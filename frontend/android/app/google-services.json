@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242301906654",
+    "project_id": "iitg-campus-sync",
+    "storage_bucket": "iitg-campus-sync.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242301906654:android:be45b55d1a26596c1b9c4f",
+        "android_client_info": {
+          "package_name": "com.IitgCampusSync.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnmsuVKiNk4_fgN9WaasDMu01vCaem2kg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
