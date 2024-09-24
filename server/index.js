@@ -51,7 +51,7 @@ try {
 
 // Update User FCM Token Route
 app.post('/register-token', async (req, res) => {
-  const { userId, fcmToken } = req.body;
+  const { userId, fcmToken } = req.body; // Ensure this matches what you're sending from Flutter
 
   try {
     await User.updateOne({ _id: userId }, { fcmToken }, { upsert: true });
@@ -96,6 +96,16 @@ app.post('/create-event', async (req, res) => {
         console.error('Error creating event or sending notifications:', err);
         res.status(500).json({ error: 'Error creating event or sending notifications' });
     }
+});
+
+app.get('/get-events', async (req, res) => {
+  try {
+    const events = await Event.find();
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    res.status(500).json({ message: 'Failed to fetch events' });
+  }
 });
 
 

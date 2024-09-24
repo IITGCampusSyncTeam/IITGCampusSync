@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/notifications_provider.dart';
+import 'package:frontend/screens/event_screen.dart';
 import 'package:http/http.dart' as http;
 
 import 'firebase_options.dart';
@@ -12,28 +13,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-Future<void> saveFcmTokenToServer(String userId) async {
-  // Get the FCM token
-  String? fcmToken = await FirebaseMessaging.instance.getToken();
+FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  if (fcmToken != null) {
-    // Make an API call to save the token to the backend
-    var response = await http.post(
-      Uri.parse('https://your-backend-api-url.com/save-token'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'userId': userId,
-        'fcmToken': fcmToken,
-      }),
+Future<void> sendFCMTokenToServer() async {
+  String? token = await messaging.getToken();
+  if (token != null) {
+    final url = 'http://192.168.0.102:3000/register-token';
+    await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'userId': '5f50b61f78d1e74d8c3f0002',
+        'fcmToken':
+            'cDccltMOSvaxExFxsxLSQs:APA91bH075549UA84cSIfty-Cj0l5h2R_ji4wmn_N2tNkknGpPBlFjVBByoQVzAZTb_0ei8YIge1f7haBKED0wCGQspT5DsS66iXBzqqJw5zgyXzAgdeL5sBYh6AmOdlCqNEqozNNiLe'
+      }), // Make sure to include userId
     );
-
-    if (response.statusCode == 200) {
-      print('FCM token saved successfully');
-    } else {
-      print('Failed to save FCM token');
-    }
   }
 }
 
@@ -75,6 +69,7 @@ class _MyAppState extends State<MyApp> {
       print('FCM Token: $token');
       // Send this token to your server
     });
+    sendFCMTokenToServer();
 
     // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -89,15 +84,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('FCM Example'),
-        ),
-        body: Center(
-          child: Text('Flutter FCM Demo'),
-        ),
-      ),
-    );
+    return MaterialApp(home: EventScreen());
   }
 }
