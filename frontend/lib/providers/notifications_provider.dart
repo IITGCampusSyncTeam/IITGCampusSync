@@ -71,11 +71,11 @@ void onDidReceiveNotificationResponse(
   }
   // Navigate to a specific screen or perform an action based on the payload
 }
-
-bool checkNotificationCategory(String type) {
-  // Define valid categories for IITG notifications
-  return type == "event" || type == "announcement" || type == "reminder";
-}
+//
+// bool checkNotificationCategory(String type) {
+//   // Define valid categories for IITG notifications
+//   return type == "event" || type == "announcement" || type == "reminder";
+// }
 
 Future<bool> checkForNotifications() async {
   await FirebaseMessaging.instance.subscribeToTopic('iitg_all');
@@ -142,10 +142,8 @@ Future<bool> checkForNotifications() async {
       iOS: iosNotificationDetails,
     );
 
-    if (checkNotificationCategory(message.data['category'])) {
-      await flutterLocalNotificationsPlugin.show(message.hashCode,
-          message.data['title'], message.data['body'], notificationDetails);
-    }
+    await flutterLocalNotificationsPlugin.show(message.hashCode,
+        message.data['title'], message.data['body'], notificationDetails);
   });
 
   final SharedPreferences preferences = await SharedPreferences.getInstance();

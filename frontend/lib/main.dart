@@ -15,19 +15,23 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-Future<void> sendFCMTokenToServer() async {
-  String? token = await messaging.getToken();
+// Method to send FCM token to your server
+Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
     final url = 'http://192.168.0.102:3000/register-token';
-    await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'userId': '5f50b61f78d1e74d8c3f0002',
-        'fcmToken':
-            'cDccltMOSvaxExFxsxLSQs:APA91bH075549UA84cSIfty-Cj0l5h2R_ji4wmn_N2tNkknGpPBlFjVBByoQVzAZTb_0ei8YIge1f7haBKED0wCGQspT5DsS66iXBzqqJw5zgyXzAgdeL5sBYh6AmOdlCqNEqozNNiLe'
-      }), // Make sure to include userId
-    );
+    try {
+      await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId': '5f50b61f78d1e74d8c3f0002', // Make sure to include userId
+          'fcmToken': token,
+        }),
+      );
+      print("Token sent to server: $token");
+    } catch (e) {
+      print("Error sending token to server: $e");
+    }
   }
 }
 
@@ -64,12 +68,17 @@ class _MyAppState extends State<MyApp> {
     // Request permission for notifications
     messaging.requestPermission();
 
-    // Get the token for the device
+    // Get the initial token and send it to your server
     messaging.getToken().then((token) {
-      print('FCM Token: $token');
-      // Send this token to your server
+      print('Initial FCM Token: $token');
+      sendFCMTokenToServer(token);
     });
-    sendFCMTokenToServer();
+
+    // Listen for token refresh and send the new token to your server
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      print('Refreshed FCM Token: $newToken');
+      sendFCMTokenToServer(newToken);
+    });
 
     // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

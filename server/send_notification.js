@@ -28,7 +28,7 @@ app.post('/send-notification', async (req, res) => {
 
   const message = {
     notification: { title, body },
-    token: token // use device token instead of topic
+    token: token
   };
 
    try {
