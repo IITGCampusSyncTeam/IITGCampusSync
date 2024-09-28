@@ -1,7 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/services/notification_services.dart';
+import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
+import 'package:mongo_dart/mongo_dart.dart';
 
 class EventScreen extends StatefulWidget {
   @override
@@ -10,15 +14,71 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   List events = [];
+  final String serverKey = '';
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final dateTimeController = TextEditingController();
   final clubController = TextEditingController();
+  NotificationServices notificationServices = NotificationServices();
 
   @override
   void initState() {
     super.initState();
     fetchEvents();
+    notificationServices.requestNotificationPermission;
+    notificationServices.forgroundMessage();
+    notificationServices.firebaseInit(context);
+    notificationServices.setupInteractMessage(context);
+    notificationServices.getDeviceToken().then((value) {
+      print('device token');
+      print(value);
+    });
+  }
+
+  Future<String> getServerKey() async {
+    // Your client ID and client secret obtained from Google Cloud Console
+    final serviceAccountJson = {
+      //Your serviceAccoucnt Json Data
+      "type": "service_account",
+      "project_id": "iitg-campus-sync",
+      "private_key_id": "e4409b4f2999862281cff53e1413cb71bc359434",
+      "private_key":
+          "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCx04tL6bzfmkrf\nW55IE/CYI7ssQw+jvoNACcbg3rsQIc1SOi3vNF/o7wBaEPgFboLk4KkQnm6Vdf+U\nscVKQAIm+4gqzJ2uDQ8w7O6Cc1tImnq6pNBVE+NWk1m++RRHAvzGgBSypjdre8KO\n4RPQQqIPRzo675kuGO6XJ7CX+0cFnozKMhP94vatDktSuIQqKDaVLed4lhvFT2Gz\nyUg5YEohhWb1uuRCgQilDC2/Lra+W+B/Quu7po/bePk+1Nf/dpflen6DafkUJUW7\nYFNhyRjRm1m3G4G5jBJ8Ih0eePmZ1CtYrmdW/ZXDTkt/VqPe+eMKco5rcObsnyid\nwjgGxW41AgMBAAECggEAEmfc9nczpMk+5VjW9zWTz4t952+W13yemoA95Nno7sXb\nj0k/po9QkLbm3cD9NZgMqvf98nRo6cYUNXsjpTMe2z4UXVRfIGbFoxYYUcmdhymb\neQ9vaNRC0ZvgIX4nynnVWWO5wLanlykbfYJvyec7su0ians7laPgU3uOMbeWevmT\nhq6yHJ/iw7ysSBIYtRo4mBeCZujEEVsL9w9VrMJZTEI4DmAyGU+ocrG3DaqL6LuC\nrg2GhQ299FjRjtxmkmNZzzpPvXmuaEj2HTxZmgeZGE6lzbn1mTZxa0Kz0sxz94KC\nNhzOBePczklmktW/1xMvUpTetBI6JSbYbh3CSlgz+QKBgQD3qZJFz+E7Frrdw9jA\nR4v0kkr0Zgo4M1tsU9MXBxAkvKNW6BTrLvvW6I30anih7nhbpj1XdPxIR/qJAyj3\n4o6m3TE48dtnPUdsjeSrChH1SiDWySi0PeWgN8R1wo/4EZec2liXOj/mAPLUEgfK\nkX9BrDxxzUEdt+kAue4SGiBw8wKBgQC30BrU32huvRFiDqVdg/Me4GN/OKttcNNt\nbtUUVbY988ISpcEgpVro75yGmDRmJ8si3f7j6OkD18X4leu6Hf2lm12DkfTF2IAp\n6GCA+oDz4VvWa6FPiiP+nnu6oAHPSiZNAScJMtXjm5QRi+PYI6zb+UndLhCnveUr\ngHdEsNiuNwKBgF1JpG1jhmVphG3wTX7v9EnlqRIyNXtB7Rf64zJzWKNd4vDjbq2/\n/uDOrFn6mQH1/6QWFFkTGcxoQHjHlfD5h95Wxym6AHj83iCHujCrFGSezYvaLdjm\nz83v87Kf3PcGOWO940zjhhovFUjImeK1t4eXRxVeyT5Wfg/l+UUcTkf9AoGAbAvU\nqcqEvYs/e482Xwjf0Qd/FNo/0j3e2dWrRJ+5VyNAseti4YixLnkiXe975YyAmIc7\ne8Z9qbec9ClT/fwBC+aOincyFVXUyE2C5G3bfP+8Fwb/NBz0WYfZHPNO/QUODHef\n9YU/OuJJoCLFlFgsFMWtSGj6e09hNTf3Y5Y8V/MCgYEA9yPOVYcf1RChQGjDdrYH\n5v91py9Dc5gNbGYfq7Dzmlq1OeWmEcBRkq9Q58X95ubwXl4dg5iW1NAT2m2e0bkc\nl//z5MLSjmKl9FU35nQYSOFZyzlHEa7R09g64u/RLjBFwDy5q2H4jq8a5/Un6Qzp\n4PNnhmny6+3Z/V+VcXikmdA=\n-----END PRIVATE KEY-----\n",
+      "client_email":
+          "firebase-adminsdk-lriwj@iitg-campus-sync.iam.gserviceaccount.com",
+      "client_id": "100065933557536941684",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url":
+          "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url":
+          "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-lriwj%40iitg-campus-sync.iam.gserviceaccount.com",
+      "universe_domain": "googleapis.com"
+    };
+
+    List<String> scopes = [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/firebase.database",
+      "https://www.googleapis.com/auth/firebase.messaging"
+    ];
+
+    http.Client client = await auth.clientViaServiceAccount(
+      auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
+      scopes,
+    );
+
+    // Obtain the access token
+    auth.AccessCredentials credentials =
+        await auth.obtainAccessCredentialsViaServiceAccount(
+            auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
+            scopes,
+            client);
+
+    // Close the HTTP client
+    client.close();
+
+    // Return the access token
+    return credentials.accessToken.data;
   }
 
   Future<void> fetchEvents() async {
@@ -37,8 +97,37 @@ class _EventScreenState extends State<EventScreen> {
       _showErrorDialog('Error: $e');
     }
   }
+  //
+  // Future<List<String>> fetchAllFcmTokens() async {
+  //   List<String> fcmTokens = [];
+  //
+  //   try {
+  //     // Connect to MongoDB (replace with your actual connection string)
+  //     final db = await Db.create('your_mongodb_connection_string');
+  //     await db.open();
+  //
+  //     // Access the collection
+  //     final users = db.collection('users');
+  //
+  //     // Query all documents and extract fcm tokens
+  //     await users.find().forEach((user) {
+  //       if (user.containsKey('fcmToken')) {
+  //         fcmTokens.add(user['fcmToken'] as String);
+  //       }
+  //     });
+  //
+  //     // Close the connection
+  //     await db.close();
+  //   } catch (e) {
+  //     print('Error fetching FCM tokens: $e');
+  //     // Handle the error appropriately
+  //   }
+  //
+  //   return fcmTokens;
+  // }
 
   Future<void> createEvent() async {
+    final String serverKey = await getServerKey();
     final title = titleController.text;
     final description = descriptionController.text;
     final dateTime = dateTimeController.text;
@@ -74,6 +163,35 @@ class _EventScreenState extends State<EventScreen> {
         _showSuccessDialog('Event created successfully');
         fetchEvents(); // Refresh event list
         _clearInputFields(); // Clear fields after submission
+        NotificationServices().getDeviceToken().then((value) async {
+          var data = {
+            'message': {
+              'token':
+                  value, // Token of the device you want to send the message to
+              'notification': {'body': description, 'title': title},
+              'data': {
+                'current_user_fcm_token':
+                    value, // Include the current user's FCM token in data payload
+              },
+            }
+          };
+          await http.post(
+              Uri.parse(
+                  'https://fcm.googleapis.com/v1/projects/iitg-campus-sync/messages:send'),
+              body: jsonEncode(data),
+              headers: {
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Authorization': 'Bearer $serverKey'
+              }).then((value) {
+            if (kDebugMode) {
+              print(value.body.toString());
+            }
+          }).onError((error, stackTrace) {
+            if (kDebugMode) {
+              print(error);
+            }
+          });
+        });
       } else {
         _showErrorDialog('Error creating event');
       }
@@ -81,6 +199,44 @@ class _EventScreenState extends State<EventScreen> {
       _showErrorDialog('Error: $e');
     }
   }
+
+  // Future<void> sendFCMMessage() async {
+  //   final String serverKey =
+  //       // Your FCM server key
+  //   final String fcmEndpoint =
+  //       'https://fcm.googleapis.com/v1/projects/iitg-campus-sync/messages:send';
+  //   final currentFCMToken = await FirebaseMessaging.instance.getToken();
+  //   print("fcmkey : $currentFCMToken");
+  //   final Map<String, dynamic> message = {
+  //     'message': {
+  //       'token':
+  //           currentFCMToken, // Token of the device you want to send the message to
+  //       'notification': {
+  //         'body': 'This is an FCM notification message!',
+  //         'title': 'FCM Message'
+  //       },
+  //       'data': {
+  //         'current_user_fcm_token':
+  //             currentFCMToken, // Include the current user's FCM token in data payload
+  //       },
+  //     }
+  //   };
+  //
+  //   final http.Response response = await http.post(
+  //     Uri.parse(fcmEndpoint),
+  //     headers: <String, String>{
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $serverKey',
+  //     },
+  //     body: jsonEncode(message),
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     print('FCM message sent successfully');
+  //   } else {
+  //     print('Failed to send FCM message: ${response.statusCode}');
+  //   }
+  // }
 
   void _clearInputFields() {
     titleController.clear();

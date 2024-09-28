@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/providers/notifications_provider.dart';
 import 'package:frontend/screens/event_screen.dart';
 import 'package:http/http.dart' as http;
 
 import 'firebase_options.dart';
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
+  await Firebase.initializeApp();
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -41,11 +41,6 @@ void main() async {
   // Get FCM Token
   String? token = await FirebaseMessaging.instance.getToken();
   print("FCM Token: $token"); // This line prints the token
-
-  await Future.wait([
-    checkForNotifications(),
-    //FirebaseMessaging.instance.getToken(),
-  ]);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 

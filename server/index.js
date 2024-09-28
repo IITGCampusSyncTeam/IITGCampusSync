@@ -47,22 +47,7 @@ try {
 // Routes to create event and fetch events (now handled by eventController)
 app.post('/create-event', eventController.createEvent);
 app.get('/get-events', eventController.getEvents);
-//
-//const message = {
-//  notification: {
-//    title: 'Test Title',
-//    body: 'Test Body',
-//  },
-//  token: "cDccltMOSvaxExFxsxLSQs:APA91bH075549UA84cSIfty-Cj0l5h2R_ji4wmn_N2tNkknGpPBlFjVBByoQVzAZTb_0ei8YIge1f7haBKED0wCGQspT5DsS66iXBzqqJw5zgyXzAgdeL5sBYh6AmOdlCqNEqozNNiLe"
-//};
-//
-//admin.messaging().send(message)
-//  .then((response) => {
-//    console.log('Successfully sent message:', response);
-//  })
-//  .catch((error) => {
-//    console.log('Error sending message:', error);
-//  });
+
 
 // Route to save FCM token
 app.post('/save-token', async (req, res) => {
