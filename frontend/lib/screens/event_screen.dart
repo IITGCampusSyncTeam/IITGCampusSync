@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
-import 'package:mongo_dart/mongo_dart.dart';
 
 class EventScreen extends StatefulWidget {
   @override
@@ -97,34 +95,6 @@ class _EventScreenState extends State<EventScreen> {
       _showErrorDialog('Error: $e');
     }
   }
-  //
-  // Future<List<String>> fetchAllFcmTokens() async {
-  //   List<String> fcmTokens = [];
-  //
-  //   try {
-  //     // Connect to MongoDB (replace with your actual connection string)
-  //     final db = await Db.create('your_mongodb_connection_string');
-  //     await db.open();
-  //
-  //     // Access the collection
-  //     final users = db.collection('users');
-  //
-  //     // Query all documents and extract fcm tokens
-  //     await users.find().forEach((user) {
-  //       if (user.containsKey('fcmToken')) {
-  //         fcmTokens.add(user['fcmToken'] as String);
-  //       }
-  //     });
-  //
-  //     // Close the connection
-  //     await db.close();
-  //   } catch (e) {
-  //     print('Error fetching FCM tokens: $e');
-  //     // Handle the error appropriately
-  //   }
-  //
-  //   return fcmTokens;
-  // }
 
   Future<void> createEvent() async {
     final String serverKey = await getServerKey();
@@ -163,40 +133,54 @@ class _EventScreenState extends State<EventScreen> {
         _showSuccessDialog('Event created successfully');
         fetchEvents(); // Refresh event list
         _clearInputFields(); // Clear fields after submission
-        NotificationServices().getDeviceToken().then((value) async {
-          var data = {
-            'message': {
-              'token':
-                  value, // Token of the device you want to send the message to
-              'notification': {'body': description, 'title': title},
-              'data': {
-                'current_user_fcm_token':
-                    value, // Include the current user's FCM token in data payload
-              },
-            }
-          };
-          await http.post(
-              Uri.parse(
-                  'https://fcm.googleapis.com/v1/projects/iitg-campus-sync/messages:send'),
-              body: jsonEncode(data),
-              headers: {
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Authorization': 'Bearer $serverKey'
-              }).then((value) {
-            if (kDebugMode) {
-              print(value.body.toString());
-            }
-          }).onError((error, stackTrace) {
-            if (kDebugMode) {
-              print(error);
-            }
-          });
-        });
+
+        // Fetch all registered FCM tokens
+        final tokensResponse =
+            await http.get(Uri.parse('http://192.168.0.102:3000/get-tokens'));
+        if (tokensResponse.statusCode == 200) {
+          // Explicitly cast dynamic values to String
+          List<String> tokens = (json.decode(tokensResponse.body) as List)
+              .map((item) => item.toString())
+              .toList();
+
+          await sendNotificationToAll(tokens, title, description, serverKey);
+        } else {
+          _showErrorDialog('Failed to retrieve user tokens');
+        }
       } else {
         _showErrorDialog('Error creating event');
       }
     } catch (e) {
       _showErrorDialog('Error: $e');
+    }
+  }
+
+  Future<void> sendNotificationToAll(
+      List<String> tokens, String title, String body, String serverKey) async {
+    for (String token in tokens) {
+      var data = {
+        'message': {
+          'token': token,
+          'notification': {'body': body, 'title': title},
+        }
+      };
+      try {
+        final response = await http.post(
+          Uri.parse(
+              'https://fcm.googleapis.com/v1/projects/iitg-campus-sync/messages:send'),
+          body: jsonEncode(data),
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': 'Bearer $serverKey',
+          },
+        );
+        if (response.statusCode != 200) {
+          print(
+              'Failed to send notification to $token: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error sending notification to $token: $e');
+      }
     }
   }
 

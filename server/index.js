@@ -68,6 +68,23 @@ app.post('/save-token', async (req, res) => {
   }
 });
 
+// GET request to retrieve FCM tokens
+app.get('/get-tokens', async (req, res) => {
+    try {
+        const users = await User.find({});
+        // Extract fcmToken and filter out undefined or empty tokens
+        const tokens = users
+            .map(user => user.fcmToken)
+            .filter(token => typeof token === 'string' && token.trim() !== '');
+
+        res.json(tokens);
+    } catch (error) {
+        console.error('Error fetching tokens:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
