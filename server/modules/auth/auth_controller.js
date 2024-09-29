@@ -130,71 +130,83 @@ export const redirectHandler = async (req, res, next) => {
 
 export const mobileRedirectHandler = async (req, res, next) => {
     const { code } = req.query;
-    console.log("flag")
-    var data = qs.stringify({
-        client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~',
-        client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
-        //redirect_uri: redirect_uri,
-        redirect_uri: "http://localhost:3000/api/auth/login/redirect/mobile",
-        scope: "user.read",
-        grant_type: "authorization_code",
-        code: code,
-    });
-
-    var config = {
-        method: "post",
-        url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~',
-        },
-        data: data,
-    };
-    const response = await axios.post(config.url, config.data, {
-        headers: config.headers,
-    });
-
- if (!response.data) throw new AppError(500, "Something went wrong");
-
-    const AccessToken = response.data.access_token;
-    //const RefreshToken = response.data.refresh_token;
-
-    const userFromToken = await getUserFromToken(AccessToken);
-
-    if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
-
-    const roll = userFromToken.data.surname;
-    if (!roll) throw new AppError(401, "Sign in using Institute Account");
-
-    let existingUser = await findUserWithEmail(userFromToken.data.mail); //find with email
-
-    if (!existingUser) {
-       
-        const department = await getDepartment(AccessToken);
-
-        const userData = {
-            name: userFromToken.data.displayName,
-            degree: userFromToken.data.jobTitle,
-            rollNumber: userFromToken.data.surname,
-            email: userFromToken.data.mail,
-            // branch: department, //calculate branch
-            semester: calculateSemester(userFromToken.data.surname),
-            department: department,
-        };
-
-        const { error } = validateUser(userData);
-        if (error) throw new AppError(500, error.message);
-
-        const user = new User(userData);
-        existingUser = await user.save();
+    if (!code) {
+        return next(new AppError(400, "Authorization code missing"));
     }
 
-    const token = existingUser.generateJWT();
+    try {
+        var data = qs.stringify({
+            client_secret:"yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~",
+            client_id:"7e8cd638-96e9-4441-b3a5-dd3ea895a46d" ,
+            redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
+            scope: "user.read offline_access",
+            grant_type: "authorization_code",
+            code: code,
+        });
 
-    //     const encryptedToken = EncryptText(token);
+        var config = {
+            method: "post",
+            url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: data,
+        };
 
-    return res.redirect('iitgsync://success?token=${token}');
+        const response = await axios.post(config.url, config.data, {
+            headers: config.headers,
+        });
+
+        if (!response.data) throw new AppError(500, "Something went wrong");
+
+        const AccessToken = response.data.access_token;
+        const userFromToken = await getUserFromToken(AccessToken);
+
+        if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
+
+        const roll = userFromToken.data.surname;
+        if (!roll) throw new AppError(401, "Sign in using Institute Account");
+
+        // Log roll number and calculate semester
+        console.log("Roll Number:", roll);
+        const semester = calculateSemester(roll);
+        console.log("Calculated Semester:", semester);
+
+        // Ensure semester is correctly calculated
+        if (!semester || isNaN(semester)) {
+            return next(new AppError(500, "Invalid semester value"));
+        }
+
+        let existingUser = await findUserWithEmail(userFromToken.data.mail); //find with email
+
+        if (!existingUser) {
+            const department = await getDepartment(AccessToken);
+
+            const userData = {
+                name: userFromToken.data.displayName,
+                degree: userFromToken.data.jobTitle,
+                rollNumber: userFromToken.data.surname,
+                email: userFromToken.data.mail,
+                semester: semester,  // Ensure this is properly assigned
+                department: department,
+            };
+
+            const { error } = validateUser(userData);
+            if (error) throw new AppError(500, error.message);
+
+            const user = new User(userData);
+            existingUser = await user.save();
+        }
+
+        const token = existingUser.generateJWT();
+
+        return res.redirect(`iitgsync://success?token=${token}`);
+    } catch (error) {
+        console.error("Error in mobileRedirectHandler:", error.response ? error.response.data : error.message);
+        next(new AppError(500, "Mobile Redirect Failed"));
+    }
 };
+
 
 export const logoutHandler = (req, res, next) => {
     //     res.clearCookie("token");
