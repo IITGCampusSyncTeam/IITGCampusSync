@@ -3,7 +3,7 @@ import qs from "querystring";
 import AppError from "../../utils/appError.js";
 import catchAsync from "../../utils/catchAsync.js";
 
-
+import academicdata from "../../config/academic.js";
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_VALUE;
 const redirect_uri = process.env.REDIRECT_URI;
