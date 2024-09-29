@@ -131,11 +131,12 @@ export const redirectHandler = async (req, res, next) => {
 export const mobileRedirectHandler = async (req, res, next) => {
     const { code } = req.query;
     console.log("flag")
+    console.log(code)
     var data = qs.stringify({
         client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~',
         client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
         //redirect_uri: redirect_uri,
-        redirect_uri: "http://localhost:3000/api/auth/login/redirect/mobile",
+        redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
         scope: "user.read",
         grant_type: "authorization_code",
         code: code,
@@ -150,10 +151,16 @@ export const mobileRedirectHandler = async (req, res, next) => {
         },
         data: data,
     };
-    const response = await axios.post(config.url, config.data, {
-        headers: config.headers,
-    });
-
+    let response;
+    try {
+        response = await axios.post(config.url, data, {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
+        console.log("Response Data:", response.data);  // Log response
+    } catch (error) {
+        console.error("Error Data:", error.response ? error.response.data : error.message);  // Log error details
+        throw new AppError(500, "OAuth Token Request Failed");
+    }
  if (!response.data) throw new AppError(500, "Something went wrong");
 
     const AccessToken = response.data.access_token;
