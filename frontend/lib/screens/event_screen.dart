@@ -106,8 +106,7 @@ class _EventScreenState extends State<EventScreen> {
           'description': description,
           'dateTime': dateTime,
           'club': club,
-          'createdBy':
-              '5f50b61f78d1e74d8c3f0002', // Replace with actual user ID
+          'createdBy': '5f50b61f78d1e74d8c3f0002',
           'participants': [],
           'feedbacks': [],
           'notifications': []
