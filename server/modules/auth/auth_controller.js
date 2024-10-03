@@ -125,32 +125,33 @@ export const redirectHandler = async (req, res, next) => {
 
     return res.redirect(appConfig.clientURL);
 };
-
 export const mobileRedirectHandler = async (req, res, next) => {
-    const { code } = req.query;
-    if (!code) {
-        return next(new AppError(400, "Authorization code missing"));
-    }
-
     try {
+        const { code } = req.query;
+
         var data = qs.stringify({
-            client_secret: "yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~",
-            client_id: "7e8cd638-96e9-4441-b3a5-dd3ea895a46d",
+            client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
+            client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
             redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
-            scope: "user.read offline_access",
+            scope: "user.read",
             grant_type: "authorization_code",
             code: code,
         });
 
+        // Define the config object properly
         var config = {
             method: "post",
             url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
+                client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
             },
             data: data,
         };
 
+        console.log("Config before Axios request:", config);
+
+        // Axios request with the config object
         const response = await axios.post(config.url, config.data, {
             headers: config.headers,
         });
@@ -158,6 +159,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
         if (!response.data) throw new AppError(500, "Something went wrong");
 
         const AccessToken = response.data.access_token;
+
         const userFromToken = await getUserFromToken(AccessToken);
 
         if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
@@ -165,17 +167,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
         const roll = userFromToken.data.surname;
         if (!roll) throw new AppError(401, "Sign in using Institute Account");
 
-        // Log roll number and calculate semester
-        console.log("Roll Number:", roll);
-        const semester = calculateSemester(roll);
-        console.log("Calculated Semester:", semester);
-
-        // Ensure semester is correctly calculated
-        if (!semester || isNaN(semester)) {
-            return next(new AppError(500, "Invalid semester value"));
-        }
-
-        let existingUser = await findUserWithEmail(userFromToken.data.mail); //find with email
+        let existingUser = await findUserWithEmail(userFromToken.data.mail);
 
         if (!existingUser) {
             const department = await getDepartment(AccessToken);
@@ -185,7 +177,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 degree: userFromToken.data.jobTitle,
                 rollNumber: userFromToken.data.surname,
                 email: userFromToken.data.mail,
-                semester: semester,  // Ensure this is properly assigned
+                semester: calculateSemester(userFromToken.data.surname),
                 department: department,
             };
 
@@ -198,12 +190,15 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
         const token = existingUser.generateJWT();
 
+        // Redirect to mobile with token
         return res.redirect(`iitgsync://success?token=${token}`);
+
     } catch (error) {
-        console.error("Error in mobileRedirectHandler:", error.response ? error.response.data : error.message);
+        console.error("Error in mobileRedirectHandler:", error);
         next(new AppError(500, "Mobile Redirect Failed"));
     }
 };
+
 
 export const logoutHandler = (req, res, next) => {
     //     res.clearCookie("token");
