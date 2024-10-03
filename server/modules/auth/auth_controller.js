@@ -49,6 +49,83 @@ function calculateSemester(rollNumber) {
     return semester;
 }
 
+export const redirectHandler = async (req, res, next) => {
+    const { code } = req.query;
+  console.log("flag")
+    var data = qs.stringify({
+        client_secret: clientSecret,
+        client_id: clientid,
+        //redirect_uri: redirect_uri,
+        redirect_uri: "http://localhost:8080/api/auth/login/redirect",
+        scope: "user.read",
+        grant_type: "authorization_code",
+        code: code,
+    });
+
+    console.log(data);
+
+    var config = {
+        method: "post",
+        url: `https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token`,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            client_secret: clientSecret,
+        },
+        data: data,
+    };
+    const response = await axios.post(config.url, config.data, {
+        headers: config.headers,
+    });
+
+    if (!response.data) throw new AppError(500, "Something went wrong");
+
+    console.log(response.data);
+
+    const AccessToken = response.data.access_token;
+    const RefreshToken = response.data.refresh_token;
+
+    const userFromToken = await getUserFromToken(AccessToken);
+
+    if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
+
+    const roll = userFromToken.data.surname;
+    if (!roll) throw new AppError(401, "Sign in using Institute Account");
+
+    let existingUser = await findUserWithEmail(userFromToken.data.mail); //find with email
+
+    if (!existingUser) {
+        const department = await getDepartment(AccessToken);
+
+        const userData = {
+            name: userFromToken.data.displayName,
+            degree: userFromToken.data.jobTitle,
+            rollNumber: userFromToken.data.surname,
+            email: userFromToken.data.mail,
+            // branch: department, //calculate branch
+            semester: calculateSemester(userFromToken.data.surname), //calculate sem
+            department: department,
+        };
+
+        const { error } = validateUser(userData);
+        if (error) throw new AppError(500, error.message);
+
+        const user = new User(userData);
+        existingUser = await user.save();
+    }
+
+    const token = existingUser.generateJWT();
+
+    res.cookie("token", token, {
+        maxAge: 2073600000,
+        sameSite: "lax",
+        secure: false,
+        expires: new Date(Date.now() + 2073600000),
+        httpOnly: true,
+    });
+
+    return res.redirect(appConfig.clientURL);
+};
+
 export const mobileRedirectHandler = async (req, res, next) => {
     const { code } = req.query;
     if (!code) {
