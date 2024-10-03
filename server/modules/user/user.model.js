@@ -101,7 +101,7 @@ export const getUserFromToken = async function (access_token) {
 
 export const findUserWithEmail = async function (email) {
     const user = await User.findOne({ email: email });
-    // console.log("found user with email", user);
+     console.log("found user with email", user);
     if (!user) return false;
     return user;
 };
