@@ -2,44 +2,36 @@ import { model, Schema } from "mongoose";
 import Joi from "joi";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-//import { getRandomColor } from "../../utils/generateRandomColor.js";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load environment variables
 
 const userSchema = Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
-    // branch: { type: String, required: true },
-    semester: { type: Number, reqiured: true },
+    semester: { type: Number, required: true },
     degree: { type: String, required: true },
-    courses: { type: Array, default: [], required: true },
-    // contri
-    department: { type: String, required: true }, //dup
-    favourites: [
-        {
-            name: { type: String },
-            id: { type: String },
-            path: { type: String },
-            code: { type: String },
-        },
-    ],
+    department: { type: String, required: true },
 });
 
+// Generating JWT
 userSchema.methods.generateJWT = function () {
-    var user = this;
-    var token = jwt.sign({ user: user._id }, config.jwtSecret, {
+    const user = this;
+    const token = jwt.sign({ user: user._id }, process.env.JWT_SECRET, {
         expiresIn: "24d",
     });
     return token;
 };
 
+// Finding user by JWT
 userSchema.statics.findByJWT = async function (token) {
     try {
-        var user = this;
-        var decoded = jwt.verify(token, config.jwtSecret);
-        const id = decoded.user;
-        const fetchedUser = user.findOne({ _id: id });
-        if (!fetchedUser) return false;
-        return fetchedUser;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.user;
+        const user = await this.findOne({ _id: userId });
+        if (!user) return false;
+        return user;
     } catch (error) {
         return false;
     }
@@ -53,30 +45,29 @@ export const validateUser = function (obj) {
         name: Joi.string().min(4).required(),
         email: Joi.string().email().required(),
         rollNumber: Joi.number().required(),
-        // branch: Joi.string().required(),
         semester: Joi.number().required(),
         degree: Joi.string().required(),
         department: Joi.string().required(),
     });
     return joiSchema.validate(obj);
 };
+
 export const updateUserData = async (userId, userData) => {
-    User.findOne({ _id: userId }, async (err, doc) => {
-        if (err) {
-        }
-        if (userData.newUserData.newUserName) {
-            doc.name = userData.newUserData.newUserName;
-            await doc.save();
-        } else if (userData.newUserData.newUserSem) {
-            doc.semester = userData.newUserData.newUserSem;
-            await doc.save();
-        }
-    });
+    const user = await User.findOne({ _id: userId });
+    if (!user) return false;
+
+    if (userData.newUserData.newUserName) {
+        user.name = userData.newUserData.newUserName;
+    } else if (userData.newUserData.newUserSem) {
+        user.semester = userData.newUserData.newUserSem;
+    }
+    await user.save();
+    return user;
 };
 
 export const getUserFromToken = async function (access_token) {
     try {
-        var config = {
+        const config = {
             method: "get",
             url: "https://graph.microsoft.com/v1.0/me",
             headers: {
@@ -86,23 +77,15 @@ export const getUserFromToken = async function (access_token) {
         const response = await axios.get(config.url, {
             headers: config.headers,
         });
-
         return response;
     } catch (error) {
         return false;
     }
 };
 
-// export const findUserWithRollNumber = async function (rollNumber) {
-// 	const user = await User.findOne({ rollNumber: rollNumber });
-// 	if (!user) return false;
-// 	return user;
-// };
-
 export const findUserWithEmail = async function (email) {
     const user = await User.findOne({ email: email });
-     console.log("found user with email", user);
+    console.log("found user with email", user);
     if (!user) return false;
     return user;
 };
-
