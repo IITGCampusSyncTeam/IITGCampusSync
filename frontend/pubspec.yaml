@@ -44,6 +44,7 @@ dependencies:
   provider: ^6.1.2
   app_settings: ^5.1.1
   mongo_dart: ^0.10.3
+  onesignal_flutter: ^5.2.6
 
 dev_dependencies:
   flutter_test:
