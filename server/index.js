@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const testRoute = require('./modules/test/testRoute');
+const CalendarController = require('./modules/calendar/calendarController');
 
 dotenv.config();
 
@@ -32,3 +33,7 @@ app.use('/api/test', testRoute);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
+
+app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
