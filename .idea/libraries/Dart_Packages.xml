@@ -352,6 +352,13 @@
             </list>
           </value>
         </entry>
+        <entry key="onesignal_flutter">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/onesignal_flutter-5.2.6/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="packages_extensions">
           <value>
             <list>
@@ -682,6 +689,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/mongo_dart-0.10.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/mongo_dart_query-5.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/nested-1.0.0/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/onesignal_flutter-5.2.6/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/packages_extensions-0.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.9.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/lib" />
