@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.frontend</string>
+	<string>com.IitgCampusSync.app</string>
 	<key>PROJECT_ID</key>
 	<string>iitg-campus-sync</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:242301906654:ios:0444b2c736abbd6c1b9c4f</string>
+	<string>1:242301906654:ios:9dcce642613090e41b9c4f</string>
 </dict>
 </plist>

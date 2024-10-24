@@ -59,11 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBfJAKr5yKHbZ0Cx_ebtOwEYHG4pwwgkn8',
-    appId: '1:242301906654:ios:0444b2c736abbd6c1b9c4f',
+    appId: '1:242301906654:ios:9dcce642613090e41b9c4f',
     messagingSenderId: '242301906654',
     projectId: 'iitg-campus-sync',
     storageBucket: 'iitg-campus-sync.appspot.com',
-    iosBundleId: 'com.example.frontend',
+    iosBundleId: 'com.IitgCampusSync.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
