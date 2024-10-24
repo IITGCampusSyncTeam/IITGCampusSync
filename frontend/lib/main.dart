@@ -18,7 +18,7 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 // Method to send FCM token to your server
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
-    final url = 'http://192.168.0.102:3000/register-token';
+    final url = 'http://192.168.0.100:3000/register-token';
     try {
       await http.post(
         Uri.parse(url),

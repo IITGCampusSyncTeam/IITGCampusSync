@@ -17,18 +17,11 @@ const createEvent = async (req, res) => {
     // In a real-world scenario, you'd fetch these tokens from your database
     // based on the participants or other criteria
     const fcmTokens = [
-        'cDccltMOSvaxExFxsxLSQs:APA91bH075549UA84cSIfty-Cj0l5h2R_ji4wmn_N2tNkknGpPBlFjVBByoQVzAZTb_0ei8YIge1f7haBKED0wCGQspT5DsS66iXBzqqJw5zgyXzAgdeL5sBYh6AmOdlCqNEqozNNiLe'
-      // ... add more tokens here, up to 500
+       "cv_aFs3BRL-Ahxhf4IMMzK:APA91bGzPdIVd8qVeJp6YxZNZez4_8oaFj05qdD-WPZ8pqHIVeN3Ri4tPtdv_L-xzedUqyx3jsTFUvR_Bw9a9Ws8CeTXZUZG1OOD2Tsa0JQJ9wXG9NKlNQ4"
     ];
 
-    // Prepare the message
-    const message = {
-      data: {
-        title: title,
-        body: description,
-      },
 
-    };
+
 
     // Split tokens into chunks of 500 (FCM limit for batch send)
     const tokenChunks = chunkArray(fcmTokens, 500);
@@ -37,12 +30,16 @@ const createEvent = async (req, res) => {
     let failureCount = 0;
 
     // Send notifications to each chunk
-    for (const chunk of tokenChunks) {
+    for (const token of fcmTokens) {
+     const message = {
+          notification: {
+            title: title,
+            body: description,
+          },
+          token: token,  // An array of valid FCM tokens
+        };
       try {
-        const response = await admin.messaging().sendMulticast({
-          ...message,
-          tokens: chunk,
-        });
+        const response = await admin.messaging().send(message);
 
         console.log(`${response.successCount} messages were sent successfully`);
 
