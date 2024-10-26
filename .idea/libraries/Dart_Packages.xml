@@ -187,7 +187,7 @@
         <entry key="flutter">
           <value>
             <list>
-              <option value="$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter/lib" />
+              <option value="$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter/lib" />
             </list>
           </value>
         </entry>
@@ -222,14 +222,14 @@
         <entry key="flutter_test">
           <value>
             <list>
-              <option value="$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter_test/lib" />
+              <option value="$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter_test/lib" />
             </list>
           </value>
         </entry>
         <entry key="flutter_web_plugins">
           <value>
             <list>
-              <option value="$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter_web_plugins/lib" />
+              <option value="$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter_web_plugins/lib" />
             </list>
           </value>
         </entry>
@@ -516,7 +516,7 @@
         <entry key="sky_engine">
           <value>
             <list>
-              <option value="$USER_HOME$/Desktop/SWC/flutter_new/bin/cache/pkg/sky_engine/lib" />
+              <option value="$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/bin/cache/pkg/sky_engine/lib" />
             </list>
           </value>
         </entry>
@@ -729,10 +729,10 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/web-1.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/xdg_directories-1.0.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/xml-6.5.0/lib" />
-      <root url="file://$USER_HOME$/Desktop/SWC/flutter_new/bin/cache/pkg/sky_engine/lib" />
-      <root url="file://$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter/lib" />
-      <root url="file://$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter_test/lib" />
-      <root url="file://$USER_HOME$/Desktop/SWC/flutter_new/packages/flutter_web_plugins/lib" />
+      <root url="file://$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/bin/cache/pkg/sky_engine/lib" />
+      <root url="file://$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter/lib" />
+      <root url="file://$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter_test/lib" />
+      <root url="file://$USER_HOME$/Library/CloudStorage/GoogleDrive-jenayatika@gmail.com/My Drive/SWC/flutter_new/packages/flutter_web_plugins/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
