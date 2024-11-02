@@ -1,4 +1,4 @@
-import { User} from "./user.model.js";
+import User from "./user.model.js";
 import { updateUserData } from "./user.model.js";
 export const getUser = async (req, res, next) => {
     return res.json(req.user);

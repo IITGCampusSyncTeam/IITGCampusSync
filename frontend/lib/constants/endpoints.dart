@@ -15,7 +15,7 @@ class tokenlink {
 }
 
 class redirecturi {
-  static const Redirecturi = 'iitgsync://auth';
+  static const Redirecturi = 'iitgsync://success';
 }
 
 class clientSecretid {

@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import Joi from "joi";
 import axios from "axios";
 import jwt from "jsonwebtoken";
@@ -6,19 +6,51 @@ import dotenv from "dotenv";
 
 dotenv.config(); // Load environment variables
 
-const userSchema = Schema({
+const userSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
     semester: { type: Number, required: true },
     degree: { type: String, required: true },
     department: { type: String, required: true },
+    role: { type: String, enum: ['normal', 'club_head', 'higher_authority'], default: 'normal' },
+    profilePicture: {
+        type: String,
+        validate: {
+            validator: function(v) {
+                return /^(http|https):\/\/[^ "]+$/.test(v); // Basic URL validation
+            },
+            message: props => `${props.value} is not a valid URL!`
+        }
+    },
+    subscribedClubs: [
+        {
+            type: Types.ObjectId,
+            ref: 'Club'
+        }
+    ],
+    clubsResponsible: [
+        {
+            type: Types.ObjectId,
+            ref: 'Club'
+        }
+    ],
+    reminders: [
+        {
+            notificationId: {
+                type: Types.ObjectId,
+                ref: 'Notification'
+            },
+            reminderTime: {
+                type: Date
+            }
+        }
+    ]
 });
 
 // Generating JWT
 userSchema.methods.generateJWT = function () {
-    const user = this;
-    const token = jwt.sign({ user: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ user: this._id }, process.env.JWT_SECRET, {
         expiresIn: "24d",
     });
     return token;
@@ -28,10 +60,8 @@ userSchema.methods.generateJWT = function () {
 userSchema.statics.findByJWT = async function (token) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.user;
-        const user = await this.findOne({ _id: userId });
-        if (!user) return false;
-        return user;
+        const user = await this.findById(decoded.user);
+        return user || false;
     } catch (error) {
         return false;
     }
@@ -40,6 +70,7 @@ userSchema.statics.findByJWT = async function (token) {
 const User = model("User", userSchema);
 export default User;
 
+// Joi validation schema for user input
 export const validateUser = function (obj) {
     const joiSchema = Joi.object({
         name: Joi.string().min(4).required(),
@@ -48,34 +79,44 @@ export const validateUser = function (obj) {
         semester: Joi.number().required(),
         degree: Joi.string().required(),
         department: Joi.string().required(),
+        role: Joi.string().valid('normal', 'club_head', 'higher_authority').default('normal'),
+        profilePicture: Joi.string().uri(),
+        subscribedClubs: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
+        clubsResponsible: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
+        reminders: Joi.array().items(
+            Joi.object({
+                notificationId: Joi.string().regex(/^[0-9a-fA-F]{24}$/), // ObjectId format
+                reminderTime: Joi.date()
+            })
+        )
     });
+
     return joiSchema.validate(obj);
 };
 
+
+// Update user data
 export const updateUserData = async (userId, userData) => {
-    const user = await User.findOne({ _id: userId });
+    const user = await User.findById(userId);
     if (!user) return false;
 
     if (userData.newUserData.newUserName) {
         user.name = userData.newUserData.newUserName;
-    } else if (userData.newUserData.newUserSem) {
+    } 
+    if (userData.newUserData.newUserSem) {
         user.semester = userData.newUserData.newUserSem;
     }
     await user.save();
     return user;
 };
 
+// Retrieve user from Microsoft Graph API with access token
 export const getUserFromToken = async function (access_token) {
     try {
-        const config = {
-            method: "get",
-            url: "https://graph.microsoft.com/v1.0/me",
+        const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
             headers: {
                 Authorization: `Bearer ${access_token}`,
-            },
-        };
-        const response = await axios.get(config.url, {
-            headers: config.headers,
+            }
         });
         return response;
     } catch (error) {
@@ -83,9 +124,9 @@ export const getUserFromToken = async function (access_token) {
     }
 };
 
+// Find user by email
 export const findUserWithEmail = async function (email) {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email });
     console.log("found user with email", user);
-    if (!user) return false;
-    return user;
+    return user || false;
 };
