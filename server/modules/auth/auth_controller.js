@@ -65,6 +65,8 @@ export const mobileRedirectHandler = async (req, res, next) => {
         if (!response.data) throw new AppError(500, "Something went wrong");
 
         const accessToken = response.data.access_token;
+        const RefreshToken = response.data.refresh_token;
+        console.log("refresh token is: ",RefreshToken);
         const userFromToken = await getUserFromToken(accessToken);
         if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
 
