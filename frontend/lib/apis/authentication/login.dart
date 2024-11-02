@@ -11,7 +11,7 @@ import 'package:frontend/screens/profile_screen.dart';
 
 import '../../constants/endpoints.dart';
 
-import 'package:frontend/models/user.dart';
+import 'package:frontend/models/userModel.dart';
 import '../../screens/login_screen.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/apis/User/user.dart';
@@ -24,16 +24,28 @@ Future<void> authenticate() async {
     print(result);
 
     final accessToken = Uri.parse(result).queryParameters['token'];
-    print(accessToken);
+    final userDetail = Uri.parse(result).queryParameters['user'];
+
+    if (accessToken == null || userDetail == null) {
+      throw ('access token or user detail not found');
+    }
+
+    // Decode the user data from the URL-encoded JSON string
+    String decodedUserString = Uri.decodeComponent(userDetail);
+
+    // Clean up unsupported elements in the JSON string
+    decodedUserString = decodedUserString
+        .replaceAll("new ObjectId(", "")
+        .replaceAll(")", "")
+        .replaceAllMapped(RegExp(r"_id:\s*'?([^,]+)'?"), (match) => '"_id": "${match[1]}"'); // Wrap _id values with quotes
+
+    // Parse the cleaned JSON
+    final decodedUserJson = jsonDecode(decodedUserString);
+    final User user = User.fromJson(decodedUserJson);
 
     final prefs = await SharedPreferences.getInstance();
-
-    if (accessToken == null) {
-      throw ('access token not found');
-    }
     prefs.setString('access_token', accessToken);
-    await fetchUserDetails();
-
+    prefs.setString('user_data', jsonEncode(user.toJson()));
 
   } on PlatformException catch (_) {
     rethrow;
@@ -42,7 +54,6 @@ Future<void> authenticate() async {
     rethrow;
   }
 }
-
 
 
 

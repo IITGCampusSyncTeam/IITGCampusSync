@@ -1,12 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/apis/User/user.dart';
 import 'package:frontend/apis/authentication/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:frontend/models/userModel.dart';
 import 'edit_profile_page.dart';
-import 'home.dart';
-//import 'edit_profile_page.dart';
-//import 'main_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -31,18 +29,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> fetchUserData() async {
-    final userDetails = await fetchUserDetails();
-    if (userDetails != null) {
+    final prefs = await SharedPreferences.getInstance();
+    String? userJson = prefs.getString('user_data');
+
+    if (userJson != null) {
+      User user = User.fromJson(jsonDecode(userJson));
+
       setState(() {
-        name = userDetails['name'] ?? '';
-        email = userDetails['email'] ?? '';
-        roll = userDetails['roll'] ?? '';
-        branch = userDetails['branch'] ?? '';
+        name = user.name;
+        email = user.email;
+        roll = user.rollNumber.toString();
+        branch = user.department;
       });
-    } else {
-      print("Failed to load user details.");
     }
   }
+
 
   Future<void> loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -60,10 +61,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.black12,
         title: Text("Profile"),
         actions: [
-          // Logout Button
           IconButton(
             onPressed: () async {
-             await logoutHandler(context);
+              await logoutHandler(context);
             },
             icon: Icon(Icons.logout),
           ),
@@ -75,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: double.infinity, // Make the card take the full width
+              width: double.infinity,
               child: Card(
                 elevation: 5,
                 shape: RoundedRectangleBorder(
@@ -117,7 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 room: roomController.text,
                 contact: contactController.text,
                 onSave: (hostel, room, contact) async {
-                  // Save the updated data locally using SharedPreferences
                   final prefs = await SharedPreferences.getInstance();
                   prefs.setString('hostel', hostel);
                   prefs.setString('room', room);
@@ -141,8 +140,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-
-  // Helper function to build each label and value pair
   Widget _buildProfileItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

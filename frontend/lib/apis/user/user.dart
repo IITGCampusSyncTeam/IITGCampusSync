@@ -1,59 +1,60 @@
 import 'dart:convert';
 
-//import 'package:frontend/database/hive_store.dart';
 import 'package:frontend/apis/authentication/login.dart';
-//import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/apis/protected.dart';
-import '../../utilities/branch_name.dart';
+import 'dart:io';
 
 
 
 
 
 Future<Map<String, String>?> fetchUserDetails() async {
-  final accessToken = await getAccessToken();
-  print("Fetched access token: $accessToken");  // Debugging line
-
-  if (accessToken == 'error') {
-    print("No access token found!");
-    return null;  // Return early if no token is found
+  final header = await getAccessToken();
+  print(header);
+  if (header == 'error') {
+    throw ('token not found');
   }
+  try {
+    final resp = await http.get(
+      Uri.parse(UserEndPoints.currentUser),
+      headers: {
+        "Authorization": "Bearer $header",//make sure to include Bearer
+        "Content-Type": "application/json",
+      },
+    );
+    print('Response headers: ${resp.headers}');
 
-  final response = await http.get(
-    Uri.parse(Userendpoints.getdetails),
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'Content-Type': 'application/json',
-    },
-  );
+    if (resp.statusCode == 200) {
+      final Map<String, dynamic> userData = json.decode(resp.body);
 
-  if (response.statusCode == 200) {
-    final Map<String, dynamic> userData = json.decode(response.body);
+      // Extract user details
+      final String name = userData['name'];
+      final String degree = userData['degree'];
+      final String mail = userData['email'];
+      final String roll = userData['rollNumber'];
+      final String branch = userData['department'];
 
-    // Extract user details
-    final String name = userData['displayName'];
-    final String mail = userData['mail'];
-    final String roll = userData['surname'];
-    final String branch = calculateBranch(roll);
+      print("Name: $name");
+      print("Degree: $degree");
+      print("Email: $mail");
+      print("Roll: $roll");
+      print("Branch: $branch");
 
-    print("Name: $name");
-    print("Email: $mail");
-    print("Roll: $roll");
-    print("Branch: $branch");
+      // Return the data as a map
+      return {
+        'name': name,
+        'email': mail,
+        'roll': roll,
+        'branch': branch,
+      };
+    }
 
-    // Return the data as a map
-    return {
-      'name': name,
-      'email': mail,
-      'roll': roll,
-      'branch': branch,
-    };
 
-  } else {
-    print("Failed to fetch user details: ${response.statusCode}");
-    print("Response body: ${response.body}");  // Additional debugging line
-    return null;
+  } catch (e) {
+    print("error is: $e");
+    rethrow;
   }
 }
+

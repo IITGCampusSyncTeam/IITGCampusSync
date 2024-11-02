@@ -6,6 +6,10 @@ class Userendpoints {
   static const getdetails = 'https://graph.microsoft.com/v1.0/me';
 }
 
+class UserEndPoints{
+  static const currentUser="https://iitgcampussync.onrender.com/api/user/";
+}
+
 class clientid {
   static const Clientid = '7e8cd638-96e9-4441-b3a5-dd3ea895a46d';
 }

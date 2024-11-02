@@ -42,6 +42,12 @@ class MyHomePageState extends State<MyHomePage> {
   static const String KEY_LOGIN_STATUS = "login";
 
   @override
+  void initState() {
+    super.initState();
+    wheretogo(); // Automatically call wheretogo when MyHomePage loads
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.purple[100],
@@ -50,24 +56,13 @@ class MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title, style: const TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
-      body: Container(
-        color: Colors.grey[400],
-        child: Center(
-          child: ElevatedButton(
-            onPressed: () => wheretogo(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.pink[100],
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              textStyle: const TextStyle(fontSize: 18),
-            ),
-            child: const Text('START'),
-          ),
-        ),
+      body: Center(
+        child: CircularProgressIndicator(), // Show a loading indicator while navigating
       ),
     );
   }
 
-  void wheretogo(BuildContext context) async {
+  void wheretogo() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token');
@@ -89,5 +84,4 @@ class MyHomePageState extends State<MyHomePage> {
       print("ERROR: $e");
     }
   }
-
 }
