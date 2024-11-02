@@ -41,9 +41,9 @@ export const mobileRedirectHandler = async (req, res, next) => {
         const { code } = req.query;
 
         const data = qs.stringify({
-            client_secret: clientSecret,
-            client_id: clientid,
-            redirect_uri: redirect_uri,
+            client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
+            client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
+            redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
             scope: "user.read",
             grant_type: "authorization_code",
             code: code,
@@ -54,6 +54,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
             url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
+                client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
             },
             data: data,
         };
