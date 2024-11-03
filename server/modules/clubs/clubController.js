@@ -1,12 +1,78 @@
 import Club from './clubModel.js';
+import Feedback from '../feedback/feedbackModel.js';
 
 export const createClub = async (req, res) => {
-    const { name, description } = req.body;
+    const { name, description, heads, members, images, websiteLink } = req.body;
+    if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
     try {
-        const newClub = new Club({ name, description });
+        const newClub = new Club({ name, description, heads, members, images, websiteLink });
         await newClub.save();
         res.status(201).json(newClub);
     } catch (err) {
         res.status(500).json({ message: 'Error creating club', error: err });
     }
 };
+
+
+export const editClub = async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+    try {
+        const club = await Club.findById(id);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        Object.assign(club, updates);
+        await club.save();
+        res.status(200).json(club);
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating club', error: err });
+    }
+};
+
+
+export const deleteClub = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const club = await Club.findById(id);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        await club.remove();
+        res.status(200).json({ message: 'Club deleted' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error deleting club', error: err });
+    }
+};
+
+
+export const addFeedback = async (req, res) => {
+    const { id } = req.params;
+    const { feedback } = req.body;
+    try {
+        const club = await Club.findById(id);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+        const newFeedback = new Feedback({ clubId: id, userId: req.user._id.toString(), feedback });
+        await newFeedback.save();
+        res.status(201).json(newFeedback);
+    } catch (err) {
+        res.status(500).json({ message: 'Error adding feedback', error: err });
+    }
+};
+
+
+export const changeAuthority = async (req, res) => {
+    const { id } = req.params;
+    const { userId, newRole } = req.body;
+    try {
+        const club = await Club.findById(id);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        const member = club.members.find(member => member.userId === userId);
+        if (!member) return res.status(404).json({ message: 'Member not found' });
+        member.responsibility = newRole;
+        await club.save();
+        res.status(200).json(club);
+    } catch (err) {
+        res.status(500).json({ message: 'Error changing authority', error: err });
+    }
+};
+

@@ -37,7 +37,7 @@ app.get('/hello', (req, res) => {
 // Auth routes
 app.use("/api/auth", authRoutes);
 
-// Club routes
+// Clubs routes
 app.use("/api/clubs", clubRoutes);
 
 // Start the server
