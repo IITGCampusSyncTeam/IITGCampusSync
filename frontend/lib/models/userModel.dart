@@ -10,6 +10,7 @@ class User {
   final List<String> subscribedClubs;
   final List<String> clubsResponsible;
   final List<Map<String, dynamic>> reminders;
+  final int version; // This corresponds to __v in the JSON
 
   User({
     required this.id,
@@ -23,6 +24,7 @@ class User {
     required this.subscribedClubs,
     required this.clubsResponsible,
     required this.reminders,
+    this.version = 0, // Default value for __v
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class User {
       subscribedClubs: List<String>.from(json['subscribedClubs'] ?? []),
       clubsResponsible: List<String>.from(json['clubsResponsible'] ?? []),
       reminders: List<Map<String, dynamic>>.from(json['reminders'] ?? []),
+      version: json['__v'] ?? 0,
     );
   }
 
@@ -54,6 +57,7 @@ class User {
       'subscribedClubs': subscribedClubs,
       'clubsResponsible': clubsResponsible,
       'reminders': reminders,
+      '__v': version,
     };
   }
 }

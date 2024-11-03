@@ -18,38 +18,69 @@ import 'package:frontend/apis/User/user.dart';
 
 Future<void> authenticate() async {
   try {
-
     final result = await FlutterWebAuth.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgsync");
-    print(result);
+    print("Authentication result: $result");
 
-    final accessToken = Uri.parse(result).queryParameters['token'];
-    final userDetail = Uri.parse(result).queryParameters['user'];
+    final accessToken = Uri
+        .parse(result)
+        .queryParameters['token'];
+    final userDetail = Uri
+        .parse(result)
+        .queryParameters['user'];
+    print("access_token: $accessToken");
+    print("user: $userDetail");
 
     if (accessToken == null || userDetail == null) {
       throw ('access token or user detail not found');
     }
+    try {
+      // Decode URL-encoded userDetail string
+      String decodedUserString = Uri.decodeComponent(userDetail);
 
-    // Decode the user data from the URL-encoded JSON string
-    String decodedUserString = Uri.decodeComponent(userDetail);
+      // Clean up unsupported elements in the JSON string to make it JSON-compliant
+      decodedUserString = decodedUserString
+          .replaceAll("new ObjectId(", "")
+          .replaceAll(")", "")
+          .replaceAllMapped(
+          RegExp(r"_id:\s*'([^']*)'"),
+              (match) => '"_id": "${match[1]}"'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*'([^']*)'"),
+              (match) => '"${match[1]}": "${match[2]}"'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*(\d+)"),
+              (match) => '"${match[1]}": ${match[2]}'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*\[\]"),
+              (match) => '"${match[1]}": []'
+      )
+          .replaceAll(
+          "'", '"') // Replace single quotes with double quotes for JSON
+          .replaceAll(",\n}", "\n}"); // Remove trailing commas if they exist
 
-    // Clean up unsupported elements in the JSON string
-    decodedUserString = decodedUserString
-        .replaceAll("new ObjectId(", "")
-        .replaceAll(")", "")
-        .replaceAllMapped(RegExp(r"_id:\s*'?([^,]+)'?"), (match) => '"_id": "${match[1]}"'); // Wrap _id values with quotes
+      // Debug print cleaned-up JSON string
+      print("Cleaned User JSON: $decodedUserString");
 
-    // Parse the cleaned JSON
-    final decodedUserJson = jsonDecode(decodedUserString);
-    final User user = User.fromJson(decodedUserJson);
+      // Parse JSON string
+      final decodedUserJson = jsonDecode(decodedUserString);
 
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('access_token', accessToken);
-    prefs.setString('user_data', jsonEncode(user.toJson()));
+      // Create User object from JSON
+      final User user = User.fromJson(decodedUserJson);
 
-  } on PlatformException catch (_) {
-    rethrow;
-  } catch (e) {
+      // Store user data in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
+      await prefs.setString('access_token', accessToken);
+    } catch (e) {
+      print('Error in parsing user data: $e');
+      rethrow;
+    }
+  }
+  catch (e) {
     print('Error in getting code');
     rethrow;
   }
