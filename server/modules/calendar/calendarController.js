@@ -1,4 +1,4 @@
-const EventModel = require('../event/eventModel');
+import EventModel from '../event/eventModel.js';
 
 const getUserEvents = async (req, res) => {
     const outlookId = req.params.outlookId;
@@ -7,7 +7,7 @@ const getUserEvents = async (req, res) => {
         const startOfDay = new Date(date);
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
-        const events =  await EventModel.find({
+        const events = await EventModel.find({
             outlookId,
             startTime: { $gte: startOfDay, $lt: endOfDay }
         });
@@ -15,7 +15,7 @@ const getUserEvents = async (req, res) => {
     } catch (error) {
         res.status(500).json({ "Message": error.message });
     }
-}
+};
 
 const setPersonalReminderTime = async (req, res) => {
     const outlookId = req.params.outlookId;
@@ -35,9 +35,10 @@ const setPersonalReminderTime = async (req, res) => {
     } catch (error) {
         res.status(500).json({ "Message": error.message });
     }
-}
+};
 
-module.exports = {
+// Export CalendarController as a default export
+export default {
     getUserEvents,
     setPersonalReminderTime
 };

@@ -5,7 +5,9 @@ import dotenv from 'dotenv';
 
 // Import routes
 import authRoutes from './modules/auth/auth_route.js'; // Ensure '.js' is included in the path
-const CalendarController = require('./modules/calendar/calendarController');
+import clubRoutes from './modules/clubs/clubRoutes.js';
+import CalendarController from './modules/calendar/calendarController.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +36,9 @@ app.get('/hello', (req, res) => {
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+
+// Club routes
+app.use("/api/clubs", clubRoutes);
 
 // Start the server
 app.listen(PORT, () => {
