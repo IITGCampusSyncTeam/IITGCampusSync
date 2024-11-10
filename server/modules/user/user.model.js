@@ -11,6 +11,9 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
     semester: { type: Number, required: true },
+    hostel: {type:String},
+    roomnum:{type:String},
+    contact:{type:String},
     degree: { type: String, required: true },
     department: { type: String, required: true },
     role: { type: String, enum: ['normal', 'club_head', 'higher_authority'], default: 'normal' },
@@ -77,10 +80,13 @@ export const validateUser = function (obj) {
         email: Joi.string().email().required(),
         rollNumber: Joi.number().required(),
         semester: Joi.number().required(),
+        hostel: Joi.string().optional(),
+        roomnum: Joi.string().optional(),
+        contact: Joi.string().optional(),
         degree: Joi.string().required(),
         department: Joi.string().required(),
         role: Joi.string().valid('normal', 'club_head', 'higher_authority').default('normal'),
-        profilePicture: Joi.string().uri(),
+        profilePicture: Joi.string().uri().optional(),
         subscribedClubs: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
         clubsResponsible: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
         reminders: Joi.array().items(

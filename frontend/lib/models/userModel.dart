@@ -4,6 +4,9 @@ class User {
   final String email;
   final int rollNumber;
   final int semester;
+  final String hostel;
+  final String roomnum;
+  final String contact;
   final String degree;
   final String department;
   final String role;
@@ -18,6 +21,9 @@ class User {
     required this.email,
     required this.rollNumber,
     required this.semester,
+    required this.hostel,
+    required this.roomnum,
+    required this.contact,
     required this.degree,
     required this.department,
     required this.role,
@@ -34,6 +40,9 @@ class User {
       email: json['email'] ?? '',
       rollNumber: json['rollNumber'] ?? 0,
       semester: json['semester'] ?? 0,
+      hostel: json['hostel'] ?? '',
+      roomnum: json['roomnum'] ?? '',
+      contact: json['contact'] ?? '',
       degree: json['degree'] ?? '',
       department: json['department'] ?? '',
       role: json['role'] ?? 'normal',
@@ -51,6 +60,9 @@ class User {
       'email': email,
       'rollNumber': rollNumber,
       'semester': semester,
+      'hostel':hostel,
+      'roomnum':roomnum,
+      'contact':contact,
       'degree': degree,
       'department': department,
       'role': role,
