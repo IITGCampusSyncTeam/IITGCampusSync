@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/User/user.dart';
-import 'package:frontend/apis/authentication/login.dart';
+import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:frontend/models/userModel.dart';
-import 'edit_profile_page.dart';
+
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -25,7 +24,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     fetchUserData();
-    loadProfileData(); // Load saved profile data from SharedPreferences
   }
 
   Future<void> fetchUserData() async {
@@ -33,25 +31,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? userJson = prefs.getString('user_data');
 
     if (userJson != null) {
-      User user = User.fromJson(jsonDecode(userJson));
-
+      final user = jsonDecode(userJson);
       setState(() {
-        name = user.name;
-        email = user.email;
-        roll = user.rollNumber.toString();
-        branch = user.department;
+        name = user['name'];
+        email = user['email'];
+        roll = user['rollNumber'].toString();
+        branch = user['department'];
+        hostelController.text = user['hostel'] ?? ''; // Load hostel
+        roomController.text = user['room'] ?? ''; // Load room number
+        contactController.text = user['contact'] ?? ''; // Load contact
       });
     }
   }
 
-
-  Future<void> loadProfileData() async {
+  Future<void> updateUserDetails() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      hostelController.text = prefs.getString('hostel') ?? '';
-      roomController.text = prefs.getString('room') ?? '';
-      contactController.text = prefs.getString('contact') ?? '';
-    });
+    // Prepare updated user data
+    Map<String, dynamic> updatedUser = {
+      'name': name,
+      'email': email,
+      'rollNumber': roll,
+      'department': branch,
+      'hostel': hostelController.text,
+      'room': roomController.text,
+      'contact': contactController.text,
+    };
+    // Save updated data to SharedPreferences
+    await prefs.setString('user_data', jsonEncode(updatedUser));
+
+    // Navigate to the home page
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => Home(),
+      ),
+    );
   }
 
   @override
@@ -63,7 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             onPressed: () async {
-              await logoutHandler(context);
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => login(),
+                ),
+              );
             },
             icon: Icon(Icons.logout),
           ),
@@ -94,11 +113,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 16),
                       _buildProfileItem("Branch", branch),
                       SizedBox(height: 16),
-                      _buildProfileItem("Hostel", hostelController.text),
+                      _buildEditableField("Hostel", hostelController),
                       SizedBox(height: 16),
-                      _buildProfileItem("Room Number", roomController.text),
+                      _buildEditableField("Room Number", roomController),
                       SizedBox(height: 16),
-                      _buildProfileItem("Contact", contactController.text),
+                      _buildEditableField("Contact", contactController),
+                      SizedBox(height: 24),
+                      Center(
+                        child: ElevatedButton(
+                        onPressed: updateUserDetails,
+                        child: Text("Submit" , style: TextStyle(
+                          color: Colors.white
+                        ),),
+                        style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.all(20),
+
+                          backgroundColor: Colors.deepPurple,
+                        ),
+                      ),
+                      ),
+
                     ],
                   ),
                 ),
@@ -106,36 +140,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditProfileScreen(
-                hostel: hostelController.text,
-                room: roomController.text,
-                contact: contactController.text,
-                onSave: (hostel, room, contact) async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString('hostel', hostel);
-                  prefs.setString('room', room);
-                  prefs.setString('contact', contact);
-
-                  setState(() {
-                    hostelController.text = hostel;
-                    roomController.text = room;
-                    contactController.text = contact;
-                  });
-
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          );
-        },
-        backgroundColor: Colors.deepPurple,
-        child: Icon(Icons.edit),
       ),
     );
   }
@@ -147,6 +151,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         SizedBox(height: 4),
         Text(value, style: TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        SizedBox(height: 4),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: "Enter $label",
+          ),
+        ),
       ],
     );
   }

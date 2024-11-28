@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,7 +72,7 @@ class MyHomePageState extends State<MyHomePage> {
         // Navigate to ProfileScreen if access token is present
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  ProfileScreen()),
+          MaterialPageRoute(builder: (context) =>  Home()),
         );
       } else {
         // Navigate to login if no access token is found
