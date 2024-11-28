@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:frontend/apis/protected.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -46,42 +46,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> updateUserDetails() async {
-    final url = Uri.parse('https://iitgcampussync.onrender.com/api/user/update');
-    final data = {
-      'email': email, // Send the user's email
-      'hostel': hostelController.text,
-      'room': roomController.text,
-      'contact': contactController.text,
-    };
+    final token = await getAccessToken(); // Retrieve token here
+    if (token == 'error') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Authentication required !! ")),
+      );
+      return;
+    }
 
-    try {
+    //final url = Uri.parse('https://iitgcampussync.onrender.com/api/user/$email');
+
+    try{
       final response = await http.put(
-        url,
+        Uri.parse('https://iitgcampussync.onrender.com/api/user/$email'),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(data),
+        body: json.encode({
+          'hostel': hostelController.text,
+          'roomnum': roomController.text,
+          'contact': contactController.text,
+        }),
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        // Update successful
+        // Save updated data to SharedPreferences
         final updatedUser = jsonDecode(response.body)['user'];
+        print(updatedUser);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_data', jsonEncode(updatedUser));
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Profile updated successfully!")),
         );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to update profile")),
         );
       }
-    } catch (e) {
+    }catch(e){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
     }
+
+
   }
 
   @override

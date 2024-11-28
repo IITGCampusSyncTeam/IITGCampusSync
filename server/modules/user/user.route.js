@@ -25,6 +25,6 @@ router.get("/", isAuthenticated, catchAsync(getUser));
 
 // Apply validation middleware
 router.post("/", validate(validateUser), catchAsync(createUser));
-router.put("/update", isAuthenticated, catchAsync(updateUserController));
+router.put("/:email", isAuthenticated, catchAsync(updateUserController));
 
 export default router;

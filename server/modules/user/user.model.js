@@ -102,7 +102,7 @@ export const validateUser = function (obj) {
 
 
 // Update user data
-export const updateUserData = async (email, userData) => {
+/*export const updateUserData = async (email, userData) => {
     const user = await User.findOne({ email });
     if (!user) return false;
 
@@ -119,7 +119,7 @@ export const updateUserData = async (email, userData) => {
 
     await user.save();
     return user;
-};
+};*/
 
 // Retrieve user from Microsoft Graph API with access token
 export const getUserFromToken = async function (access_token) {
