@@ -102,7 +102,7 @@ export const validateUser = function (obj) {
 
 
 // Update user data
-export const updateUserData = async (userId, userData) => {
+export const updateUserData = async (email, userData) => {
     const user = await User.findOne({ email });
     if (!user) return false;
 
