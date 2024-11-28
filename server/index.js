@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 // Import routes
 import authRoutes from './modules/auth/auth_route.js';
 import userRoutes from './modules/user/user.route.js';
+import cookieParser from 'cookie-parser';
+
+
 
 // Load environment variables
 dotenv.config();
@@ -15,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-
+app.use(cookieParser());
 // MongoDB connection
 const connectDB = async () => {
     try {
