@@ -39,7 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         roll = user['rollNumber'].toString();
         branch = user['department'];
         hostelController.text = user['hostel'] ?? ''; // Load hostel
-        roomController.text = user['room'] ?? ''; // Load room number
+        roomController.text = user['roomnum'] ?? ''; // Load room number
         contactController.text = user['contact'] ?? ''; // Load contact
       });
     }
