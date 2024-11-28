@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,26 +46,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> updateUserDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    // Prepare updated user data
-    Map<String, dynamic> updatedUser = {
-      'name': name,
-      'email': email,
-      'rollNumber': roll,
-      'department': branch,
+    final url = Uri.parse('https://iitgcampussync.onrender.com/api/user/update');
+    final data = {
+      'email': email, // Send the user's email
       'hostel': hostelController.text,
       'room': roomController.text,
       'contact': contactController.text,
     };
-    // Save updated data to SharedPreferences
-    await prefs.setString('user_data', jsonEncode(updatedUser));
 
-    // Navigate to the home page
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => Home(),
-      ),
-    );
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        // Update successful
+        final updatedUser = jsonDecode(response.body)['user'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', jsonEncode(updatedUser));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile updated successfully!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
   }
 
   @override
@@ -121,16 +138,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 24),
                       Center(
                         child: ElevatedButton(
-                        onPressed: updateUserDetails,
-                        child: Text("Submit" , style: TextStyle(
-                          color: Colors.white
-                        ),),
-                        style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.all(20),
+                          onPressed: updateUserDetails,
+                          child: Text("Submit" , style: TextStyle(
+                              color: Colors.white
+                          ),),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(20),
 
-                          backgroundColor: Colors.deepPurple,
+                            backgroundColor: Colors.deepPurple,
+                          ),
                         ),
-                      ),
                       ),
 
                     ],

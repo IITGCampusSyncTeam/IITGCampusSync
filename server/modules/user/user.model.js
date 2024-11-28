@@ -103,15 +103,20 @@ export const validateUser = function (obj) {
 
 // Update user data
 export const updateUserData = async (userId, userData) => {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ email });
     if (!user) return false;
 
-    if (userData.newUserData.newUserName) {
-        user.name = userData.newUserData.newUserName;
-    } 
-    if (userData.newUserData.newUserSem) {
-        user.semester = userData.newUserData.newUserSem;
+    // Update the user's details based on the provided data
+    if (userData.hostel !== undefined) {
+        user.hostel = userData.hostel;
     }
+    if (userData.roomnum !== undefined) {
+        user.roomnum = userData.roomnum;
+    }
+    if (userData.contact !== undefined) {
+        user.contact = userData.contact;
+    }
+
     await user.save();
     return user;
 };
