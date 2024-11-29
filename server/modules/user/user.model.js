@@ -1,45 +1,70 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import Joi from "joi";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-//import { getRandomColor } from "../../utils/generateRandomColor.js";
+import dotenv from "dotenv";
 
-const userSchema = Schema({
+dotenv.config(); // Load environment variables
+
+const userSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
-    // branch: { type: String, required: true },
-    semester: { type: Number, reqiured: true },
+    semester: { type: Number, required: true },
+    hostel: {type:String},
+    roomnum:{type:String},
+    contact:{type:String},
     degree: { type: String, required: true },
-    courses: { type: Array, default: [], required: true },
-    // contri
-    department: { type: String, required: true }, //dup
-    favourites: [
+    department: { type: String, required: true },
+    role: { type: String, enum: ['normal', 'club_head', 'higher_authority'], default: 'normal' },
+    profilePicture: {
+        type: String,
+        validate: {
+            validator: function(v) {
+                return /^(http|https):\/\/[^ "]+$/.test(v); // Basic URL validation
+            },
+            message: props => `${props.value} is not a valid URL!`
+        }
+    },
+    subscribedClubs: [
         {
-            name: { type: String },
-            id: { type: String },
-            path: { type: String },
-            code: { type: String },
-        },
+            type: Types.ObjectId,
+            ref: 'Club'
+        }
     ],
+    clubsResponsible: [
+        {
+            type: Types.ObjectId,
+            ref: 'Club'
+        }
+    ],
+    reminders: [
+        {
+            notificationId: {
+                type: Types.ObjectId,
+                ref: 'Notification'
+            },
+            reminderTime: {
+                type: Date
+            }
+        }
+    ]
 });
 
+// Generating JWT
 userSchema.methods.generateJWT = function () {
-    var user = this;
-    var token = jwt.sign({ user: user._id }, config.jwtSecret, {
+    const token = jwt.sign({ user: this._id }, process.env.JWT_SECRET, {
         expiresIn: "24d",
     });
     return token;
 };
 
+// Finding user by JWT
 userSchema.statics.findByJWT = async function (token) {
     try {
-        var user = this;
-        var decoded = jwt.verify(token, config.jwtSecret);
-        const id = decoded.user;
-        const fetchedUser = user.findOne({ _id: id });
-        if (!fetchedUser) return false;
-        return fetchedUser;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await this.findById(decoded.user);
+        return user || false;
     } catch (error) {
         return false;
     }
@@ -48,61 +73,53 @@ userSchema.statics.findByJWT = async function (token) {
 const User = model("User", userSchema);
 export default User;
 
+// Joi validation schema for user input
 export const validateUser = function (obj) {
     const joiSchema = Joi.object({
         name: Joi.string().min(4).required(),
         email: Joi.string().email().required(),
         rollNumber: Joi.number().required(),
-        // branch: Joi.string().required(),
         semester: Joi.number().required(),
+        hostel: Joi.string(),
+        roomnum: Joi.string(),
+        contact: Joi.string(),
         degree: Joi.string().required(),
         department: Joi.string().required(),
+        role: Joi.string().valid('normal', 'club_head', 'higher_authority').default('normal'),
+        profilePicture: Joi.string().uri().optional(),
+        subscribedClubs: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
+        clubsResponsible: Joi.array().items(Joi.string().regex(/^[0-9a-fA-F]{24}$/)), // ObjectId format
+        reminders: Joi.array().items(
+            Joi.object({
+                notificationId: Joi.string().regex(/^[0-9a-fA-F]{24}$/), // ObjectId format
+                reminderTime: Joi.date()
+            })
+        )
     });
+
     return joiSchema.validate(obj);
 };
-export const updateUserData = async (userId, userData) => {
-    User.findOne({ _id: userId }, async (err, doc) => {
-        if (err) {
-        }
-        if (userData.newUserData.newUserName) {
-            doc.name = userData.newUserData.newUserName;
-            await doc.save();
-        } else if (userData.newUserData.newUserSem) {
-            doc.semester = userData.newUserData.newUserSem;
-            await doc.save();
-        }
-    });
-};
 
+
+
+
+// Retrieve user from Microsoft Graph API with access token
 export const getUserFromToken = async function (access_token) {
     try {
-        var config = {
-            method: "get",
-            url: "https://graph.microsoft.com/v1.0/me",
+        const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
             headers: {
                 Authorization: `Bearer ${access_token}`,
-            },
-        };
-        const response = await axios.get(config.url, {
-            headers: config.headers,
+            }
         });
-
         return response;
     } catch (error) {
         return false;
     }
 };
 
-// export const findUserWithRollNumber = async function (rollNumber) {
-// 	const user = await User.findOne({ rollNumber: rollNumber });
-// 	if (!user) return false;
-// 	return user;
-// };
-
+// Find user by email
 export const findUserWithEmail = async function (email) {
-    const user = await User.findOne({ email: email });
-    // console.log("found user with email", user);
-    if (!user) return false;
-    return user;
+    const user = await User.findOne({ email });
+    console.log("found user with email", user);
+    return user || false;
 };
-

@@ -1,12 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/User/user.dart';
-import 'package:frontend/apis/authentication/login.dart';
+import 'package:http/http.dart' as http;
+import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'edit_profile_page.dart';
-import 'home.dart';
-//import 'edit_profile_page.dart';
-//import 'main_screen.dart';
+import 'package:frontend/apis/protected.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -27,30 +25,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     fetchUserData();
-    loadProfileData(); // Load saved profile data from SharedPreferences
   }
 
   Future<void> fetchUserData() async {
-    final userDetails = await fetchUserDetails();
-    if (userDetails != null) {
+    final prefs = await SharedPreferences.getInstance();
+    String? userJson = prefs.getString('user_data');
+
+    if (userJson != null) {
+      final user = jsonDecode(userJson);
       setState(() {
-        name = userDetails['name'] ?? '';
-        email = userDetails['email'] ?? '';
-        roll = userDetails['roll'] ?? '';
-        branch = userDetails['branch'] ?? '';
+        name = user['name'];
+        email = user['email'];
+        roll = user['rollNumber'].toString();
+        branch = user['department'];
+        hostelController.text = user['hostel'] ?? ''; // Load hostel
+        roomController.text = user['roomnum'] ?? ''; // Load room number
+        contactController.text = user['contact'] ?? ''; // Load contact
       });
-    } else {
-      print("Failed to load user details.");
     }
   }
 
-  Future<void> loadProfileData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      hostelController.text = prefs.getString('hostel') ?? '';
-      roomController.text = prefs.getString('room') ?? '';
-      contactController.text = prefs.getString('contact') ?? '';
-    });
+  Future<void> updateUserDetails() async {
+    final token = await getAccessToken(); // Retrieve token here
+    if (token == 'error') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Authentication required !! ")),
+      );
+      return;
+    }
+
+    //final url = Uri.parse('https://iitgcampussync.onrender.com/api/user/$email');
+
+    try{
+      final response = await http.put(
+        Uri.parse('https://iitgcampussync.onrender.com/api/user/$email'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'hostel': hostelController.text,
+          'roomnum': roomController.text,
+          'contact': contactController.text,
+        }),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Save updated data to SharedPreferences
+        final updatedUser = jsonDecode(response.body)['user'];
+        print(updatedUser);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', jsonEncode(updatedUser));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile updated successfully!")),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+
+
   }
 
   @override
@@ -60,10 +108,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.black12,
         title: Text("Profile"),
         actions: [
-          // Logout Button
           IconButton(
             onPressed: () async {
-             await logoutHandler(context);
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => login(),
+                ),
+              );
             },
             icon: Icon(Icons.logout),
           ),
@@ -75,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: double.infinity, // Make the card take the full width
+              width: double.infinity,
               child: Card(
                 elevation: 5,
                 shape: RoundedRectangleBorder(
@@ -94,11 +147,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 16),
                       _buildProfileItem("Branch", branch),
                       SizedBox(height: 16),
-                      _buildProfileItem("Hostel", hostelController.text),
+                      _buildEditableField("Hostel", hostelController),
                       SizedBox(height: 16),
-                      _buildProfileItem("Room Number", roomController.text),
+                      _buildEditableField("Room Number", roomController),
                       SizedBox(height: 16),
-                      _buildProfileItem("Contact", contactController.text),
+                      _buildEditableField("Contact", contactController),
+                      SizedBox(height: 24),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: updateUserDetails,
+                          child: Text("Submit" , style: TextStyle(
+                              color: Colors.white
+                          ),),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(20),
+
+                            backgroundColor: Colors.deepPurple,
+                          ),
+                        ),
+                      ),
+
                     ],
                   ),
                 ),
@@ -107,42 +175,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditProfileScreen(
-                hostel: hostelController.text,
-                room: roomController.text,
-                contact: contactController.text,
-                onSave: (hostel, room, contact) async {
-                  // Save the updated data locally using SharedPreferences
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString('hostel', hostel);
-                  prefs.setString('room', room);
-                  prefs.setString('contact', contact);
-
-                  setState(() {
-                    hostelController.text = hostel;
-                    roomController.text = room;
-                    contactController.text = contact;
-                  });
-
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          );
-        },
-        backgroundColor: Colors.deepPurple,
-        child: Icon(Icons.edit),
-      ),
     );
   }
 
-
-  // Helper function to build each label and value pair
   Widget _buildProfileItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,6 +185,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         SizedBox(height: 4),
         Text(value, style: TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        SizedBox(height: 4),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: "Enter $label",
+          ),
+        ),
       ],
     );
   }

@@ -2,86 +2,96 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/screens/profile_screen.dart';
+
+
 
 import '../../constants/endpoints.dart';
+
+import 'package:frontend/models/userModel.dart';
 import '../../screens/login_screen.dart';
-import '../protected.dart';
+import 'package:frontend/apis/protected.dart';
+import 'package:frontend/apis/User/user.dart';
 
 Future<void> authenticate() async {
   try {
-    print("Attempting to authenticate...");
-
     final result = await FlutterWebAuth.authenticate(
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgsync");
-
     print("Authentication result: $result");
 
-    final code = Uri.parse(result).queryParameters['code'];
+    final accessToken = Uri
+        .parse(result)
+        .queryParameters['token'];
+    final userDetail = Uri
+        .parse(result)
+        .queryParameters['user'];
+    print("access_token: $accessToken");
+    print("user: $userDetail");
 
-    if (code != null) {
-      print("Authorization code received: $code");
-      await exchangeCodeForToken(code);
-    } else {
-      print("Authorization code is null. Something went wrong.");
+    if (accessToken == null || userDetail == null) {
+      throw ('access token or user detail not found');
     }
-  } on PlatformException catch (e) {
-    print("PlatformException caught during authentication: $e");
-    rethrow;
-  } catch (e) {
-    print("Error during authentication: $e");
-    rethrow;
-  }
-}
+    try {
+      // Decode URL-encoded userDetail string
+      String decodedUserString = Uri.decodeComponent(userDetail);
 
-Future<void> exchangeCodeForToken(String authCode) async {
-  final tokenUrl = Uri.parse(tokenlink.Tokenlink);
-  print("Exchanging authorization code for token...");
+      // Clean up unsupported elements in the JSON string to make it JSON-compliant
+      decodedUserString = decodedUserString
+          .replaceAll("new ObjectId(", "")
+          .replaceAll(")", "")
+          .replaceAllMapped(
+          RegExp(r"_id:\s*'([^']*)'"),
+              (match) => '"_id": "${match[1]}"'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*'([^']*)'"),
+              (match) => '"${match[1]}": "${match[2]}"'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*(\d+)"),
+              (match) => '"${match[1]}": ${match[2]}'
+      )
+          .replaceAllMapped(
+          RegExp(r"(\w+):\s*\[\]"),
+              (match) => '"${match[1]}": []'
+      )
+          .replaceAll(
+          "'", '"') // Replace single quotes with double quotes for JSON
+          .replaceAll(",\n}", "\n}"); // Remove trailing commas if they exist
 
-  try {
-    final response = await http.post(
-      tokenUrl,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'client_id': clientid.Clientid,
-        'grant_type': 'authorization_code',
-        'code': authCode,
-        'redirect_uri': redirecturi.Redirecturi,
-        'scope': 'offline_access User.Read',
-      },
-    );
+      // Debug print cleaned-up JSON string
+      print("Cleaned User JSON: $decodedUserString");
 
-    print("Token exchange response status: ${response.statusCode}");
+      // Parse JSON string
+      final decodedUserJson = jsonDecode(decodedUserString);
 
-    if (response.statusCode == 200) {
-      final tokenData = json.decode(response.body);
-      final accessToken = tokenData['access_token'];
+      // Create User object from JSON
+      final User user = User.fromJson(decodedUserJson);
 
-      print("Access token received: $accessToken");
-
+      // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
       await prefs.setString('access_token', accessToken);
-
-      print("Access token stored in SharedPreferences.");
-    } else {
-      print('Failed to exchange authorization code for token. Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      throw Exception('Token exchange failed');
+    } catch (e) {
+      print('Error in parsing user data: $e');
+      rethrow;
     }
-  } catch (e) {
-    print('Error during token exchange: $e');
-    throw e;
+  }
+  catch (e) {
+    print('Error in getting code');
+    rethrow;
   }
 }
+
+
+
+
 
 Future<void> logoutHandler(context) async {
   final prefs = await SharedPreferences.getInstance();
-  print("Clearing SharedPreferences and logging out...");
 
   prefs.clear();
 
@@ -91,20 +101,15 @@ Future<void> logoutHandler(context) async {
     ),
         (route) => false,
   );
-
-  print("User logged out successfully.");
 }
 
 Future<bool> isLoggedIn() async {
   var access = await getAccessToken();
-  print("Checking login status...");
 
   if (access != 'error') {
-    print("User is logged in.");
+
     return true;
   } else {
-    print("User is not logged in.");
     return false;
   }
 }
-
