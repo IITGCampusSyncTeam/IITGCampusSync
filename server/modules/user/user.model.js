@@ -101,25 +101,7 @@ export const validateUser = function (obj) {
 };
 
 
-// Update user data
-/*export const updateUserData = async (email, userData) => {
-    const user = await User.findOne({ email });
-    if (!user) return false;
 
-    // Update the user's details based on the provided data
-    if (userData.hostel !== undefined) {
-        user.hostel = userData.hostel;
-    }
-    if (userData.roomnum !== undefined) {
-        user.roomnum = userData.roomnum;
-    }
-    if (userData.contact !== undefined) {
-        user.contact = userData.contact;
-    }
-
-    await user.save();
-    return user;
-};*/
 
 // Retrieve user from Microsoft Graph API with access token
 export const getUserFromToken = async function (access_token) {
