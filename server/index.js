@@ -4,7 +4,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 // Import routes
-import authRoutes from './modules/auth/auth_route.js';
+import authRoutes from './modules/auth/auth_route.js'; // Ensure '.js' is included in the path
+import clubRoutes from './modules/clubs/clubRoutes.js';
+import CalendarController from './modules/calendar/calendarController.js';
 import userRoutes from './modules/user/user.route.js';
 import cookieParser from 'cookie-parser';
 
@@ -57,7 +59,14 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Clubs routes
+app.use("/api/clubs", clubRoutes);
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
+
+app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
+
+app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
