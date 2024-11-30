@@ -21,9 +21,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.initState();
     filteredEvents = events
         .where((e) =>
-    e.startTime.day == selectedDate.day &&
-        e.startTime.month == selectedDate.month &&
-        e.startTime.year == selectedDate.year)
+            e.startTime.day == selectedDate.day &&
+            e.startTime.month == selectedDate.month &&
+            e.startTime.year == selectedDate.year)
         .toList();
   }
 
@@ -41,9 +41,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         selectedDate = picked;
         filteredEvents = events
             .where((e) =>
-        e.startTime.day == selectedDate.day &&
-            e.startTime.month == selectedDate.month &&
-            e.startTime.year == selectedDate.year)
+                e.startTime.day == selectedDate.day &&
+                e.startTime.month == selectedDate.month &&
+                e.startTime.year == selectedDate.year)
             .toList();
       });
     }
