@@ -36,6 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.2
+  timeline_tile: ^2.0.0
   http: ^1.2.2
   flutter_web_auth: ^0.5.0
   flutter_appauth: ^8.0.0+1

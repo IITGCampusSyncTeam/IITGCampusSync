@@ -14,7 +14,7 @@ import '../../constants/endpoints.dart';
 import 'package:frontend/models/userModel.dart';
 import '../../screens/login_screen.dart';
 import 'package:frontend/apis/protected.dart';
-import 'package:frontend/apis/User/user.dart';
+import 'package:frontend/apis/user/user.dart';
 
 Future<void> authenticate() async {
   try {
