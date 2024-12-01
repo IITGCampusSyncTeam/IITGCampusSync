@@ -3,8 +3,15 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+
 import 'package:frontend/screens/event_screen.dart';
+
+
+import 'package:frontend/screens/home.dart';
+import 'package:frontend/screens/login_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'firebase_options.dart';
 
@@ -18,7 +25,7 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 // Method to send FCM token to your server
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
-    final url = 'http://192.168.0.100:3000/register-token';
+    final url = 'http://192.168.29.195:3000/register-token';
     try {
       await http.post(
         Uri.parse(url),
@@ -91,3 +98,63 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(home: EventScreen());
   }
 }
+
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => MyHomePageState();
+}
+
+class MyHomePageState extends State<MyHomePage> {
+  static const String KEY_LOGIN_STATUS = "login";
+
+  @override
+  void initState() {
+    super.initState();
+    wheretogo(); // Automatically call wheretogo when MyHomePage loads
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.purple[100],
+      appBar: AppBar(
+        backgroundColor: Colors.purple[200],
+        title: Text(widget.title, style: const TextStyle(color: Colors.black)),
+        centerTitle: true,
+      ),
+      body: Center(
+        child:
+            CircularProgressIndicator(), // Show a loading indicator while navigating
+      ),
+    );
+  }
+
+  void wheretogo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        // Navigate to ProfileScreen if access token is present
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      } else {
+        // Navigate to login if no access token is found
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const login()),
+        );
+      }
+    } catch (e) {
+      print("ERROR: $e");
+    }
+  }
+}
+
