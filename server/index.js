@@ -1,16 +1,18 @@
-// Import necessary modules
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'node:path'; // Using node:path
+import admin from 'firebase-admin';
+import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'node:url'; // Using node:url
 
 // Import routes
-import authRoutes from './modules/auth/auth_route.js'; // Ensure '.js' is included in the path
-import clubRoutes from './modules/clubs/clubRoutes.js';
+import authRoutes from './modules/auth/auth_route.js';
+import clubRoutes from './modules/club/clubRoutes.js';
 import CalendarController from './modules/calendar/calendarController.js';
 import userRoutes from './modules/user/user.route.js';
-import cookieParser from 'cookie-parser';
-
-
+import eventController from './modules/event/eventController.js'; // Import eventController
+import User from './modules/user/user.model.js';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +23,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
 // MongoDB connection
 const connectDB = async () => {
     try {
@@ -36,6 +39,27 @@ const connectDB = async () => {
 };
 connectDB();
 
+// Correct the path construction for service account
+const __dirname = path.dirname(fileURLToPath(import.meta.url));  // Get __dirname equivalent in ES Modules
+const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
+
+// Check if the file exists at the constructed path
+import fs from 'fs';
+if (!fs.existsSync(serviceAccountPath)) {
+    console.error(`Service account file not found at path: ${serviceAccountPath}`);
+    process.exit(1); // Exit the app if the file is not found
+}
+
+// Initialize Firebase Admin SDK
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccountPath),
+  });
+} catch (error) {
+  console.error('Error initializing Firebase Admin SDK:', error);
+  process.exit(1);
+}
+
 // Basic route
 app.get('/', (req, res) => {
     res.send('Backend is running..');
@@ -50,43 +74,19 @@ app.get('/hello', (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(err.status || 500).json({
-        status: 'error',
-        message: err.message || 'Internal Server Error',
-    });
-});
-
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
-});
 
+// Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
-
 app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
 
-// Initialize Firebase Admin SDK
-const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
-try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountPath),
-  });
-} catch (error) {
-  console.error('Error initializing Firebase Admin SDK:', error);
-  process.exit(1);
-}
-
-// Routes to create event and fetch events (now handled by eventController)
+// Routes to create event and fetch events
 app.post('/create-event', eventController.createEvent);
 app.get('/get-events', eventController.getEvents);
 
-
+// Save FCM token
 app.post('/save-token', async (req, res) => {
   const { userId, fcmToken } = req.body;
 
@@ -119,4 +119,18 @@ app.get('/get-tokens', async (req, res) => {
         console.error('Error fetching tokens:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(err.status || 500).json({
+        status: 'error',
+        message: err.message || 'Internal Server Error',
+    });
+});
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

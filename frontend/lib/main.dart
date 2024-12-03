@@ -1,12 +1,13 @@
+import 'dart:convert';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/profile_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -18,7 +19,7 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 // Method to send FCM token to your server
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
-    final url = 'http://192.168.0.100:3000/register-token';
+    final url = 'http://192.168.29.195:3000/register-token';
     try {
       await http.post(
         Uri.parse(url),
@@ -34,7 +35,6 @@ Future<void> sendFCMTokenToServer(String? token) async {
     }
   }
 }
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -131,7 +131,8 @@ class MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
       ),
       body: Center(
-        child: CircularProgressIndicator(), // Show a loading indicator while navigating
+        child:
+            CircularProgressIndicator(), // Show a loading indicator while navigating
       ),
     );
   }
@@ -145,7 +146,7 @@ class MyHomePageState extends State<MyHomePage> {
         // Navigate to ProfileScreen if access token is present
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  Home()),
+          MaterialPageRoute(builder: (context) => Home()),
         );
       } else {
         // Navigate to login if no access token is found

@@ -1,5 +1,5 @@
-const Event = require('./eventModel'); // Adjust the path as necessary
-const admin = require('firebase-admin');
+import Event from './eventModel.js'; // Adjust the path as necessary
+import admin from 'firebase-admin';
 
 // Function to create an event and send notifications
 const createEvent = async (req, res) => {
@@ -20,9 +20,6 @@ const createEvent = async (req, res) => {
        "cv_aFs3BRL-Ahxhf4IMMzK:APA91bGzPdIVd8qVeJp6YxZNZez4_8oaFj05qdD-WPZ8pqHIVeN3Ri4tPtdv_L-xzedUqyx3jsTFUvR_Bw9a9Ws8CeTXZUZG1OOD2Tsa0JQJ9wXG9NKlNQ4"
     ];
 
-
-
-
     // Split tokens into chunks of 500 (FCM limit for batch send)
     const tokenChunks = chunkArray(fcmTokens, 500);
 
@@ -30,16 +27,16 @@ const createEvent = async (req, res) => {
     let failureCount = 0;
 
     // Send notifications to each chunk
-    for (const token of fcmTokens) {
-     const message = {
-          notification: {
-            title: title,
-            body: description,
-          },
-          token: token,  // An array of valid FCM tokens
-        };
+    for (const chunk of tokenChunks) {
+      const message = {
+        notification: {
+          title: title,
+          body: description,
+        },
+        tokens: chunk,  // An array of valid FCM tokens
+      };
       try {
-        const response = await admin.messaging().send(message);
+        const response = await admin.messaging().sendMulticast(message);
 
         console.log(`${response.successCount} messages were sent successfully`);
 
@@ -90,22 +87,6 @@ const getEvents = async (req, res) => {
   }
 };
 
-// Function to get FCM tokens of all users (used in createEvent)
-
-//const getFcmTokensOfUsers = async (userIds) => {
-//  try {
-//    // Find users by their IDs and return their FCM tokens
-//    const users = await User.find({ _id: { $in: userIds } });
-//    const fcmTokens = users.map(user => user.fcmToken).filter(token => token !== undefined);
-//
-//    return fcmTokens;
-//  } catch (err) {
-//    console.error('Error retrieving FCM tokens:', err);
-//    throw err;
-//  }
-//};
-
-
 // Helper function to split array into chunks
 function chunkArray(array, chunkSize) {
   const chunks = [];
@@ -115,7 +96,7 @@ function chunkArray(array, chunkSize) {
   return chunks;
 }
 
-module.exports = {
+export default{
   createEvent,
   getEvents,
 };
