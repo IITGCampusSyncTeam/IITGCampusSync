@@ -8,6 +8,7 @@ dotenv.config(); // Load environment variables
 
 const userSchema = new Schema({
     name: { type: String, required: true },
+    fcmToken: {type: String, required:true},
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
     semester: { type: Number, required: true },
