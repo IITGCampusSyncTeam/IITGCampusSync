@@ -1,5 +1,6 @@
 class User {
   final String id;
+  final String fcmToken;
   final String name;
   final String email;
   final int rollNumber;
@@ -17,6 +18,7 @@ class User {
 
   User({
     required this.id,
+    required this.fcmToken,
     required this.name,
     required this.email,
     required this.rollNumber,
@@ -36,6 +38,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['_id'] ?? '',
+      fcmToken: json['fcmToken'] ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       rollNumber: json['rollNumber'] ?? 0,
@@ -56,13 +59,14 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
+      'fcmToken': fcmToken,
       'name': name,
       'email': email,
       'rollNumber': rollNumber,
       'semester': semester,
-      'hostel':hostel,
-      'roomnum':roomnum,
-      'contact':contact,
+      'hostel': hostel,
+      'roomnum': roomnum,
+      'contact': contact,
       'degree': degree,
       'department': department,
       'role': role,

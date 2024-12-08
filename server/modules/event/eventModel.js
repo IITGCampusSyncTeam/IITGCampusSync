@@ -1,12 +1,16 @@
 import mongoose from 'mongoose';
 
 const eventSchema = new mongoose.Schema({
-    // Define your schema fields here
-    outlookId: { type: String, required: true },
-    startTime: { type: Date, required: true },
-    reminderTime: { type: Date, required: true },
-    // Add other fields as necessary
+  title: String,
+  description: String,
+  dateTime: Date,
+  club: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  feedbacks: [String],
+  notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
 });
+
 
 const EventModel = mongoose.model('Event', eventSchema);
 

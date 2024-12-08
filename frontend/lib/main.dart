@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,6 +40,13 @@ Future<void> sendFCMTokenToServer(String? token) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize NotificationServices
+  NotificationServices notificationServices = NotificationServices();
+
+  // Request notification permissions
+  notificationServices.requestNotificationPermission();
+
   // Get FCM Token
   String? token = await FirebaseMessaging.instance.getToken();
   print("FCM Token: $token"); // This line prints the token
@@ -56,11 +64,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final NotificationServices _notificationServices = NotificationServices();
   late FirebaseMessaging messaging;
 
   @override
   void initState() {
     super.initState();
+    // Initialize Firebase notifications
+    _notificationServices.firebaseInit(context);
+
+    // Set up foreground notification presentation options
+    _notificationServices.forgroundMessage();
     messaging = FirebaseMessaging.instance;
 
     // Request permission for notifications
