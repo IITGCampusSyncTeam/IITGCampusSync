@@ -13,6 +13,7 @@ import CalendarController from './modules/calendar/calendarController.js';
 import userRoutes from './modules/user/user.route.js';
 import eventController from './modules/event/eventController.js'; // Import eventController
 import User from './modules/user/user.model.js';
+import contestRoutes from './modules/contest/routes.js'; // Import contest routes
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,8 @@ const connectDB = async () => {
     }
 };
 connectDB();
+
+app.use("/api/contest", contestRoutes); // Add contest routes
 
 // Correct the path construction for service account
 const __dirname = path.dirname(fileURLToPath(import.meta.url));  // Get __dirname equivalent in ES Modules
