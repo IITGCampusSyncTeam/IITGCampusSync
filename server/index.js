@@ -21,6 +21,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
@@ -131,6 +132,57 @@ app.use((err, req, res, next) => {
         status: 'error',
         message: err.message || 'Internal Server Error',
     });
+});
+//PAYMENT
+// In-memory storage for transactions (for demo purposes)
+let transactions = {};
+
+// Endpoint to initiate transaction (POST request)
+app.post('/api/transactions', (req, res) => {
+  const { tid, tr, upiId, amount, status } = req.body;
+
+  // Check if all required data is provided
+  if (!tid || !tr || !upiId || !amount || !status) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Store transaction in memory (database can be used in production)
+  transactions[tid] = {
+    tid,
+    tr,
+    upiId,
+    amount,
+    status
+  };
+
+  console.log(`Transaction initiated: ${tid} - Status: ${status}`);
+  res.status(200).json({ message: 'Transaction initiated' });
+});
+
+// Endpoint to verify transaction status (GET request)
+app.get('/api/transactions/verify', (req, res) => {
+  const { tid } = req.query;
+
+  // Check if transaction exists
+  if (!transactions[tid]) {
+    return res.status(404).json({ error: 'Transaction not found' });
+  }
+
+  // Get transaction details
+  const transaction = transactions[tid];
+
+  // Simulate payment verification (in real-world, this would be API-driven)
+  if (transaction.status === 'PENDING') {
+    // Here, you would verify with your payment gateway and update the status
+    transaction.status = 'SUCCESS'; // Simulate a successful transaction
+    console.log(`Transaction ${tid} verified: SUCCESS`);
+  }
+
+  res.status(200).json({
+    tid,
+    status: transaction.status,
+    amount: transaction.amount
+  });
 });
 
 // Start the server
