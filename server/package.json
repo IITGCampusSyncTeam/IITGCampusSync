@@ -12,17 +12,20 @@
   "dependencies": {
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
-    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
     "firebase-admin": "^12.5.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.9.0",
-    "mongoose": "^8.6.1"
+    "mongoose": "^8.6.1",
+    "razorpay": "^2.9.5"
   },
   "type": "module",
   "devDependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "nodemon": "^3.1.7"
   },
   "description": ""
