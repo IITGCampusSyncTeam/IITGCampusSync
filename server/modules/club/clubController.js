@@ -1,6 +1,7 @@
 import Club from './clubModel.js';
 import Feedback from '../feedback/feedbackModel.js';
 
+// Create a new club
 export const createClub = async (req, res) => {
     const { name, description, heads, members, images, websiteLink } = req.body;
     if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
@@ -13,7 +14,7 @@ export const createClub = async (req, res) => {
     }
 };
 
-
+// Edit a club
 export const editClub = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
@@ -29,7 +30,7 @@ export const editClub = async (req, res) => {
     }
 };
 
-
+// Delete a club
 export const deleteClub = async (req, res) => {
     const { id } = req.params;
     try {
@@ -43,7 +44,7 @@ export const deleteClub = async (req, res) => {
     }
 };
 
-
+// Add feedback to a club
 export const addFeedback = async (req, res) => {
     const { id } = req.params;
     const { feedback } = req.body;
@@ -58,7 +59,7 @@ export const addFeedback = async (req, res) => {
     }
 };
 
-
+// Change authority of a club member
 export const changeAuthority = async (req, res) => {
     const { id } = req.params;
     const { userId, newRole } = req.body;
@@ -73,5 +74,35 @@ export const changeAuthority = async (req, res) => {
         res.status(200).json(club);
     } catch (err) {
         res.status(500).json({ message: 'Error changing authority', error: err });
+    }
+};
+
+export const getClubs = async (req, res) => {
+    try {
+        // Fetch only the fields needed for the frontend club list
+        const clubs = await Club.find({}, 'id name description images websiteLink');
+
+        res.status(200).json(clubs);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching clubs', error: err });
+    }
+};
+
+
+export const getClubDetail = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const club = await Club.findById(id)
+            .populate('heads', 'name')  // Populate heads with names
+            .populate('members.userId', 'name')  // Populate member user names
+            .populate('events')  // Populate all event details
+            .populate('merch');  // Populate all merch details
+
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+
+        res.status(200).json(club);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching club details', error: err });
     }
 };
