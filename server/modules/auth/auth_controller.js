@@ -39,6 +39,7 @@ function calculateSemester(rollNumber) {
 export const mobileRedirectHandler = async (req, res, next) => {
     try {
         const { code } = req.query;
+        console.log("debug message 1");
 
         const data = qs.stringify({
             client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
@@ -84,6 +85,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 semester: calculateSemester(rollNumber),
                 department: department,
                 role: 'normal', // default role
+                fcmToken: "",
             };
 
             const { error } = validateUser(userData);
