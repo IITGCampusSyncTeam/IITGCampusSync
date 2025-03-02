@@ -85,7 +85,6 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 semester: calculateSemester(rollNumber),
                 department: department,
                 role: 'normal', // default role
-                fcmToken: "",
             };
 
             const { error } = validateUser(userData);
