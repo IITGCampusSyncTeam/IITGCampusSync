@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/club_model.dart';
 import '../models/merch_model.dart';
 import 'add_merch_screen.dart';
+import 'package:frontend/apis/protected.dart'; // Import getAccessToken()
 
 class MerchManagementScreen extends StatefulWidget {
   final String clubId;
@@ -27,10 +28,26 @@ class _MerchManagementScreenState extends State<MerchManagementScreen> {
 
   Future<void> fetchClubDetails() async {
     try {
+      String token = await getAccessToken();
+      print("DEBUG: Access Token -> $token"); // ✅ Debugging log
+
+      if (token == 'error') {
+        setState(() {
+          errorMessage = 'Authentication error: No token found';
+          isLoading = false;
+        });
+        return;
+      }
+
       final response = await http.get(
         Uri.parse('https://iitgcampussync.onrender.com/api/clubs/${widget.clubId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
+
+      print("DEBUG: Backend Response -> ${response.body}"); // ✅ Print full backend response
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -52,12 +69,28 @@ class _MerchManagementScreenState extends State<MerchManagementScreen> {
     }
   }
 
+
   Future<void> deleteMerch(String merchId) async {
     try {
+      String token = await getAccessToken();
+      print("DEBUG: Access Token -> $token"); // ✅ Debugging log
+      if (token == 'error') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Authentication error: No token found')),
+        );
+        return;
+      }
+      print("DEBUG: Attempting to delete merch -> ID: ${merchId}");
+
       final response = await http.delete(
         Uri.parse('https://iitgcampussync.onrender.com/api/clubs/${widget.clubId}/merch/$merchId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
+
+      print("DEBUG: Delete Response -> ${response.statusCode} ${response.body}"); // ✅ Debugging log
 
       if (response.statusCode == 200) {
         setState(() {
@@ -65,7 +98,7 @@ class _MerchManagementScreenState extends State<MerchManagementScreen> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete merch')),
+          SnackBar(content: Text('Failed to delete merch: ${response.body}')),
         );
       }
     } catch (e) {
