@@ -49,6 +49,12 @@ const userSchema = new Schema({
                 type: Date
             }
         }
+    ],
+    merchOrders: [
+        {
+            type: Types.ObjectId,
+            ref: 'Order' // Reference to orders made by the user
+        }
     ]
 });
 

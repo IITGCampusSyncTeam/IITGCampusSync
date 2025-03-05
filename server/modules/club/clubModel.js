@@ -13,13 +13,15 @@ const merchSchema = new Schema({
         type: String, 
         enum: ['Normal T-Shirt', 'Oversized', 'Hoodie'], 
         required: true 
-    }
+    },
+    orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
 });
 
 // Club schema
 const clubSchema = new Schema({
     name: { type: String, unique: true, required: true },
-    description: { type: String, required: true },
+    description: { type: String, required: true }, 
+    secretary : { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Club secretary (user)
     heads: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Club heads (users)
     members: [
         {

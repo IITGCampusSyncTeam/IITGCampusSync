@@ -1,17 +1,22 @@
 import express from 'express';
 import { 
     createClub, 
+    addMerch,
+    deleteMerch,
     editClub, 
     deleteClub, 
     addFeedback, 
     changeAuthority, 
     getClubs,   
-    getClubDetail  
+    getClubDetail
 } from './clubController.js';
+import isAuthenticated from '../../middleware/isAuthenticated.js';
 
 const router = express.Router();
 
 router.post('/create', createClub);
+router.post("/:clubId/merch", isAuthenticated, addMerch);
+router.delete("/:clubId/merch/:merchId", isAuthenticated, deleteMerch);
 router.put('/edit/:id', editClub);
 router.delete('/delete/:id', deleteClub);
 router.post('/:id/feedback', addFeedback);

@@ -11,6 +11,7 @@ import userRoutes from './modules/user/user.route.js';
 import eventController from './modules/event/eventController.js';
 import User from './modules/user/user.model.js';
 import contestRoutes from './modules/contest/routes.js';
+import orderRoutes from "./modules/orders/ordersRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -77,6 +78,9 @@ app.use("/api/user", userRoutes);
 
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
+
+//orderRoutes
+app.use("/orders", orderRoutes);
 
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);

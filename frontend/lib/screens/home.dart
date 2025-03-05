@@ -3,8 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_screen.dart';
 import 'clubs_screen.dart';
+import 'cart_screen.dart';
 
-/// Updated Home page that now includes a bottom navigation bar for Home and Clubs.
+/// Home page with bottom navigation for Home, Clubs, and Cart.
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -13,13 +14,14 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // 0: Home content, 1: Clubs
+  // 0: Home, 1: Clubs, 2: Cart
   int _selectedIndex = 0;
 
   // List of pages for each tab.
   final List<Widget> _pages = [
     const HomeContent(),
-    ClubsScreen(),
+    const ClubsScreen(), // ClubsScreen has its own AppBar
+    const CartScreen(),
   ];
 
   Future<void> _logout(BuildContext context) async {
@@ -32,41 +34,29 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  /// Returns the AppBar title based on the current tab.
-  String getTitle() {
-    switch (_selectedIndex) {
-      case 0:
-        return "IITGSync";
-      case 1:
-        return "Clubs";
-      default:
-        return "IITGSync";
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(getTitle()),
+      appBar: _selectedIndex == 0
+          ? AppBar(
+        title: const Text(
+          "IITGSync",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueAccent,
+        elevation: 3, // Soft shadow for depth
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _logout(context),
-          )
+          ),
         ],
-      ),
+      )
+          : null, // No AppBar on Clubs and Cart
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -75,6 +65,10 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
             label: "Clubs",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: "Cart",
           ),
         ],
       ),
@@ -85,6 +79,7 @@ class _HomeState extends State<Home> {
 /// The original home content displayed in the first tab.
 class HomeContent extends StatelessWidget {
   const HomeContent({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Center(

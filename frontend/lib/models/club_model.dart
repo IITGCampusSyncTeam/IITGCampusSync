@@ -29,6 +29,7 @@ class Club {
   final String name;
   final String description;
   final List<String> heads;
+  final String secretary;  // ✅ New field for secretary
   final List<ClubMember> members;
   final List<String> events;
   final String images;
@@ -40,6 +41,7 @@ class Club {
     required this.name,
     required this.description,
     required this.heads,
+    required this.secretary,  // ✅ Added secretary field
     required this.members,
     required this.events,
     required this.images,
@@ -53,17 +55,16 @@ class Club {
       name: json['name'] ?? 'Unknown Club',
       description: json['description'] ?? 'No description available',
       heads: List<String>.from(json['heads'] ?? []),
+      secretary: json['secretary'] ?? '',  // ✅ Extract secretary from JSON
       members: (json['members'] as List<dynamic>?)
           ?.map((member) => ClubMember.fromJson(member))
-          .toList() ??
-          [],
+          .toList() ?? [],
       events: List<String>.from(json['events'] ?? []),
       images: json['images'] ?? '',
       websiteLink: json['websiteLink'] ?? '',
       merch: (json['merch'] as List<dynamic>?)
-          ?.map((item) => Merch.fromJson(item)) // ✅ Now properly references Merch from merch_model.dart
-          .toList() ??
-          [],
+          ?.map((item) => Merch.fromJson(item))
+          .toList() ?? [],
     );
   }
 
@@ -73,6 +74,7 @@ class Club {
       'name': name,
       'description': description,
       'heads': heads,
+      'secretary': secretary,  // ✅ Include secretary in JSON
       'members': members.map((member) => member.toJson()).toList(),
       'events': events,
       'images': images,

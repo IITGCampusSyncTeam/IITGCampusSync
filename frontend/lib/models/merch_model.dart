@@ -5,6 +5,7 @@ class Merch {
   final double price;
   final String type;
   final List<String> sizes;
+  final List<String> orders;  // ✅ Added orders field
 
   Merch({
     required this.id,
@@ -13,6 +14,7 @@ class Merch {
     required this.price,
     required this.type,
     required this.sizes,
+    required this.orders,  // ✅ Include orders in constructor
   });
 
   factory Merch.fromJson(Map<String, dynamic> json) {
@@ -23,10 +25,10 @@ class Merch {
       price: (json['price'] ?? 0).toDouble(),
       type: json['type'] ?? 'Unknown',
       sizes: List<String>.from(json['sizes'] ?? []),
+      orders: List<String>.from(json['orders'] ?? []),  // ✅ Extract orders from JSON
     );
   }
 
-  /// ✅ **Add this method to fix the error**
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
@@ -35,6 +37,7 @@ class Merch {
       'price': price,
       'type': type,
       'sizes': sizes,
+      'orders': orders,  // ✅ Include orders in JSON
     };
   }
 }

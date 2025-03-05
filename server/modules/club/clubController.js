@@ -106,3 +106,59 @@ export const getClubDetail = async (req, res) => {
         res.status(500).json({ message: 'Error fetching club details', error: err });
     }
 };
+
+export const addMerch = async (req, res) => {
+    try {
+        const { clubId } = req.params;
+        const { name, description, price, image, sizes, type } = req.body;
+        const userId = req.user.id; // Assuming user ID is extracted from authentication middleware
+
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: "Club not found" });
+
+        // ✅ Check if the logged-in user is the club's secretary
+        if (club.secretary.toString() !== userId) {
+            return res.status(403).json({ message: "Unauthorized: Only the secretary can add merch" });
+        }
+
+        const newMerch = { name, description, price, image, sizes, type };
+
+        // ✅ Push new merch item to the array
+        club.merch.push(newMerch);
+        await club.save();
+
+        res.status(201).json({ message: "Merch added successfully", merch: newMerch });
+    } catch (error) {
+        console.error("Error adding merch:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+//  Delete Merch from a Club (Only Secretary)
+export const deleteMerch = async (req, res) => {
+    try {
+        const { clubId, merchId } = req.params;
+        const userId = req.user.id;
+
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: "Club not found" });
+
+        // ✅ Check if the logged-in user is the club's secretary
+        if (club.secretary.toString() !== userId) {
+            return res.status(403).json({ message: "Unauthorized: Only the secretary can delete merch" });
+        }
+
+        // ✅ Remove the merch item
+        const merchIndex = club.merch.findIndex((item) => item._id.toString() === merchId);
+        if (merchIndex === -1) return res.status(404).json({ message: "Merch item not found" });
+
+        club.merch.splice(merchIndex, 1);
+        await club.save();
+
+        res.status(200).json({ message: "Merch deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting merch:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
