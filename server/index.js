@@ -137,6 +137,11 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Securely return the Razorpay Key
+app.get("/get-razorpay-key", (req, res) => {
+  res.json({ key: process.env.RAZORPAY_KEY_ID});
+});
+
 //payment
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,

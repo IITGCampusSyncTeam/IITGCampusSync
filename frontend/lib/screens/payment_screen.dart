@@ -11,6 +11,7 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   late Razorpay _razorpay;
+  String razorpayKey = "";
   String orderId = ""; // Store order ID
 
   @override
@@ -22,12 +23,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    // Fetch Razorpay Key from Backend
+    fetchRazorpayKey();
   }
 
   @override
   void dispose() {
     _razorpay.clear(); // Clean up resources
     super.dispose();
+  }
+
+  Future<void> fetchRazorpayKey() async {
+    try {
+      final response = await http
+          .get(Uri.parse("http://10.150.61.209:3000/get-razorpay-key"));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          razorpayKey = data['key'];
+        });
+      } else {
+        print("Failed to fetch Razorpay Key");
+      }
+    } catch (e) {
+      print("Error fetching Razorpay Key: $e");
+    }
   }
 
   // Function to create an order on the backend
@@ -49,7 +70,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   // Function to open Razorpay Checkout
   void openCheckout(String amount) {
     var options = {
-      'key': "rzp_test_EcIHLwtMIwVBmO", // Use your Razorpay API key
+      'key': razorpayKey, // Use your Razorpay API key
       'amount': int.parse(amount) * 100, // Convert to paise
       'order_id': orderId, // Attach order ID from backend
       'name': 'campus sync',
