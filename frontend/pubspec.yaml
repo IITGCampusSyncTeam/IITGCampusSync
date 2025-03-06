@@ -49,6 +49,7 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_web_auth_2: ^4.1.0
   uuid: ^4.5.1
+  razorpay_flutter: ^1.4.0
 
 dev_dependencies:
   flutter_test:
