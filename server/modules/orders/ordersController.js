@@ -3,43 +3,86 @@ import Club from "../club/clubModel.js";
 import User from "../user/user.model.js";
 
 // CREATE ORDER
+import Order from "../models/orderModel.js";
+import Merch from "../models/merchModel.js";
+import User from "../models/userModel.js";
+import Club from "../models/clubModel.js";
+
 export const createOrder = async (req, res) => {
     try {
-        const { user, merchId, quantity, size, totalPrice, name, contact, hostel, roomNum } = req.body;
+        const { user, items, name, contact, hostel, roomNum, totalPrice } = req.body;
 
         // Ensure required fields are provided
-        if (!name || !contact || !hostel || !roomNum) {
-            return res.status(400).json({ success: false, message: "All user details (name, contact, hostel, room number) are required." });
+        if (!user || !name || !contact || !hostel || !roomNum || !items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "All user details and at least one item are required.",
+            });
         }
 
-        // Create new order
-        const newOrder = await Order.create({
-            user,
-            merch: merchId,
-            quantity,
-            size,
-            totalPrice,
-            name,
-            contact,
-            hostel,
-            roomNum,
-            orderedAt: new Date(),
-        });
+        // Validate each item in the order
+        for (const item of items) {
+            if (!item.merchId || !item.size || !item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Each item must have merchId, size, and quantity.",
+                });
+            }
 
-        // Add order ID to the corresponding merch's orders array
-        await Club.updateOne(
-            { "merch._id": merchId },
-            { $push: { "merch.$.orders": newOrder._id } }
+            // Check if merch exists
+            const merchItem = await Merch.findById(item.merchId);
+            if (!merchItem) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Merch item with ID ${item.merchId} not found.`,
+                });
+            }
+        }
+
+        // Create orders for each unique merchId and size
+        const orders = await Order.insertMany(
+            items.map(item => ({
+                user,
+                merch: item.merchId,
+                quantity: item.quantity,
+                size: item.size,
+                totalPrice: item.price, // Already calculated in frontend
+                name,
+                contact,
+                hostel,
+                roomNum,
+                orderedAt: new Date(),
+            }))
         );
 
-        // Add order ID to the user's merchOrders array
-        await User.findByIdAndUpdate(user, { $push: { merchOrders: newOrder._id } });
+        // Extract all order IDs
+        const orderIds = orders.map(order => order._id);
 
-        res.status(201).json({ success: true, message: 'Order created successfully', order: newOrder });
+        // Update merch orders in the Club collection
+        for (const item of items) {
+            await Club.updateOne(
+                { "merch._id": item.merchId },
+                { $push: { "merch.$.orders": { $each: orderIds } } }
+            );
+        }
+
+        // Add order IDs to the user's merchOrders array
+        await User.findByIdAndUpdate(user, { $push: { merchOrders: { $each: orderIds } } });
+
+        res.status(201).json({
+            success: true,
+            message: "Order created successfully",
+            orders,
+        });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error creating order', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: "Error creating order",
+            error: error.message,
+        });
     }
 };
+
 
 // GET ALL ORDERS
 export const getAllOrders = async (req, res) => {
