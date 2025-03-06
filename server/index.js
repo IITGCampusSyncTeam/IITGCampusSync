@@ -5,7 +5,9 @@ import path from 'node:path'; // Using node:path
 import admin from 'firebase-admin';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'node:url'; // Using node:url
-
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import cors from "cors";
 // Import routes
 import authRoutes from './modules/auth/auth_route.js';
 import clubRoutes from './modules/club/clubRoutes.js';
@@ -21,9 +23,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 // MongoDB connection
 const connectDB = async () => {
@@ -133,7 +137,49 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Securely return the Razorpay Key
+app.get("/get-razorpay-key", (req, res) => {
+  res.json({ key: process.env.RAZORPAY_KEY_ID});
 });
+
+//payment
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+// Create Order API
+app.post("/create-order", async (req, res) => {
+  try {
+    const options = {
+      amount: req.body.amount * 100, // Convert to paise
+      currency: "INR",
+      receipt: "order_rcptid_11",
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+// Verify Payment API
+app.post("/verify-payment", async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const generated_signature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest("hex");
+
+  if (generated_signature === razorpay_signature) {
+    res.json({ success: true, message: "Payment verified successfully" });
+  } else {
+    res.status(400).json({ success: false, message: "Payment verification failed" });
+  }
+});
+
+// Start the server
+app.listen(3000, '0.0.0.0', () => {
+    console.log("Server running on port 3000");
+});
+
