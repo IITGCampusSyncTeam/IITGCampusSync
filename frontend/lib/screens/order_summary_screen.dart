@@ -138,7 +138,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(orderData),
     );
-
+    print("Response Status Code: ${response.statusCode}");
+    print("Response Body: ${response.body}");
     if (response.statusCode == 201) {
       await prefs.remove('cart');
 
@@ -174,7 +175,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -223,12 +223,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   Center(
                     child: ElevatedButton(
                       onPressed: cartItems.isNotEmpty ? placeOrder : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: Text("Place Order", style: TextStyle(fontSize: 18)),
+                      child: Text("Place Order"),
                     ),
                   ),
                 ],

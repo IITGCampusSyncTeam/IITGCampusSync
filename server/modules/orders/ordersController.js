@@ -5,7 +5,7 @@ import User from "../user/user.model.js";
 
 export const createOrder = async (req, res) => {
     try {
-        const { user, items, name, contact, hostel, roomNum, totalPrice } = req.body;
+        const { user, name, contact, hostel, roomNum, items, totalPrice } = req.body;
 
         // Ensure required fields are provided
         if (!user || !name || !contact || !hostel || !roomNum || !items || !Array.isArray(items) || items.length === 0) {
@@ -24,8 +24,19 @@ export const createOrder = async (req, res) => {
                 });
             }
 
-            // Check if merch exists
-            const merchItem = await Merch.findById(item.merchId);
+            //  Fetch the club that contains this merch item
+            const clubWithMerch = await Club.findOne({ "merch._id": item.merchId });
+
+            if (!clubWithMerch) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Merch item with ID ${item.merchId} not found in any club.`,
+                });
+            }
+
+            // Extract the specific merch item
+            const merchItem = clubWithMerch.merch.find(m => m._id.toString() === item.merchId);
+
             if (!merchItem) {
                 return res.status(404).json({
                     success: false,
@@ -34,14 +45,14 @@ export const createOrder = async (req, res) => {
             }
         }
 
-        // Create orders for each unique merchId and size
+        //  Create orders for each unique merchId and size
         const orders = await Order.insertMany(
             items.map(item => ({
                 user,
                 merch: item.merchId,
                 quantity: item.quantity,
                 size: item.size,
-                totalPrice: item.price, // Already calculated in frontend
+                totalPrice, // Already calculated in frontend
                 name,
                 contact,
                 hostel,
@@ -50,10 +61,10 @@ export const createOrder = async (req, res) => {
             }))
         );
 
-        // Extract all order IDs
+        //  Extract all order IDs
         const orderIds = orders.map(order => order._id);
 
-        // Update merch orders in the Club collection
+        //  Update merch orders in the Club collection
         for (const item of items) {
             await Club.updateOne(
                 { "merch._id": item.merchId },
@@ -61,7 +72,7 @@ export const createOrder = async (req, res) => {
             );
         }
 
-        // Add order IDs to the user's merchOrders array
+        //  Add order IDs to the user's merchOrders array
         await User.findByIdAndUpdate(user, { $push: { merchOrders: { $each: orderIds } } });
 
         res.status(201).json({
@@ -77,7 +88,6 @@ export const createOrder = async (req, res) => {
         });
     }
 };
-
 
 // GET ALL ORDERS
 export const getAllOrders = async (req, res) => {
