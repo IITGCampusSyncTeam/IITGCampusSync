@@ -50,6 +50,8 @@ dependencies:
   flutter_web_auth_2: ^4.1.0
   uuid: ^4.5.1
   razorpay_flutter: ^1.4.0
+  flutter_dotenv: ^5.2.1
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_test:

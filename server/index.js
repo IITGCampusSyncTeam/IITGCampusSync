@@ -5,7 +5,9 @@ import path from 'node:path'; // Using node:path
 import admin from 'firebase-admin';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'node:url'; // Using node:url
-
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import cors from "cors";
 // Import routes
 import authRoutes from './modules/auth/auth_route.js';
 import clubRoutes from './modules/club/clubRoutes.js';
@@ -25,6 +27,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 // MongoDB connection
 const connectDB = async () => {
@@ -133,59 +136,45 @@ app.use((err, req, res, next) => {
         message: err.message || 'Internal Server Error',
     });
 });
-//PAYMENT
-// In-memory storage for transactions (for demo purposes)
-let transactions = {};
 
-// Endpoint to initiate transaction (POST request)
-app.post('/api/transactions', (req, res) => {
-  const { tid, tr, upiId, amount, status } = req.body;
-
-  // Check if all required data is provided
-  if (!tid || !tr || !upiId || !amount || !status) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  // Store transaction in memory (database can be used in production)
-  transactions[tid] = {
-    tid,
-    tr,
-    upiId,
-    amount,
-    status
-  };
-
-  console.log(`Transaction initiated: ${tid} - Status: ${status}`);
-  res.status(200).json({ message: 'Transaction initiated' });
+//payment
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+// Create Order API
+app.post("/create-order", async (req, res) => {
+  try {
+    const options = {
+      amount: req.body.amount * 100, // Convert to paise
+      currency: "INR",
+      receipt: "order_rcptid_11",
+    };
 
-// Endpoint to verify transaction status (GET request)
-app.get('/api/transactions/verify', (req, res) => {
-  const { tid } = req.query;
-
-  // Check if transaction exists
-  if (!transactions[tid]) {
-    return res.status(404).json({ error: 'Transaction not found' });
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    res.status(500).send(error);
   }
+});
+// Verify Payment API
+app.post("/verify-payment", async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-  // Get transaction details
-  const transaction = transactions[tid];
+  const generated_signature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest("hex");
 
-  // Simulate payment verification (in real-world, this would be API-driven)
-  if (transaction.status === 'PENDING') {
-    // Here, you would verify with your payment gateway and update the status
-    transaction.status = 'SUCCESS'; // Simulate a successful transaction
-    console.log(`Transaction ${tid} verified: SUCCESS`);
+  if (generated_signature === razorpay_signature) {
+    res.json({ success: true, message: "Payment verified successfully" });
+  } else {
+    res.status(400).json({ success: false, message: "Payment verification failed" });
   }
-
-  res.status(200).json({
-    tid,
-    status: transaction.status,
-    amount: transaction.amount
-  });
 });
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(3000, '0.0.0.0', () => {
+    console.log("Server running on port 3000");
 });
+
