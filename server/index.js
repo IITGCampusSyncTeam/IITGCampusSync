@@ -17,7 +17,7 @@ import orderRoutes from "./modules/orders/ordersRoutes.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());

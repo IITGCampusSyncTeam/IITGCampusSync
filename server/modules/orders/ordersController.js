@@ -2,11 +2,6 @@ import Order from "./ordersModel.js";
 import Club from "../club/clubModel.js";
 import User from "../user/user.model.js";
 
-// CREATE ORDER
-import Order from "../models/orderModel.js";
-import Merch from "../models/merchModel.js";
-import User from "../models/userModel.js";
-import Club from "../models/clubModel.js";
 
 export const createOrder = async (req, res) => {
     try {
