@@ -5,7 +5,12 @@ import User from "../user/user.model.js";
 // CREATE ORDER
 export const createOrder = async (req, res) => {
     try {
-        const { user, merchId, quantity, size, totalPrice } = req.body;
+        const { user, merchId, quantity, size, totalPrice, name, contact, hostel, roomNum } = req.body;
+
+        // Ensure required fields are provided
+        if (!name || !contact || !hostel || !roomNum) {
+            return res.status(400).json({ success: false, message: "All user details (name, contact, hostel, room number) are required." });
+        }
 
         // Create new order
         const newOrder = await Order.create({
@@ -14,6 +19,10 @@ export const createOrder = async (req, res) => {
             quantity,
             size,
             totalPrice,
+            name,
+            contact,
+            hostel,
+            roomNum,
             orderedAt: new Date(),
         });
 
@@ -82,11 +91,16 @@ export const getOrdersByMerch = async (req, res) => {
     }
 };
 
-// UPDATE ORDER (e.g., update quantity or size)
+// UPDATE ORDER (e.g., update quantity, size, or user details)
 export const updateOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
         const updates = req.body;
+
+        // Prevent removing required fields
+        if (updates.name === "" || updates.contact === "" || updates.hostel === "" || updates.roomNum === "") {
+            return res.status(400).json({ success: false, message: "User details cannot be empty." });
+        }
 
         const updatedOrder = await Order.findByIdAndUpdate(orderId, updates, { new: true });
 

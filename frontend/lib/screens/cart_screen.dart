@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'checkout_screen.dart'; // Import the checkout screen
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -9,7 +10,8 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  Map<String, int> cartItems = {};
+  Map<String, Map<String, dynamic>> cartItems = {}; // Stores item details
+  double totalPrice = 0.0;
 
   @override
   void initState() {
@@ -17,63 +19,84 @@ class _CartScreenState extends State<CartScreen> {
     loadCart();
   }
 
-  /// Loads cart items and their quantities from SharedPreferences.
   Future<void> loadCart() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> cartList = prefs.getStringList('cart') ?? [];
 
-    Map<String, int> cartMap = {};
+    Map<String, Map<String, dynamic>> cartMap = {};
+    double total = 0.0;
+
     for (var item in cartList) {
       List<String> parts = item.split(' - ');
-      if (parts.length == 3) {
-        String itemName = '${parts[0]} - ${parts[1]}';
-        int quantity = int.tryParse(parts[2]) ?? 1;
-        cartMap[itemName] = quantity;
+      if (parts.length == 5) {
+        String merchId = parts[0]; // Used internally, but not shown
+        String itemName = parts[1];
+        String size = parts[2];
+        int quantity = int.tryParse(parts[3]) ?? 1;
+        double price = double.tryParse(parts[4]) ?? 0.0;
+
+        String key = "$itemName - $size"; // User-friendly key (without merch ID)
+
+        if (cartMap.containsKey(key)) {
+          cartMap[key]!["quantity"] += quantity;
+        } else {
+          cartMap[key] = {
+            "quantity": quantity,
+            "price": price,
+            "merchId": merchId // Store for correct retrieval but hide from UI
+          };
+        }
+        total += price * quantity;
       }
     }
 
     setState(() {
       cartItems = cartMap;
+      totalPrice = total;
     });
   }
 
-  /// Updates the cart and saves to SharedPreferences.
   Future<void> updateCart() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> cartList = cartItems.entries
-        .where((entry) => entry.value > 0)
-        .map((entry) => '${entry.key} - ${entry.value}')
-        .toList();
+    List<String> cartList = cartItems.entries.map((entry) {
+      String key = entry.key;
+      List<String> keyParts = key.split(' - ');
+      String itemName = keyParts[0];
+      String size = keyParts[1];
+      String merchId = entry.value["merchId"];
+
+      return '$merchId - $itemName - $size - ${entry.value["quantity"]} - ${entry.value["price"]}';
+    }).toList();
+
     await prefs.setStringList('cart', cartList);
   }
 
-  /// Increases quantity of an item.
   void increaseQuantity(String item) {
     setState(() {
-      cartItems[item] = (cartItems[item] ?? 1) + 1;
+      cartItems[item]!["quantity"] += 1;
+      totalPrice += cartItems[item]!["price"];
     });
     updateCart();
   }
 
-  /// Decreases quantity of an item or removes it if it reaches 0.
   void decreaseQuantity(String item) {
     setState(() {
-      if (cartItems.containsKey(item)) {
-        if (cartItems[item]! > 1) {
-          cartItems[item] = cartItems[item]! - 1;
-        } else {
-          cartItems.remove(item);
-        }
+      if (cartItems[item]!["quantity"] > 1) {
+        cartItems[item]!["quantity"] -= 1;
+        totalPrice -= cartItems[item]!["price"];
+      } else {
+        totalPrice -= cartItems[item]!["price"];
+        cartItems.remove(item);
       }
     });
     updateCart();
   }
 
-  /// Clears the entire cart.
   Future<void> clearCart() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       cartItems.clear();
+      totalPrice = 0.0;
     });
     await prefs.remove('cart');
   }
@@ -98,23 +121,30 @@ class _CartScreenState extends State<CartScreen> {
             child: ListView.builder(
               itemCount: cartItems.length,
               itemBuilder: (context, index) {
-                String itemName = cartItems.keys.elementAt(index);
-                int quantity = cartItems[itemName]!;
+                String itemKey = cartItems.keys.elementAt(index);
+                int quantity = cartItems[itemKey]!["quantity"];
+                double price = cartItems[itemKey]!["price"];
+                double itemTotal = quantity * price;
+
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
-                    title: Text(itemName, style: const TextStyle(fontSize: 16)),
-                    subtitle: Text("Quantity: $quantity"),
+                    title: Text(itemKey, style: const TextStyle(fontSize: 16)), // Only shows item name and size
+                    subtitle: Text("₹${price.toStringAsFixed(2)} x $quantity = ₹${itemTotal.toStringAsFixed(2)}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
                           icon: const Icon(Icons.remove, color: Colors.red),
-                          onPressed: () => decreaseQuantity(itemName),
+                          onPressed: () => decreaseQuantity(itemKey),
+                        ),
+                        Text(
+                          '$quantity',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           icon: const Icon(Icons.add, color: Colors.green),
-                          onPressed: () => increaseQuantity(itemName),
+                          onPressed: () => increaseQuantity(itemKey),
                         ),
                       ],
                     ),
@@ -125,17 +155,44 @@ class _CartScreenState extends State<CartScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: clearCart,
-                icon: const Icon(Icons.delete),
-                label: const Text("Clear Cart"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              children: [
+                Text(
+                  "Total Price: ₹${totalPrice.toStringAsFixed(2)}",
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: clearCart,
+                    icon: const Icon(Icons.delete),
+                    label: const Text("Clear Cart"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CheckoutScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.shopping_cart_checkout),
+                    label: const Text("Checkout"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

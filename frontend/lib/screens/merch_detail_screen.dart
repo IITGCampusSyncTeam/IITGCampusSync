@@ -20,12 +20,16 @@ class _MerchDetailScreenState extends State<MerchDetailScreen> {
     selectedSize = widget.merch.sizes.isNotEmpty ? widget.merch.sizes[0] : null;
   }
 
+  /// Retrieves the cart list from SharedPreferences
+  Future<List<String>> getCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('cart') ?? [];
+  }
+
   /// Checks if the item with the same size is already in the cart
   Future<bool> isItemAlreadyInCart() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> cart = prefs.getStringList('cart') ?? [];
-
-    String newItem = '${widget.merch.name} - ${selectedSize ?? "No Size"}';
+    List<String> cart = await getCart();
+    String newItem = '${widget.merch.id} - ${widget.merch.name} - ${selectedSize ?? "No Size"}';
     return cart.any((item) => item.startsWith(newItem));
   }
 
@@ -53,9 +57,16 @@ class _MerchDetailScreenState extends State<MerchDetailScreen> {
       return;
     }
 
-    List<String> cart = prefs.getStringList('cart') ?? [];
-    cart.add('${widget.merch.name} - ${selectedSize ?? "No Size"} - 1');
+    List<String> cart = await getCart();
+
+    // Store item with merchId, name, size, quantity, and price
+    String newItem = '${widget.merch.id} - ${widget.merch.name} - $selectedSize - 1 - ${widget.merch.price}';
+    cart.add(newItem);
+
     await prefs.setStringList('cart', cart);
+
+    // Debugging log to verify saving
+    print("Cart updated: $cart");
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

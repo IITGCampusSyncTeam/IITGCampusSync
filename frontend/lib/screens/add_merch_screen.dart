@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/apis/protected.dart'; // Import the file containing getAccessToken()
 
 class AddMerchScreen extends StatefulWidget {
   final String clubId;
@@ -16,13 +17,14 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _imageController = TextEditingController();
 
-  String _selectedType = "T-Shirt"; // Default merch type
+  String _selectedType = "Normal T-Shirt"; // Default type
   List<String> _selectedSizes = [];
   bool _isLoading = false;
   String _errorMessage = '';
 
-  final List<String> merchTypes = ["T-Shirt", "Hoodie", "Cap", "Mug", "Sticker"];
+  final List<String> merchTypes = ["Normal T-Shirt", "Oversized", "Hoodie"];
   final List<String> availableSizes = ["S", "M", "L", "XL", "XXL"];
 
   Future<void> addMerch() async {
@@ -41,23 +43,38 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
     final Map<String, dynamic> merchData = {
       "name": _nameController.text.trim(),
       "description": _descriptionController.text.trim(),
-      "price": double.parse(_priceController.text),
-      "type": _selectedType,
+      "price": double.tryParse(_priceController.text) ?? 0.0,
+      "image": _imageController.text.trim().isEmpty
+          ? "https://example.com/default-merch-image.jpg"
+          : _imageController.text.trim(),
       "sizes": _selectedSizes,
+      "type": _selectedType,
     };
 
     try {
+      String? accessToken = await getAccessToken(); // Get access token
+      if (accessToken == null) {
+        setState(() {
+          _errorMessage = "Authentication error. Please log in again.";
+        });
+        return;
+      }
+
       final response = await http.post(
         Uri.parse("https://iitgcampussync.onrender.com/api/clubs/${widget.clubId}/merch"),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken', // Send access token
+        },
         body: jsonEncode(merchData),
       );
 
       if (response.statusCode == 201) {
-        Navigator.pop(context, true); // Go back and refresh merch list
+        Navigator.pop(context, true);
       } else {
+        final responseData = jsonDecode(response.body);
         setState(() {
-          _errorMessage = 'Failed to add merch. Please try again!';
+          _errorMessage = responseData["message"] ?? 'Failed to add merch. Please try again!';
         });
       }
     } catch (e) {
@@ -108,7 +125,13 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Merch Type Dropdown
+              TextFormField(
+                controller: _imageController,
+                decoration: InputDecoration(labelText: "Image URL", border: OutlineInputBorder()),
+                validator: (value) => value!.isEmpty ? "Enter image URL" : null,
+              ),
+              const SizedBox(height: 12),
+
               DropdownButtonFormField<String>(
                 value: _selectedType,
                 decoration: InputDecoration(labelText: "Merch Type", border: OutlineInputBorder()),
@@ -119,7 +142,6 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Multi-select Sizes
               Wrap(
                 spacing: 10,
                 children: availableSizes.map((size) {
@@ -155,11 +177,6 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: addMerch,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                   child: const Text("Add Merch"),
                 ),
               ),

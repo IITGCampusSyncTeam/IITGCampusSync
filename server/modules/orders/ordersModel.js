@@ -15,6 +15,12 @@ const orderSchema = new Schema({
         default: 'Pending' 
     }, // Order status
     orderedAt: { type: Date, default: Date.now }, // Timestamp of order
+    
+    // New fields for user details
+    name: { type: String, required: true }, // User's full name
+    contact: { type: String, required: true }, // User's contact number
+    hostel: { type: String, required: true }, // Hostel name
+    roomNum: { type: String, required: true } // Room number
 });
 
 const Order = mongoose.model('Order', orderSchema);

@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 
 // Merch schema (sub-document)
 const merchSchema = new Schema({
-    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String, required: true }, // URL or file path of the image
@@ -16,7 +15,7 @@ const merchSchema = new Schema({
         required: true 
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
-});
+},{ _id: true });;
 
 // Club schema
 const clubSchema = new Schema({

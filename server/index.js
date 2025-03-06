@@ -80,7 +80,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/clubs", clubRoutes);
 
 //orderRoutes
-app.use("/orders", orderRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);

@@ -111,19 +111,39 @@ export const addMerch = async (req, res) => {
     try {
         const { clubId } = req.params;
         const { name, description, price, image, sizes, type } = req.body;
-        const userId = req.user.id; // Assuming user ID is extracted from authentication middleware
+        const userId = req.user.id; // Extracted from authentication middleware
 
+        // Validate required fields
+        if (!name || !description || !price || !image || !sizes || !type) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        // Validate price as a number
+        const parsedPrice = parseFloat(price);
+        if (isNaN(parsedPrice)) {
+            return res.status(400).json({ message: "Invalid price format" });
+        }
+
+        // Find the club
         const club = await Club.findById(clubId);
         if (!club) return res.status(404).json({ message: "Club not found" });
 
-        // ✅ Check if the logged-in user is the club's secretary
+        // Only the secretary can add merch
         if (club.secretary.toString() !== userId) {
             return res.status(403).json({ message: "Unauthorized: Only the secretary can add merch" });
         }
 
-        const newMerch = { name, description, price, image, sizes, type };
+        // Create new merch item
+        const newMerch = {
+            name,
+            description,
+            price: parsedPrice, // Ensure price is stored as a number
+            image,
+            sizes,
+            type
+        };
 
-        // ✅ Push new merch item to the array
+        // Push new merch item and save
         club.merch.push(newMerch);
         await club.save();
 
