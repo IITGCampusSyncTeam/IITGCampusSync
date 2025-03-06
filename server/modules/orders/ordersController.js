@@ -119,7 +119,19 @@ export const getOrderById = async (req, res) => {
 export const getOrdersByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const orders = await Order.find({ user: userId }).populate("merch");
+        
+        // Fetch all orders by user
+        const orders = await Order.find({ user: userId }).lean();
+
+        // Populate merch details from Club model
+        for (const order of orders) {
+            const clubWithMerch = await Club.findOne({ "merch._id": order.merch });
+
+            if (clubWithMerch) {
+                const merchItem = clubWithMerch.merch.find(m => m._id.toString() === order.merch.toString());
+                order.merchDetails = merchItem; // Attach merch details to response
+            }
+        }
 
         res.status(200).json({ success: true, orders });
     } catch (error) {
