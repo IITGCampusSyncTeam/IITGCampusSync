@@ -41,27 +41,27 @@ connectDB();
 app.use("/api/contest", contestRoutes);
 
 // 🔴 Commented out Firebase Admin SDK
-// import admin from 'firebase-admin';
-// import path from 'node:path';
-// import { fileURLToPath } from 'node:url';
-// import fs from 'fs';
+import admin from 'firebase-admin';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'fs';
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
 
-// if (!fs.existsSync(serviceAccountPath)) {
-//     console.error(`Service account file not found at path: ${serviceAccountPath}`);
-//     process.exit(1);
-// }
+if (!fs.existsSync(serviceAccountPath)) {
+    console.error(`Service account file not found at path: ${serviceAccountPath}`);
+    process.exit(1);
+}
 
-// try {
-//   admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccountPath),
-//   });
-// } catch (error) {
-//   console.error('Error initializing Firebase Admin SDK:', error);
-//   process.exit(1);
-// }
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccountPath),
+  });
+} catch (error) {
+  console.error('Error initializing Firebase Admin SDK:', error);
+  process.exit(1);
+}
 
 // Basic route
 app.get('/', (req, res) => {
@@ -91,38 +91,38 @@ app.post('/create-event', eventController.createEvent);
 app.get('/get-events', eventController.getEvents);
 
 // Save FCM token (Firebase Related - Commenting Out)
-// app.post('/save-token', async (req, res) => {
-//   const { userId, fcmToken } = req.body;
+app.post('/save-token', async (req, res) => {
+  const { userId, fcmToken } = req.body;
 
-//   try {
-//     const user = await User.findById(userId);
-//     if (user) {
-//       user.fcmToken = fcmToken;
-//       await user.save();
-//       res.status(200).json({ message: 'FCM token saved successfully' });
-//     } else {
-//       res.status(404).json({ message: 'User not found' });
-//     }
-//   } catch (err) {
-//     console.error('Error saving FCM token:', err);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      user.fcmToken = fcmToken;
+      await user.save();
+      res.status(200).json({ message: 'FCM token saved successfully' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (err) {
+    console.error('Error saving FCM token:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // GET request to retrieve FCM tokens (Commented Out)
-// app.get('/get-tokens', async (req, res) => {
-//     try {
-//         const users = await User.find({});
-//         const tokens = users
-//             .map(user => user.fcmToken)
-//             .filter(token => typeof token === 'string' && token.trim() !== '');
+app.get('/get-tokens', async (req, res) => {
+    try {
+        const users = await User.find({});
+        const tokens = users
+            .map(user => user.fcmToken)
+            .filter(token => typeof token === 'string' && token.trim() !== '');
 
-//         res.json(tokens);
-//     } catch (error) {
-//         console.error('Error fetching tokens:', error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
+        res.json(tokens);
+    } catch (error) {
+        console.error('Error fetching tokens:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
