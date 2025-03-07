@@ -4,8 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login_screen.dart';
 import 'clubs_screen.dart';
 import 'cart_screen.dart';
+import 'orders_screen.dart';
 
-/// Home page with bottom navigation for Home, Clubs, and Cart.
+/// Home page with bottom navigation for Home, Clubs, Cart, and Orders.
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -14,7 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // 0: Home, 1: Clubs, 2: Cart
+  // 0: Home, 1: Clubs, 2: Cart, 3: Orders
   int _selectedIndex = 0;
 
   // List of pages for each tab.
@@ -22,6 +23,7 @@ class _HomeState extends State<Home> {
     const HomeContent(),
     const ClubsScreen(), // ClubsScreen has its own AppBar
     const CartScreen(),
+    OrdersPage(),
   ];
 
   Future<void> _logout(BuildContext context) async {
@@ -52,9 +54,10 @@ class _HomeState extends State<Home> {
           ),
         ],
       )
-          : null, // No AppBar on Clubs and Cart
+          : null, // No AppBar on Clubs, Cart, Orders
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
@@ -69,6 +72,10 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
             label: "Cart",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: "Orders",
           ),
         ],
       ),

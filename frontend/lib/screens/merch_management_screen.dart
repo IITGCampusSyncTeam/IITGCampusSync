@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../constants/endpoints.dart';
 import '../models/club_model.dart';
 import '../models/merch_model.dart';
 import 'add_merch_screen.dart';
@@ -40,7 +41,7 @@ class _MerchManagementScreenState extends State<MerchManagementScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('https://iitgcampussync.onrender.com/api/clubs/${widget.clubId}'),
+        Uri.parse('${backend.uri}/api/clubs/${widget.clubId}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

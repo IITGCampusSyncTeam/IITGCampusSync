@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:frontend/apis/protected.dart'; // Import the file containing getAccessToken()
+import 'package:frontend/apis/protected.dart';
+import 'package:frontend/constants/endpoints.dart';// Import the file containing getAccessToken()
 
 class AddMerchScreen extends StatefulWidget {
   final String clubId;
@@ -61,7 +62,7 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
       }
 
       final response = await http.post(
-        Uri.parse("https://iitgcampussync.onrender.com/api/clubs/${widget.clubId}/merch"),
+        Uri.parse("${backend.uri}/api/clubs/${widget.clubId}/merch"),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken', // Send access token

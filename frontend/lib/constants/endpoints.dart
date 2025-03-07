@@ -14,6 +14,10 @@ class ClubEndPoints {
   static const cluburl="https://iitgcampussync.onrender.com/api/clubs/";
 }
 
+class backend {
+  static const uri="https://iitgcampussync.onrender.com";
+}
+
 class clientid {
   static const Clientid = '7e8cd638-96e9-4441-b3a5-dd3ea895a46d';
 }

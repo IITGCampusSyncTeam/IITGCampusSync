@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/orders_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+import '../constants/endpoints.dart';
 
 class OrderSummaryScreen extends StatefulWidget {
   final String name;
@@ -134,7 +137,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     };
 
     final response = await http.post(
-      Uri.parse("https://iitgcampussync.onrender.com/api/orders/"),
+      Uri.parse("${backend.uri}/api/orders/"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(orderData),
     );
@@ -152,7 +155,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, "/ordersPage");
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrdersPage()),
+                );
               },
               child: Text("OK"),
             ),

@@ -22,18 +22,16 @@ Future<void> authenticate() async {
         url: AuthEndpoints.getAccess, callbackUrlScheme: "iitgsync");
     print("Authentication result: $result");
 
-    final accessToken = Uri
-        .parse(result)
-        .queryParameters['token'];
-    final userDetail = Uri
-        .parse(result)
-        .queryParameters['user'];
+    final accessToken = Uri.parse(result).queryParameters['token'];
+    final userDetail = Uri.parse(result).queryParameters['user'];
+
     print("access_token: $accessToken");
     print("user: $userDetail");
 
     if (accessToken == null || userDetail == null) {
       throw ('access token or user detail not found');
     }
+
     try {
       // Decode URL-encoded userDetail string
       String decodedUserString = Uri.decodeComponent(userDetail);
@@ -43,24 +41,33 @@ Future<void> authenticate() async {
           .replaceAll("new ObjectId(", "")
           .replaceAll(")", "")
           .replaceAllMapped(
-          RegExp(r"_id:\s*'([^']*)'"),
-              (match) => '"_id": "${match[1]}"'
+        RegExp(r"_id:\s*'([^']*)'"),
+            (match) => '"_id": "${match[1]}"',
       )
           .replaceAllMapped(
-          RegExp(r"(\w+):\s*'([^']*)'"),
-              (match) => '"${match[1]}": "${match[2]}"'
+        RegExp(r"(\w+):\s*'([^']*)'"),
+            (match) => '"${match[1]}": "${match[2]}"',
       )
           .replaceAllMapped(
-          RegExp(r"(\w+):\s*(\d+)"),
-              (match) => '"${match[1]}": ${match[2]}'
+        RegExp(r"(\w+):\s*(\d+)"),
+            (match) => '"${match[1]}": ${match[2]}',
       )
           .replaceAllMapped(
-          RegExp(r"(\w+):\s*\[\]"),
-              (match) => '"${match[1]}": []'
+        RegExp(r"(\w+):\s*\[\]"),
+            (match) => '"${match[1]}": []',
       )
-          .replaceAll(
-          "'", '"') // Replace single quotes with double quotes for JSON
-          .replaceAll(",\n}", "\n}"); // Remove trailing commas if they exist
+          .replaceAll("'", '"') // Replace single quotes with double quotes for JSON
+          .replaceAll(",\n}", "\n}") // Remove trailing commas
+          .replaceAllMapped(
+        RegExp(r"merchOrders:\s*\[([\s\S]*?)\]"),
+            (match) {
+          String cleanedList = match[1]!
+              .split(',')
+              .map((id) => '"${id.trim().replaceAll("'", "").replaceAll('"', "")}"')
+              .join(', ');
+          return '"merchOrders": [$cleanedList]';
+        },
+      );
 
       // Debug print cleaned-up JSON string
       print("Cleaned User JSON: $decodedUserString");
@@ -79,8 +86,7 @@ Future<void> authenticate() async {
       print('Error in parsing user data: $e');
       rethrow;
     }
-  }
-  catch (e) {
+  } catch (e) {
     print('Error in getting code');
     rethrow;
   }

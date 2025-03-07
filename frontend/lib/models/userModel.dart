@@ -14,6 +14,7 @@ class User {
   final List<String> subscribedClubs;
   final List<String> clubsResponsible;
   final List<Map<String, dynamic>> reminders;
+  final List<String> merchOrders;
   final int version; // This corresponds to __v in the JSON
 
   User({
@@ -31,6 +32,7 @@ class User {
     required this.role,
     required this.subscribedClubs,
     required this.clubsResponsible,
+    required this.merchOrders,
     required this.reminders,
     this.version = 0, // Default value for __v
   });
@@ -52,6 +54,7 @@ class User {
       subscribedClubs: List<String>.from(json['subscribedClubs'] ?? []),
       clubsResponsible: List<String>.from(json['clubsResponsible'] ?? []),
       reminders: List<Map<String, dynamic>>.from(json['reminders'] ?? []),
+      merchOrders: List<String>.from(json['merchOrders'] ?? []),
       version: json['__v'] ?? 0,
     );
   }
@@ -73,6 +76,7 @@ class User {
       'subscribedClubs': subscribedClubs,
       'clubsResponsible': clubsResponsible,
       'reminders': reminders,
+      'merchOrders' : merchOrders,
       '__v': version,
     };
   }

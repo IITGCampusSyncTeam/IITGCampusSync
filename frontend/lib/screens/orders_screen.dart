@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/endpoints.dart';
+
 class OrdersPage extends StatefulWidget {
   @override
   _OrdersPageState createState() => _OrdersPageState();
@@ -41,9 +43,9 @@ class _OrdersPageState extends State<OrdersPage> {
         return;
       }
 
-      //  Fetch orders from API
+      // Fetch orders from API
       final response = await http.get(
-        Uri.parse('https://iitgcampussync.onrender.com/api/orders/user/$userId'),
+        Uri.parse('${backend.uri}/api/orders/user/$userId'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -78,9 +80,23 @@ class _OrdersPageState extends State<OrdersPage> {
           return Card(
             margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: ListTile(
-              leading: merch['image'] != null
-                  ? Image.network(merch['image'], width: 50, height: 50, fit: BoxFit.cover)
-                  : Icon(Icons.shopping_cart),
+              leading: Container(
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "IMAGE",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
               title: Text(merch['name'] ?? 'Unknown Item'),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

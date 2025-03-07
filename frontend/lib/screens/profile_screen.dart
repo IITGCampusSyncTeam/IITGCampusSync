@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/apis/protected.dart';
+import '../constants/endpoints.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final response = await http.put(
-        Uri.parse('https://iitgcampussync.onrender.com/api/user/$email'),
+        Uri.parse('${backend.uri}/api/user/$email'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -72,11 +73,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // ✅ FIXED: Correctly extract user data
-        final updatedUser = jsonDecode(response.body); // Fix: Directly decode response
+
+        final updatedUser = jsonDecode(response.body);
         print("Updated User Data: $updatedUser");
 
-        // ✅ Save updated user data to SharedPreferences
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_data', jsonEncode(updatedUser));
 
