@@ -32,7 +32,7 @@ app.use(cors());
 // MongoDB connection
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://simonrema123:6K8peORWEGUl15uZ@cluster0.2p9ue.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+        await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
@@ -47,20 +47,27 @@ connectDB();
 app.use("/api/contest", contestRoutes); // Add contest routes
 
 // Correct the path construction for service account
-const __dirname = path.dirname(fileURLToPath(import.meta.url));  // Get __dirname equivalent in ES Modules
-const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));  // Get __dirname equivalent in ES Modules
+// const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
 
 // Check if the file exists at the constructed path
-import fs from 'fs';
-if (!fs.existsSync(serviceAccountPath)) {
-    console.error(`Service account file not found at path: ${serviceAccountPath}`);
-    process.exit(1); // Exit the app if the file is not found
+
+// import fs from 'fs';
+// if (!fs.existsSync(serviceAccountPath)) {
+//     console.error(`Service account file not found at path: ${serviceAccountPath}`);
+//     process.exit(1); // Exit the app if the file is not found
+// }
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+    process.exit(1);
 }
 
 // Initialize Firebase Admin SDK
 try {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountPath),
+    credential: admin.credential.cert(serviceAccount),
   });
 } catch (error) {
   console.error('Error initializing Firebase Admin SDK:', error);

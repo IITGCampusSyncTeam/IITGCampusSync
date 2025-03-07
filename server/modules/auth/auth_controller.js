@@ -41,9 +41,9 @@ export const mobileRedirectHandler = async (req, res, next) => {
         const { code } = req.query;
 
         const data = qs.stringify({
-            client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
-            client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
-            redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
+            client_secret: clientid, // Make sure this is loaded securely from env
+            client_id: clientSecret,
+            redirect_uri: redirect_uri,
             scope: "user.read",
             grant_type: "authorization_code",
             code: code,
