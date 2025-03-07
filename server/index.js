@@ -16,6 +16,8 @@ import userRoutes from './modules/user/user.route.js';
 import eventController from './modules/event/eventController.js'; // Import eventController
 import User from './modules/user/user.model.js';
 import contestRoutes from './modules/contest/routes.js'; // Import contest routes
+import firebaseRoutes from './modules/firebase/firebase_routes.js';
+import paymentRoutes from './modules/payments/payment_routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -57,22 +59,22 @@ app.use("/api/contest", contestRoutes); // Add contest routes
 //     console.error(`Service account file not found at path: ${serviceAccountPath}`);
 //     process.exit(1); // Exit the app if the file is not found
 // }
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    console.error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
-    process.exit(1);
-}
+//if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+//    console.error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+//    process.exit(1);
+//}
 
 // Initialize Firebase Admin SDK
-try {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-} catch (error) {
-  console.error('Error initializing Firebase Admin SDK:', error);
-  process.exit(1);
-}
+//try {
+//  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+//
+//  admin.initializeApp({
+//    credential: admin.credential.cert(serviceAccount),
+//  });
+//} catch (error) {
+//  console.error('Error initializing Firebase Admin SDK:', error);
+//  process.exit(1);
+//}
 
 // Basic route
 app.get('/', (req, res) => {
@@ -90,8 +92,9 @@ app.use("/api/user", userRoutes);
 
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
-
-
+//routes
+app.use("/api/firebase", firebaseRoutes);
+app.use("/api/payments", paymentRoutes);
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
 app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
@@ -99,41 +102,6 @@ app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime
 // Routes to create event and fetch events
 app.post('/create-event', eventController.createEvent);
 app.get('/get-events', eventController.getEvents);
-
-// Save FCM token
-app.post('/save-token', async (req, res) => {
-  const { userId, fcmToken } = req.body;
-
-  try {
-    const user = await User.findById(userId);
-    if (user) {
-      user.fcmToken = fcmToken;
-      await user.save();
-      res.status(200).json({ message: 'FCM token saved successfully' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (err) {
-    console.error('Error saving FCM token:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// GET request to retrieve FCM tokens
-app.get('/get-tokens', async (req, res) => {
-    try {
-        const users = await User.find({});
-        // Extract fcmToken and filter out undefined or empty tokens
-        const tokens = users
-            .map(user => user.fcmToken)
-            .filter(token => typeof token === 'string' && token.trim() !== '');
-
-        res.json(tokens);
-    } catch (error) {
-        console.error('Error fetching tokens:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -144,46 +112,83 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Save FCM token
+//app.post('/save-token', async (req, res) => {
+//  const { userId, fcmToken } = req.body;
+//
+//  try {
+//    const user = await User.findById(userId);
+//    if (user) {
+//      user.fcmToken = fcmToken;
+//      await user.save();
+//      res.status(200).json({ message: 'FCM token saved successfully' });
+//    } else {
+//      res.status(404).json({ message: 'User not found' });
+//    }
+//  } catch (err) {
+//    console.error('Error saving FCM token:', err);
+//    res.status(500).json({ error: 'Internal server error' });
+//  }
+//});
+
+// GET request to retrieve FCM tokens
+//app.get('/get-tokens', async (req, res) => {
+//    try {
+//        const users = await User.find({});
+//        // Extract fcmToken and filter out undefined or empty tokens
+//        const tokens = users
+//            .map(user => user.fcmToken)
+//            .filter(token => typeof token === 'string' && token.trim() !== '');
+//
+//        res.json(tokens);
+//    } catch (error) {
+//        console.error('Error fetching tokens:', error);
+//        res.status(500).json({ error: 'Internal Server Error' });
+//    }
+//});
+
+
+
 // Securely return the Razorpay Key
-app.get("/get-razorpay-key", (req, res) => {
-  res.json({ key: process.env.RAZORPAY_KEY_ID});
-});
-
-//payment
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-// Create Order API
-app.post("/create-order", async (req, res) => {
-  try {
-    const options = {
-      amount: req.body.amount * 100, // Convert to paise
-      currency: "INR",
-      receipt: "order_rcptid_11",
-    };
-
-    const order = await razorpay.orders.create(options);
-    res.json(order);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+//app.get("/get-razorpay-key", (req, res) => {
+//  res.json({ key: process.env.RAZORPAY_KEY_ID});
+//});
+//
+////payment
+//const razorpay = new Razorpay({
+//  key_id: process.env.RAZORPAY_KEY_ID,
+//  key_secret: process.env.RAZORPAY_KEY_SECRET,
+//});
+//// Create Order API
+//app.post("/create-order", async (req, res) => {
+//  try {
+//    const options = {
+//      amount: req.body.amount * 100, // Convert to paise
+//      currency: "INR",
+//      receipt: "order_rcptid_11",
+//    };
+//
+//    const order = await razorpay.orders.create(options);
+//    res.json(order);
+//  } catch (error) {
+//    res.status(500).send(error);
+//  }
+//});
 // Verify Payment API
-app.post("/verify-payment", async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-  const generated_signature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(razorpay_order_id + "|" + razorpay_payment_id)
-    .digest("hex");
-
-  if (generated_signature === razorpay_signature) {
-    res.json({ success: true, message: "Payment verified successfully" });
-  } else {
-    res.status(400).json({ success: false, message: "Payment verification failed" });
-  }
-});
+//app.post("/verify-payment", async (req, res) => {
+//  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+//
+//  const generated_signature = crypto
+//    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//    .update(razorpay_order_id + "|" + razorpay_payment_id)
+//    .digest("hex");
+//
+//  if (generated_signature === razorpay_signature) {
+//    res.json({ success: true, message: "Payment verified successfully" });
+//  } else {
+//    res.status(400).json({ success: false, message: "Payment verification failed" });
+//  }
+//});
 
 // Start the server
 app.listen(3000, '0.0.0.0', () => {
