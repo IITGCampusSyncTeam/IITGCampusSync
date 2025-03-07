@@ -1,5 +1,5 @@
 import Event from './eventModel.js'; // Adjust the path as necessary
-// import admin from 'firebase-admin';  // ⬅️ Commented out Firebase import
+import admin from 'firebase-admin';  // ⬅️ Commented out Firebase import
 
 // Function to create an event (without Firebase notifications)
 const createEvent = async (req, res) => {
@@ -15,7 +15,7 @@ const createEvent = async (req, res) => {
     await event.save();
     console.log('Event saved successfully:', event);
 
-    /*
+    
     // Firebase Notification Logic (Commented Out)
     const fcmTokens = [
       "eRAUdMcgT6GZZLwcx6fQER:APA91bGrK18600fJQ5j_2CjBoCCI6wRF6N16CU23Vy5nYQnVdbpGWwon7id8-VwSFqUR_DDyEte4bePCeWrR6bAaOwXpidDpDJbW8Li41ZUxELxax5CPvrk"
@@ -59,7 +59,7 @@ const createEvent = async (req, res) => {
         failureCount += chunk.length;
       }
     }
-    */
+    
 
     res.status(201).json({
       message: 'Event created successfully',
