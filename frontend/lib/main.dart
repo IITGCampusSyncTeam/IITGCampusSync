@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/payment_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,8 +40,10 @@ Future<void> sendFCMTokenToServer(String? token) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // await dotenv.load(fileName: ".env");
   // Initialize NotificationServices
   NotificationServices notificationServices = NotificationServices();
 
@@ -112,7 +115,8 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'IITGsync'),
+      home: PaymentScreen(),
+      // home: const MyHomePage(title: 'IITGsync'),
     );
   }
 }
