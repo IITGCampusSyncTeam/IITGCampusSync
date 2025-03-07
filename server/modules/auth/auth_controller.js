@@ -41,8 +41,8 @@ export const mobileRedirectHandler = async (req, res, next) => {
         const { code } = req.query;
 
         const data = qs.stringify({
-            client_secret: clientid, // Make sure this is loaded securely from env
-            client_id: clientSecret,
+            client_secret: clientSecret, // Make sure this is loaded securely from env
+            client_id: clientid,
             redirect_uri: redirect_uri,
             scope: "user.read",
             grant_type: "authorization_code",
