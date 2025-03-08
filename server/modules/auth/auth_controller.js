@@ -10,6 +10,7 @@ dotenv.config();
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
+const tenant_id=process.env.AZURE_TENANT_ID;
 
 import { findUserWithEmail, getUserFromToken, validateUser } from "../user/user.model.js";
 import User from "../user/user.model.js";
@@ -39,10 +40,11 @@ function calculateSemester(rollNumber) {
 export const mobileRedirectHandler = async (req, res, next) => {
     try {
         const { code } = req.query;
+        console.log("debug message 1");
 
         const data = qs.stringify({
-            client_secret: clientid, // Make sure this is loaded securely from env
-            client_id: clientSecret,
+            client_secret: clientSecret, // Make sure this is loaded securely from env
+            client_id: clientid,
             redirect_uri: redirect_uri,
             scope: "user.read",
             grant_type: "authorization_code",
@@ -51,10 +53,10 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
         const config = {
             method: "post",
-            url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
+            url: `https://login.microsoftonline.com/${tenant_id}/oauth2/v2.0/token`,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
+                client_secret: clientSecret, // Make sure this is loaded securely from env
             },
             data: data,
         };

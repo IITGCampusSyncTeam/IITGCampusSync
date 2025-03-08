@@ -1,7 +1,7 @@
 import Event from './eventModel.js'; // Adjust the path as necessary
-import admin from 'firebase-admin';
+import admin from 'firebase-admin';  // ⬅️ Commented out Firebase import
 
-// Function to create an event and send notifications
+// Function to create an event (without Firebase notifications)
 const createEvent = async (req, res) => {
   const { title, description, dateTime, club, createdBy, participants } = req.body;
 
@@ -15,30 +15,25 @@ const createEvent = async (req, res) => {
     await event.save();
     console.log('Event saved successfully:', event);
 
-    // In a real-world scenario, you'd fetch these tokens from your database
-    // based on the participants or other criteria
+    
+    // Firebase Notification Logic (Commented Out)
     const fcmTokens = [
       "eRAUdMcgT6GZZLwcx6fQER:APA91bGrK18600fJQ5j_2CjBoCCI6wRF6N16CU23Vy5nYQnVdbpGWwon7id8-VwSFqUR_DDyEte4bePCeWrR6bAaOwXpidDpDJbW8Li41ZUxELxax5CPvrk"
     ];
 
-
-
-
-    // Split tokens into chunks of 500 (FCM limit for batch send)
     const tokenChunks = chunkArray(fcmTokens, 500);
 
     let successCount = 0;
     let failureCount = 0;
 
-    // Send notifications to each chunk
     for (const token of fcmTokens) {
-     const message = {
-          notification: {
-            title: title,
-            body: description,
-          },
-          token: token,  // An array of valid FCM tokens
-        };
+      const message = {
+        notification: {
+          title: title,
+          body: description,
+        },
+        token: token,  
+      };
       try {
         const response = await admin.messaging().send(message);
 
@@ -57,7 +52,6 @@ const createEvent = async (req, res) => {
             }
           });
 
-          // Here you might want to handle failed tokens, e.g., remove them from your database
           console.log('Failed tokens:', failedTokens);
         }
       } catch (error) {
@@ -65,18 +59,15 @@ const createEvent = async (req, res) => {
         failureCount += chunk.length;
       }
     }
+    
 
     res.status(201).json({
-      message: 'Event created and notifications sent',
-      event,
-      notificationStats: {
-        successCount,
-        failureCount,
-      }
+      message: 'Event created successfully',
+      event
     });
   } catch (err) {
-    console.error('Error creating event or sending notifications:', err);
-    res.status(500).json({ error: 'Error creating event or sending notifications' });
+    console.error('Error creating event:', err);
+    res.status(500).json({ error: 'Error creating event' });
   }
 };
 
@@ -91,22 +82,6 @@ const getEvents = async (req, res) => {
   }
 };
 
-// Function to get FCM tokens of all users (used in createEvent)
-
-//const getFcmTokensOfUsers = async (userIds) => {
-//  try {
-//    // Find users by their IDs and return their FCM tokens
-//    const users = await User.find({ _id: { $in: userIds } });
-//    const fcmTokens = users.map(user => user.fcmToken).filter(token => token !== undefined);
-//
-//    return fcmTokens;
-//  } catch (err) {
-//    console.error('Error retrieving FCM tokens:', err);
-//    throw err;
-//  }
-//};
-
-
 // Helper function to split array into chunks
 function chunkArray(array, chunkSize) {
   const chunks = [];
@@ -116,7 +91,7 @@ function chunkArray(array, chunkSize) {
   return chunks;
 }
 
-export default{
+export default {
   createEvent,
   getEvents,
 };
