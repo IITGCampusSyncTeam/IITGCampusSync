@@ -1,8 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import path from 'node:path'; // Using node:path
-import admin from 'firebase-admin';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'node:url'; // Using node:url
 import Razorpay from "razorpay";
@@ -13,9 +11,10 @@ import authRoutes from './modules/auth/auth_route.js';
 import clubRoutes from './modules/club/clubRoutes.js';
 import CalendarController from './modules/calendar/calendarController.js';
 import userRoutes from './modules/user/user.route.js';
-import eventController from './modules/event/eventController.js'; // Import eventController
+import eventController from './modules/event/eventController.js';
 import User from './modules/user/user.model.js';
-import contestRoutes from './modules/contest/routes.js'; // Import contest routes
+import contestRoutes from './modules/contest/routes.js';
+import orderRoutes from "./modules/orders/ordersRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -39,15 +38,20 @@ const connectDB = async () => {
         console.log('MongoDB connected');
     } catch (err) {
         console.error('MongoDB connection error:', err);
-        process.exit(1); // Exit process with failure
+        process.exit(1);
     }
 };
 connectDB();
 
-app.use("/api/contest", contestRoutes); // Add contest routes
+app.use("/api/contest", contestRoutes);
 
-// Correct the path construction for service account
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));  // Get __dirname equivalent in ES Modules
+// 🔴 Commented out Firebase Admin SDK
+import admin from 'firebase-admin';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'fs';
+
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
 
 // Check if the file exists at the constructed path
@@ -62,7 +66,6 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     process.exit(1);
 }
 
-// Initialize Firebase Admin SDK
 try {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
@@ -79,7 +82,6 @@ app.get('/', (req, res) => {
     res.send('Backend is running..');
 });
 
-// Hello route
 app.get('/hello', (req, res) => {
     res.send('Hello from server');
 });
@@ -91,6 +93,8 @@ app.use("/api/user", userRoutes);
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
 
+//orderRoutes
+app.use("/api/orders", orderRoutes);
 
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
@@ -100,7 +104,7 @@ app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime
 app.post('/create-event', eventController.createEvent);
 app.get('/get-events', eventController.getEvents);
 
-// Save FCM token
+// Save FCM token (Firebase Related - Commenting Out)
 app.post('/save-token', async (req, res) => {
   const { userId, fcmToken } = req.body;
 
@@ -119,11 +123,10 @@ app.post('/save-token', async (req, res) => {
   }
 });
 
-// GET request to retrieve FCM tokens
+// GET request to retrieve FCM tokens (Commented Out)
 app.get('/get-tokens', async (req, res) => {
     try {
         const users = await User.find({});
-        // Extract fcmToken and filter out undefined or empty tokens
         const tokens = users
             .map(user => user.fcmToken)
             .filter(token => typeof token === 'string' && token.trim() !== '');
