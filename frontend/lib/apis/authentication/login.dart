@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +11,7 @@ import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
   try {
-    final result = await FlutterWebAuth2.authenticate(
+    final result = await FlutterWebAuth.authenticate(
       url: AuthEndpoints.getAccess,
       callbackUrlScheme: "iitgsync",
     );
