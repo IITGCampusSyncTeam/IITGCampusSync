@@ -47,9 +47,7 @@ app.use("/api/contest", contestRoutes);
 
 // 🔴 Commented out Firebase Admin SDK
 import admin from 'firebase-admin';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import fs from 'fs';
+
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // const serviceAccountPath = path.join(__dirname, 'config', 'iitg-campus-sync.json');
