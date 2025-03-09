@@ -16,6 +16,11 @@ migrate_working_dir/
 *.iws
 .idea/
 
+<<<<<<< HEAD
+=======
+lib/constants/endpoints.dart
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
@@ -41,3 +46,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050

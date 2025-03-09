@@ -8,7 +8,11 @@ dotenv.config(); // Load environment variables
 
 const userSchema = new Schema({
     name: { type: String, required: true },
+<<<<<<< HEAD
     fcmToken: {type: String, required:false},
+=======
+    fcmToken: {type: String, required:false}, //change it to true later on
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     email: { type: String, required: true, unique: true },
     rollNumber: { type: Number, required: true, unique: true },
     semester: { type: Number, required: true },
@@ -49,6 +53,15 @@ const userSchema = new Schema({
                 type: Date
             }
         }
+<<<<<<< HEAD
+=======
+    ],
+    merchOrders: [
+        {
+            type: Types.ObjectId,
+            ref: 'Order' // Reference to orders made by the user
+        }
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     ]
 });
 

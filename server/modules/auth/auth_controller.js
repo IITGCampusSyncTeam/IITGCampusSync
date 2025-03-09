@@ -10,6 +10,10 @@ dotenv.config();
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
+<<<<<<< HEAD
+=======
+const tenant_id=process.env.AZURE_TENANT_ID;
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 
 import { findUserWithEmail, getUserFromToken, validateUser } from "../user/user.model.js";
 import User from "../user/user.model.js";
@@ -39,11 +43,20 @@ function calculateSemester(rollNumber) {
 export const mobileRedirectHandler = async (req, res, next) => {
     try {
         const { code } = req.query;
+<<<<<<< HEAD
 
         const data = qs.stringify({
             client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
             client_id: '7e8cd638-96e9-4441-b3a5-dd3ea895a46d',
             redirect_uri: "https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile",
+=======
+        console.log("debug message 1");
+
+        const data = qs.stringify({
+            client_secret: clientSecret, // Make sure this is loaded securely from env
+            client_id: clientid,
+            redirect_uri: redirect_uri,
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
             scope: "user.read",
             grant_type: "authorization_code",
             code: code,
@@ -51,10 +64,17 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
         const config = {
             method: "post",
+<<<<<<< HEAD
             url: 'https://login.microsoftonline.com/850aa78d-94e1-4bc6-9cf3-8c11b530701c/oauth2/v2.0/token',
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 client_secret: 'yg48Q~GGKqo~Do7US0gLN7VJWK9gr0UqwriAKbv~', // Make sure this is loaded securely from env
+=======
+            url: `https://login.microsoftonline.com/${tenant_id}/oauth2/v2.0/token`,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                client_secret: clientSecret, // Make sure this is loaded securely from env
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
             },
             data: data,
         };

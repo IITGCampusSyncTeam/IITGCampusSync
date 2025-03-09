@@ -16,3 +16,9 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+<<<<<<< HEAD
+=======
+buildscript {
+    ext.kotlin_version = '1.9.22'
+}
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050

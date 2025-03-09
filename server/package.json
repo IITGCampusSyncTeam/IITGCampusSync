@@ -12,17 +12,34 @@
   "dependencies": {
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+<<<<<<< HEAD
     "cookie-parser": "^1.4.7",
     "express": "^4.19.2",
+=======
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.21.2",
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     "firebase-admin": "^12.5.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.9.0",
+<<<<<<< HEAD
     "mongoose": "^8.6.1"
   },
   "type": "module",
   "devDependencies": {
     "dotenv": "^16.4.5",
+=======
+    "mongoose": "^8.6.1",
+    "razorpay": "^2.9.6"
+  },
+  "type": "module",
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     "nodemon": "^3.1.7"
   },
   "description": ""

@@ -3,6 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
+=======
+  desktop_webview_window
+  url_launcher_linux
+  window_to_front
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

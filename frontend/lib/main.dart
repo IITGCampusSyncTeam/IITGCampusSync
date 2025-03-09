@@ -5,6 +5,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
+<<<<<<< HEAD
+=======
+import 'package:frontend/screens/payment_screen.dart';
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,8 +43,15 @@ Future<void> sendFCMTokenToServer(String? token) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+<<<<<<< HEAD
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+=======
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // await dotenv.load(fileName: ".env");
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
   // Initialize NotificationServices
   NotificationServices notificationServices = NotificationServices();
 
@@ -112,7 +123,12 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+<<<<<<< HEAD
       home: const MyHomePage(title: 'IITGsync'),
+=======
+     // home: PaymentScreen(),
+       home: const MyHomePage(title: 'IITGsync'),
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     );
   }
 }

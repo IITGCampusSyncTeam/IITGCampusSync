@@ -14,6 +14,10 @@ class User {
   final List<String> subscribedClubs;
   final List<String> clubsResponsible;
   final List<Map<String, dynamic>> reminders;
+<<<<<<< HEAD
+=======
+  final List<String> merchOrders;
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
   final int version; // This corresponds to __v in the JSON
 
   User({
@@ -31,6 +35,10 @@ class User {
     required this.role,
     required this.subscribedClubs,
     required this.clubsResponsible,
+<<<<<<< HEAD
+=======
+    required this.merchOrders,
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     required this.reminders,
     this.version = 0, // Default value for __v
   });
@@ -52,6 +60,10 @@ class User {
       subscribedClubs: List<String>.from(json['subscribedClubs'] ?? []),
       clubsResponsible: List<String>.from(json['clubsResponsible'] ?? []),
       reminders: List<Map<String, dynamic>>.from(json['reminders'] ?? []),
+<<<<<<< HEAD
+=======
+      merchOrders: List<String>.from(json['merchOrders'] ?? []),
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
       version: json['__v'] ?? 0,
     );
   }
@@ -73,6 +85,10 @@ class User {
       'subscribedClubs': subscribedClubs,
       'clubsResponsible': clubsResponsible,
       'reminders': reminders,
+<<<<<<< HEAD
+=======
+      'merchOrders' : merchOrders,
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
       '__v': version,
     };
   }

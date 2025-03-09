@@ -11,12 +11,21 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+<<<<<<< HEAD
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
+=======
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     }
 
     defaultConfig {
@@ -42,4 +51,8 @@ android {
 
 flutter {
     source = "../.."
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050

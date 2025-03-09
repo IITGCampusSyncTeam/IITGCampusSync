@@ -3,7 +3,15 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
   firebase_core
+=======
+  desktop_webview_window
+  firebase_core
+  flutter_inappwebview_windows
+  url_launcher_windows
+  window_to_front
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

@@ -1,14 +1,33 @@
+<<<<<<< HEAD
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+=======
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"> <!-- ✅ Added this line -->
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     <uses-feature android:name="android.hardware.telephony" required="true" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+<<<<<<< HEAD
     <application
         android:label="IITGSync"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+=======
+
+    <uses-sdk tools:overrideLibrary="com.pichillilorenzo.flutter_inappwebview"/>
+
+    <application
+        android:label="IITGSync"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true">
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -17,6 +36,7 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
+<<<<<<< HEAD
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
@@ -25,12 +45,33 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"
                 />
+=======
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"/>
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+<<<<<<< HEAD
         </activity>
         <activity android:name="com.linusu.flutter_web_auth.CallbackActivity" android:exported="true" >
+=======
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="upi" />
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name="com.linusu.flutter_web_auth.CallbackActivity" android:exported="true">
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
             <intent-filter android:label="flutter_web_auth">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -47,16 +88,26 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel" />
+<<<<<<< HEAD
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+=======
+
+    </application>
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+<<<<<<< HEAD
 </manifest>
+=======
+</manifest>
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050

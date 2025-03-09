@@ -1,1 +1,6 @@
 node_modules/
+<<<<<<< HEAD
+=======
+config/iitg-campus-sync.json
+.env
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050

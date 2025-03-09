@@ -4,6 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/apis/protected.dart';
+<<<<<<< HEAD
+=======
+import '../constants/endpoints.dart';
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -54,11 +58,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
+<<<<<<< HEAD
     //final url = Uri.parse('https://iitgcampussync.onrender.com/api/user/$email');
 
     try{
       final response = await http.put(
         Uri.parse('https://iitgcampussync.onrender.com/api/user/$email'),
+=======
+    try {
+      final response = await http.put(
+        Uri.parse('${backend.uri}/api/user/$email'),
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -74,15 +84,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
+<<<<<<< HEAD
         // Save updated data to SharedPreferences
         final updatedUser = jsonDecode(response.body)['user'];
         print(updatedUser);
+=======
+
+        final updatedUser = jsonDecode(response.body);
+        print("Updated User Data: $updatedUser");
+
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_data', jsonEncode(updatedUser));
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Profile updated successfully!")),
         );
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Home()),
@@ -92,13 +114,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SnackBar(content: Text("Failed to update profile")),
         );
       }
+<<<<<<< HEAD
     }catch(e){
+=======
+    } catch (e) {
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
     }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
   }
 
   @override
@@ -156,17 +185,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Center(
                         child: ElevatedButton(
                           onPressed: updateUserDetails,
+<<<<<<< HEAD
                           child: Text("Submit" , style: TextStyle(
                               color: Colors.white
                           ),),
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.all(20),
 
+=======
+                          child: Text("Submit", style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(20),
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
                             backgroundColor: Colors.deepPurple,
                           ),
                         ),
                       ),
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
                     ],
                   ),
                 ),
