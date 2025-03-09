@@ -14,10 +14,7 @@ import userRoutes from './modules/user/user.route.js';
 import eventController from './modules/event/eventController.js';
 import User from './modules/user/user.model.js';
 import contestRoutes from './modules/contest/routes.js';
-<<<<<<< HEAD
 import acadRoutes from "./modules/acadcalender/acadcalRoutes.js";
-=======
->>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 import orderRoutes from "./modules/orders/ordersRoutes.js";
 
 // Load environment variables
@@ -95,11 +92,8 @@ app.use("/api/user", userRoutes);
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
 
-<<<<<<< HEAD
 //acadcal routes
 app.use('/api/acadcal', acadRoutes);
-=======
->>>>>>> 5f5db83884823f6e438f11fd55d1202d101d9050
 //orderRoutes
 app.use("/api/orders", orderRoutes);
 
