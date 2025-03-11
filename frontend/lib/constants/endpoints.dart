@@ -36,3 +36,9 @@ class tokenlink {
 class redirecturi {
   static const Redirecturi = 'iitgsync://success';
 }
+
+class payment {
+  static const getRazorpayKey = "${AuthConfig.serverUrl}/get-razorpay-key";
+  static const createOrder = '${AuthConfig.serverUrl}/create-order';
+  static const verifyPayment = '${AuthConfig.serverUrl}/verify-payment';
+}

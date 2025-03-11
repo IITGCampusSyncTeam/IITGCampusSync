@@ -15,7 +15,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late Razorpay _razorpay;
   String razorpayKey = "";
   String orderId = ""; // Store order ID
-
   @override
   void initState() {
     super.initState();
@@ -37,8 +36,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> fetchRazorpayKey() async {
     try {
-      final response =
-          await http.get(Uri.parse("${AuthConfig.serverUrl}/get-razorpay-key"));
+      final response = await http.get(Uri.parse(payment.getRazorpayKey));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -56,8 +54,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   // Function to create an order on the backend
   Future<void> createOrder(String amount) async {
     final response = await http.post(
-      Uri.parse(
-          '${AuthConfig.serverUrl}/create-order'), // Replace with deployed URL
+      Uri.parse(payment.createOrder),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'amount': amount}),
     );
@@ -109,7 +106,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> verifyPayment(
       String orderId, String paymentId, String signature) async {
     final response = await http.post(
-      Uri.parse('${AuthConfig.serverUrl}/verify-payment'),
+      Uri.parse(payment.verifyPayment),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'razorpay_order_id': orderId,
