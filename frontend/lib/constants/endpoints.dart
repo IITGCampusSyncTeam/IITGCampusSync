@@ -38,7 +38,10 @@ class redirecturi {
 }
 
 class payment {
-  static const getRazorpayKey = "${AuthConfig.serverUrl}/get-razorpay-key";
-  static const createOrder = '${AuthConfig.serverUrl}/create-order';
-  static const verifyPayment = '${AuthConfig.serverUrl}/verify-payment';
+  static const getRazorpayKey =
+      "${AuthConfig.serverUrl}/api/payments/get-razorpay-key";
+  static const createOrder =
+      '${AuthConfig.serverUrl}/api/payments/create-order';
+  static const verifyPayment =
+      '${AuthConfig.serverUrl}/api/payments/verify-payment';
 }
