@@ -4,9 +4,14 @@ import User from '../user/user.model.js';
 // Initialize Firebase
 try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+    // Ensure private key is properly formatted
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    console.log('✅ Firebase Admin SDK initialized successfully.');
 } catch (error) {
-    console.error('Error initializing Firebase Admin SDK:', error);
+    console.error('❌ Error initializing Firebase Admin SDK:', error);
     process.exit(1);
 }
 

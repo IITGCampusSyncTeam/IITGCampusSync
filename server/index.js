@@ -15,14 +15,14 @@ import eventController from './modules/event/eventController.js';
 import User from './modules/user/user.model.js';
 
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
-import paymentRoutes from './modules/payments/payment_routes.js';
+import paymentRoutes from './modules/payment/payment_routes.js';
 
 import contestRoutes from './modules/contest/routes.js';
 import orderRoutes from "./modules/orders/ordersRoutes.js";
 
-
-// Load environment variables
-dotenv.config();
+//
+//// Load environment variables
+//dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,7 +51,7 @@ connectDB();
 app.use("/api/contest", contestRoutes);
 
 // 🔴 Commented out Firebase Admin SDK
-import admin from 'firebase-admin';
+//import admin from 'firebase-admin';
 
 
 // const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -241,7 +241,7 @@ app.use((err, req, res, next) => {
 //});
 
 // Start the server
-app.listen(3000, '0.0.0.0', () => {
-    console.log("Server running on port 3000");
+app.listen(PORT, '0.0.0.0', () => {
+    console.log("Server running on port ${PORT}");
 });
 

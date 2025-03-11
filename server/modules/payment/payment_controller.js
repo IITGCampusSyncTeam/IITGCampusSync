@@ -6,6 +6,16 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+//for sending key to frontend
+export const getRazorpayKey = (req, res) => {
+    try {
+        res.json({ key: process.env.RAZORPAY_KEY_ID });
+    } catch (error) {
+        console.error("Error fetching Razorpay key:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 // Create order
 export const createOrder = async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { saveFcmToken, getFcmTokens } from './firebaseController.js';
+import { saveFcmToken, getFcmTokens } from './firebase_controller.js';
 
 const router = express.Router();
 
