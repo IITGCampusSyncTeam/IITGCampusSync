@@ -35,8 +35,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> fetchRazorpayKey() async {
     try {
-      final response = await http
-          .get(Uri.parse("http://10.150.61.209:3000/get-razorpay-key"));
+      final response = await http.get(
+          Uri.parse("https://iitgcampussync.onrender.com/get-razorpay-key"));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -54,8 +54,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   // Function to create an order on the backend
   Future<void> createOrder(String amount) async {
     final response = await http.post(
-      Uri.parse(
-          'http://10.150.61.209:3000/create-order'), // Replace with deployed URL
+      Uri.parse('https://iitgcampussync.onrender.com/create-order'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'amount': amount}),
     );
@@ -107,7 +106,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> verifyPayment(
       String orderId, String paymentId, String signature) async {
     final response = await http.post(
-      Uri.parse('http://10.150.61.209:3000/verify-payment'),
+      Uri.parse('https://iitgcampussync.onrender.com/verify-payment'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'razorpay_order_id': orderId,
@@ -150,10 +149,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       appBar: AppBar(title: Text("Razorpay Payment")),
       body: Center(
         child: ElevatedButton(
-          onPressed: () =>
-              createOrder("500"), // Call createOrder on button press
+          onPressed: () => createOrder("1"), // Call createOrder on button press
 
-          child: Text("Pay ₹500"),
+          child: Text("Pay ₹1"),
         ),
       ),
     );
