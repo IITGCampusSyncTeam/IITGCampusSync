@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import '../constants/endpoints.dart';
+
 class PaymentScreen extends StatefulWidget {
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
@@ -35,8 +37,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> fetchRazorpayKey() async {
     try {
-      final response = await http.get(
-          Uri.parse("https://iitgcampussync.onrender.com/get-razorpay-key"));
+      final response =
+          await http.get(Uri.parse("${AuthConfig.serverUrl}/get-razorpay-key"));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -55,7 +57,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> createOrder(String amount) async {
     final response = await http.post(
       Uri.parse(
-          'https://iitgcampussync.onrender.com/create-order'), // Replace with deployed URL
+          '${AuthConfig.serverUrl}/create-order'), // Replace with deployed URL
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'amount': amount}),
     );
@@ -107,7 +109,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> verifyPayment(
       String orderId, String paymentId, String signature) async {
     final response = await http.post(
-      Uri.parse('https://iitgcampussync.onrender.com/verify-payment'),
+      Uri.parse('${AuthConfig.serverUrl}/verify-payment'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'razorpay_order_id': orderId,

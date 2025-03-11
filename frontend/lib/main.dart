@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/notification_services.dart';
@@ -20,7 +21,7 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 // Method to send FCM token to your server
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
-    final url = 'http://192.168.29.195:3000/save-token';
+    final url = '${AuthConfig.serverUrl}/save-token';
     try {
       await http.post(
         Uri.parse(url),
