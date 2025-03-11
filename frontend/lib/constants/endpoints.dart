@@ -3,11 +3,13 @@ class AuthConfig {
       String.fromEnvironment('AZURE_TENANT_ID', defaultValue: '');
   static const String CLIENT_ID =
       String.fromEnvironment('CLIENT_ID', defaultValue: '');
+  static const String serverUrl =
+      String.fromEnvironment('serverUrl', defaultValue: '');
 }
 
 class AuthEndpoints {
   static const String getAccess =
-      'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=https://iitgcampussync.onrender.com/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
+      'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=${AuthConfig.serverUrl}/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
 }
 
 class Userendpoints {
@@ -15,15 +17,15 @@ class Userendpoints {
 }
 
 class UserEndPoints {
-  static const currentUser = "https://iitgcampussync.onrender.com/api/user/";
+  static const currentUser = "${AuthConfig.serverUrl}/api/user/";
 }
 
 class ClubEndPoints {
-  static const cluburl = "https://iitgcampussync.onrender.com/api/clubs/";
+  static const cluburl = "${AuthConfig.serverUrl}/api/clubs/";
 }
 
 class backend {
-  static const uri = "https://iitgcampussync.onrender.com";
+  static const uri = AuthConfig.serverUrl;
 }
 
 class tokenlink {
