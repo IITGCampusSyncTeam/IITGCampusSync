@@ -3,8 +3,8 @@ import { createOrder, verifyPayment, getRazorpayKey } from './payment_controller
 
 const router = express.Router();
 
-router.post('/api/payments/create-order', createOrder);
-router.post('/api/payments/verify-payment', verifyPayment);
-router.get('/api/payments/get-razorpay-key', getRazorpayKey);
+router.post('/create-order', createOrder);
+router.post('/verify-payment', verifyPayment);
+router.get('/get-razorpay-key', getRazorpayKey);
 
 export default router;
