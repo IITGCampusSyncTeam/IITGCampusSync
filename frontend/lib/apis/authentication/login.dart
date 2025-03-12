@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,7 +11,7 @@ import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
   try {
-    final result = await FlutterWebAuth.authenticate(
+    final result = await FlutterWebAuth2.authenticate(
       url: AuthEndpoints.getAccess,
       callbackUrlScheme: "iitgsync",
     );
@@ -35,29 +35,31 @@ Future<void> authenticate() async {
           .replaceAll("new ObjectId(", "")
           .replaceAll(")", "")
           .replaceAllMapped(
-        RegExp(r"_id:\s*'([^']*)'"),
+            RegExp(r"_id:\s*'([^']*)'"),
             (match) => '"_id": "${match[1]}"',
-      )
+          )
           .replaceAllMapped(
-        RegExp(r"(\w+):\s*'([^']*)'"),
+            RegExp(r"(\w+):\s*'([^']*)'"),
             (match) => '"${match[1]}": "${match[2]}"',
-      )
+          )
           .replaceAllMapped(
-        RegExp(r"(\w+):\s*(\d+)"),
+            RegExp(r"(\w+):\s*(\d+)"),
             (match) => '"${match[1]}": ${match[2]}',
-      )
+          )
           .replaceAllMapped(
-        RegExp(r"(\w+):\s*\[\]"),
+            RegExp(r"(\w+):\s*\[\]"),
             (match) => '"${match[1]}": []',
-      )
-          .replaceAll("'", '"') // Replace single quotes with double quotes for JSON
+          )
+          .replaceAll(
+              "'", '"') // Replace single quotes with double quotes for JSON
           .replaceAll(",\n}", "\n}") // Remove trailing commas
           .replaceAllMapped(
         RegExp(r"merchOrders:\s*\[([\s\S]*?)\]"),
-            (match) {
+        (match) {
           String cleanedList = match[1]!
               .split(',')
-              .map((id) => '"${id.trim().replaceAll("'", "").replaceAll('"', "")}"')
+              .map((id) =>
+                  '"${id.trim().replaceAll("'", "").replaceAll('"', "")}"')
               .join(', ');
           return '"merchOrders": [$cleanedList]';
         },
