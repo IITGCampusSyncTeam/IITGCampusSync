@@ -5,6 +5,7 @@ import 'login_screen.dart';
 import 'clubs_screen.dart';
 import 'cart_screen.dart';
 import 'orders_screen.dart';
+import 'user_profile_screen.dart'; // Import the profile screen
 
 /// Home page with bottom navigation for Home, Clubs, Cart, and Orders.
 class Home extends StatefulWidget {
@@ -48,6 +49,17 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.blueAccent,
         elevation: 3, // Soft shadow for depth
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person), // Profile icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfileScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _logout(context),

@@ -16,7 +16,7 @@ import User from './modules/user/user.model.js';
 import contestRoutes from './modules/contest/routes.js';
 import acadRoutes from "./modules/acadcalender/acadcalRoutes.js";
 import orderRoutes from "./modules/orders/ordersRoutes.js";
-
+import tagRoutes from "./modules/tag/tagRoute.js";
 // Load environment variables
 dotenv.config();
 
@@ -94,6 +94,12 @@ app.use("/api/clubs", clubRoutes);
 
 //acadcal routes
 app.use('/api/acadcal', acadRoutes);
+
+
+// Tag routes
+app.use("/api/tags", tagRoutes);
+
+
 //orderRoutes
 app.use("/api/orders", orderRoutes);
 
