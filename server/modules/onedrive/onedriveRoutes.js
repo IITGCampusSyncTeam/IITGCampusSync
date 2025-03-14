@@ -5,7 +5,7 @@ import {
     uploadMiddleware,
     listOneDriveFiles,
     downloadOneDriveFile
-} from "../modules/onedrive/onedriveController.js";
+} from "../onedrive/onedriveController.js";
 
 const router = express.Router();
 
