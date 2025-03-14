@@ -1,6 +1,8 @@
 // helpers/getAccessTokenByEmail.js
 import axios from 'axios';
-import User from '../modules/user/user.model.js'; // adjust path as needed
+import User from '../modules/user/user.model.js';// adjust path as needed
+
+const tenant_id=process.env.AZURE_TENANT_ID;
 
 export const getAccessTokenByEmail = async (email) => {
     try {
@@ -10,7 +12,7 @@ export const getAccessTokenByEmail = async (email) => {
             throw new Error('User not found or refresh token missing');
         }
 
-        const response = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', new URLSearchParams({
+        const response = await axios.post(`https://login.microsoftonline.com/${tenant_id}/oauth2/v2.0/token`, new URLSearchParams({
             client_id: process.env.CLIENT_ID,
             client_secret: process.env.CLIENT_SECRET,
             grant_type: 'refresh_token',
