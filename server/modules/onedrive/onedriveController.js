@@ -4,7 +4,7 @@ import path from "path";
 import catchAsync from "../../utils/catchAsync.js";
 import AppError from "../../utils/appError.js";
 import { getAccessTokenByEmail } from "../../utils/getAccessTokenByEmail.js";
-import Club from "../club/club.model.js";
+import Club from "../club/clubModel.js";
 
 // 📤 Upload file to OneDrive and generate public shareable link
 export const uploadToOneDrive = catchAsync(async (req, res, next) => {

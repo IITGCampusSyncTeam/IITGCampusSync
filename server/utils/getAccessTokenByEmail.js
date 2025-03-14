@@ -1,6 +1,6 @@
 // helpers/getAccessTokenByEmail.js
 import axios from 'axios';
-import User from '../models/user.model.js'; // adjust path as needed
+import User from '../modules/user/user.model.js'; // adjust path as needed
 
 export const getAccessTokenByEmail = async (email) => {
     try {
