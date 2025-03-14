@@ -14,7 +14,7 @@ try {
     console.error(' Error initializing Firebase Admin SDK:', error);
     process.exit(1);
 }
-
+export {admin} ;
 // Save FCM token
 export const saveFcmToken = async (req, res) => {
     const { userId, fcmToken } = req.body;

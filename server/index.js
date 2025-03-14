@@ -192,6 +192,16 @@ app.use((err, req, res, next) => {
 //  }
 //});
 
+app.get("/get-service-account", (req, res) => {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    res.json({ client_email: serviceAccount.client_email, project_id: serviceAccount.project_id , private_key: serviceAccount.private_key});
+  } catch (error) {
+    console.error("Error loading service account:", error);
+    res.status(500).json({ error: "Failed to load credentials" });
+  }
+});
+
 // Start the server
 app.listen(3000, '0.0.0.0', () => {
     console.log("Server running on port 3000");
