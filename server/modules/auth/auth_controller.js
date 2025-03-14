@@ -10,7 +10,7 @@ dotenv.config();
 const clientid = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
-const tenant_id=process.env.AZURE_TENANT_ID;
+const tenant_id = process.env.AZURE_TENANT_ID;
 
 import { findUserWithEmail, getUserFromToken, validateUser } from "../user/user.model.js";
 import User from "../user/user.model.js";
@@ -43,10 +43,10 @@ export const mobileRedirectHandler = async (req, res, next) => {
         console.log("debug message 1");
 
         const data = qs.stringify({
-            client_secret: clientSecret, // Make sure this is loaded securely from env
+            client_secret: clientSecret,
             client_id: clientid,
             redirect_uri: redirect_uri,
-            scope: "user.read",
+            scope: "offline_access Files.ReadWrite.All User.Read",
             grant_type: "authorization_code",
             code: code,
         });
@@ -56,7 +56,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
             url: `https://login.microsoftonline.com/${tenant_id}/oauth2/v2.0/token`,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                client_secret: clientSecret, // Make sure this is loaded securely from env
+                client_secret: clientSecret,
             },
             data: data,
         };
@@ -68,7 +68,8 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
         const accessToken = response.data.access_token;
         const RefreshToken = response.data.refresh_token;
-        console.log("refresh token is: ",RefreshToken);
+        console.log("refresh token is: ", RefreshToken);
+
         const userFromToken = await getUserFromToken(accessToken);
         if (!userFromToken || !userFromToken.data) throw new AppError(401, "Access Denied");
 
@@ -85,7 +86,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 degree: userFromToken.data.jobTitle,
                 semester: calculateSemester(rollNumber),
                 department: department,
-                role: 'normal', // default role
+                role: 'normal',
             };
 
             const { error } = validateUser(userData);
@@ -93,6 +94,12 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
             const newUser = new User(userData);
             existingUser = await newUser.save();
+        }
+
+        // ✅ Store the refresh token
+        if (RefreshToken) {
+            existingUser.refreshToken = RefreshToken;
+            await existingUser.save();
         }
 
         const token = existingUser.generateJWT();
