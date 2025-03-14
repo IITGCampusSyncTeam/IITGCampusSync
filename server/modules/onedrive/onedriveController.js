@@ -1,10 +1,34 @@
 import axios from "axios";
 import fs from "fs";
 import path from "path";
+import multer from "multer";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import catchAsync from "../../utils/catchAsync.js";
 import AppError from "../../utils/appError.js";
 import { getAccessTokenByEmail } from "../../utils/getAccessTokenByEmail.js";
 import Club from "../club/clubModel.js";
+
+// Create 'uploads' folder if it doesn't exist
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const uploadDir = path.join(__dirname, "../../../uploads");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configure multer to use disk storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, uniqueSuffix + "-" + file.originalname);
+    },
+});
+
+export const uploadMiddleware = multer({ storage }).single("file");
 
 // 📤 Upload file to OneDrive and generate public shareable link
 export const uploadToOneDrive = catchAsync(async (req, res, next) => {
@@ -26,7 +50,7 @@ export const uploadToOneDrive = catchAsync(async (req, res, next) => {
 
     const fileStream = fs.createReadStream(file.path);
 
-    // Upload file
+    // Upload file to OneDrive
     await axios.put(uploadUrl, fileStream, {
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -45,7 +69,7 @@ export const uploadToOneDrive = catchAsync(async (req, res, next) => {
     const downloadLink = sharingResponse.data?.link?.webUrl;
     if (!downloadLink) return next(new AppError(500, "Failed to get shareable link"));
 
-    fs.unlinkSync(file.path); // cleanup
+    fs.unlinkSync(file.path); // cleanup uploaded file
 
     res.status(200).json({
         message: "File uploaded and shared successfully",
