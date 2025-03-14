@@ -15,9 +15,9 @@ export const uploadToOneDrive = catchAsync(async (req, res, next) => {
     if (!clubId) return next(new AppError(400, "Club ID is required"));
 
     const club = await Club.findById(clubId).populate("secretary");
-    if (!club || !club.clubSecretary) return next(new AppError(404, "Club or Club Secretary not found"));
+    if (!club || !club.secretary) return next(new AppError(404, "Club or Club Secretary not found"));
 
-    const email = club.clubSecretary.email;
+    const email = club.secretary.email;
     const accessToken = await getAccessTokenByEmail(email);
     if (!accessToken) return next(new AppError(403, "Access token not found"));
 
