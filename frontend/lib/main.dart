@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/endpoints.dart';
-import 'package:frontend/screens/event_screen.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/notification_services.dart';
@@ -20,21 +19,52 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 // Method to send FCM token to your server
+// Future<void> sendFCMTokenToServer(String? token) async {
+//   if (token != null) {
+//     final url = '${AuthConfig.serverUrl}/save-token';
+//     try {
+//       await http.post(
+//         Uri.parse(url),
+//         headers: {'Content-Type': 'application/json'},
+//         body: json.encode({
+//           'userId': '5f50b61f78d1e74d8c3f0002', // Make sure to include userId
+//           'fcmToken': token,
+//         }),
+//       );
+//       print("Token sent to server: $token");
+//     } catch (e) {
+//       print("Error sending token to server: $e");
+//     }
+//   }
+// }
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
+    final prefs = await SharedPreferences.getInstance();
+    final String? userId = prefs.getString('user_id'); // Fetch stored user ID
+
+    if (userId == null) {
+      print("⚠️ User ID not found in SharedPreferences. Cannot send token.");
+      return;
+    }
+
     final url = '${AuthConfig.serverUrl}/save-token';
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'userId': '5f50b61f78d1e74d8c3f0002', // Make sure to include userId
+          'userId': userId,
           'fcmToken': token,
         }),
       );
-      print("Token sent to server: $token");
+
+      if (response.statusCode == 200) {
+        print("✅ Token sent to server: $token");
+      } else {
+        print("❌ Failed to send token: ${response.body}");
+      }
     } catch (e) {
-      print("Error sending token to server: $e");
+      print("❌ Error sending token to server: $e");
     }
   }
 }
@@ -110,15 +140,15 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'IITGsync',
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.grey[400],
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: EventScreen()
-        // home: const MyHomePage(title: 'IITGsync'),
-        );
+      title: 'IITGsync',
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.grey[400],
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      // home: EventScreen()
+      home: const MyHomePage(title: 'IITGsync'),
+    );
   }
 }
 

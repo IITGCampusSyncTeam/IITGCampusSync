@@ -78,6 +78,7 @@ Future<void> authenticate() async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_data', jsonEncode(user.toJson()));
       await prefs.setString('access_token', accessToken);
+      await prefs.setString('id', user.id);
     } catch (e) {
       print('Error in parsing user data: $e');
       rethrow;

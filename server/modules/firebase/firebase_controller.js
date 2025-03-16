@@ -20,18 +20,24 @@ export const saveFcmToken = async (req, res) => {
     const { userId, fcmToken } = req.body;
     try {
         const user = await User.findById(userId);
-        if (user) {
-            user.fcmToken = fcmToken;
-            await user.save();
-            res.status(200).json({ message: 'FCM token saved successfully' });
-        } else {
-            res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        // Ensure token is not duplicated
+        if (!user.fcmTokens) user.fcmTokens = [];
+        if (!user.fcmTokens.includes(fcmToken)) {
+            user.fcmTokens.push(fcmToken);
+            await user.save();
+        }
+
+        res.status(200).json({ message: '✅ FCM token saved successfully' });
     } catch (err) {
-        console.error('Error saving FCM token:', err);
+        console.error('❌ Error saving FCM token:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
 
 // Get all FCM tokens
 export const getFcmTokens = async (req, res) => {

@@ -2,53 +2,34 @@ import Event from './eventModel.js';
 import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
 
-//  Function to create an event
+
 async function createEvent(req, res) {
   try {
     const { title, description, dateTime, club, createdBy } = req.body;
 
-    //  Fetch all users who have an FCM token
-    const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
+    // Fetch users with FCM tokens
+    const users = await User.find({ fcmTokens: { $exists: true, $ne: [] } });
 
-    console.log(" Fetched Users with FCM Tokens:", users);
-
-    //  Extract user IDs for participants and FCM tokens separately
-    const participants = users.map(user => user._id);  // Store only ObjectIds
-    const fcmTokens = users.map(user => user.fcmToken); // Store FCM tokens separately
-
-    console.log("✅ Processed Participants (ObjectIds):", participants);
-    console.log("✅ FCM Tokens for Notifications:", fcmTokens);
+    // Extract FCM tokens
+    const fcmTokens = users.flatMap(user => user.fcmTokens);
 
     // Save event in MongoDB
-    const newEvent = await Event.create({
-      title,
-      description,
-      dateTime,
-      club,
-      createdBy,
-      participants, // Now stores only ObjectIds
-      notifications: [],
-    });
+    const newEvent = await Event.create({ title, description, dateTime, club, createdBy });
 
-    console.log(" Event Created Successfully:", newEvent);
+    console.log("✅ Event Created:", newEvent);
 
-    //  Send notifications only if participants exist
+    // Send notifications
     if (fcmTokens.length > 0) {
-      for (const token of fcmTokens) {
-        const message = {
-          notification: {
-            title: title,
-            body: description,
-          },
-          token: token,
-        };
+      const messages = fcmTokens.map(token => ({
+        notification: { title, body: description },
+        token,
+      }));
 
-        try {
-          const response = await admin.messaging().send(message);
-          console.log("✅ Notification sent successfully:", response);
-        } catch (error) {
-          console.error("❌ Error sending notification:", error);
-        }
+      try {
+        const response = await admin.messaging().sendEach(messages);
+        console.log("✅ Notifications sent successfully:", response);
+      } catch (error) {
+        console.error("❌ Error sending notifications:", error);
       }
     } else {
       console.log("⚠️ No FCM tokens found, skipping notifications.");
@@ -60,6 +41,65 @@ async function createEvent(req, res) {
     res.status(500).json({ status: "error", message: "Internal Server Error" });
   }
 }
+
+//  Function to create an event
+//async function createEvent(req, res) {
+//  try {
+//    const { title, description, dateTime, club, createdBy } = req.body;
+//
+//    //  Fetch all users who have an FCM token
+//    const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
+//
+//    console.log(" Fetched Users with FCM Tokens:", users);
+//
+//    //  Extract user IDs for participants and FCM tokens separately
+//    const participants = users.map(user => user._id);  // Store only ObjectIds
+//    const fcmTokens = users.map(user => user.fcmToken); // Store FCM tokens separately
+//
+//    console.log("✅ Processed Participants (ObjectIds):", participants);
+//    console.log("✅ FCM Tokens for Notifications:", fcmTokens);
+//
+//    // Save event in MongoDB
+//    const newEvent = await Event.create({
+//      title,
+//      description,
+//      dateTime,
+//      club,
+//      createdBy,
+//      participants, // Now stores only ObjectIds
+//      notifications: [],
+//    });
+//
+//    console.log(" Event Created Successfully:", newEvent);
+//
+//    //  Send notifications only if participants exist
+//    if (fcmTokens.length > 0) {
+//      for (const token of fcmTokens) {
+//        const message = {
+//          notification: {
+//            title: title,
+//            body: description,
+//          },
+//          token: token,
+//        };
+//
+//        try {
+//          const response = await admin.messaging().send(message);
+//          console.log("✅ Notification sent successfully:", response);
+//        } catch (error) {
+//          console.error("❌ Error sending notification:", error);
+//        }
+//      }
+//    } else {
+//      console.log("⚠️ No FCM tokens found, skipping notifications.");
+//    }
+//
+//    res.status(201).json({ status: "success", event: newEvent });
+//  } catch (error) {
+//    console.error("❌ Error creating event:", error);
+//    res.status(500).json({ status: "error", message: "Internal Server Error" });
+//  }
+//}
 
 //  Function to fetch events
 const getEvents = async (req, res) => {
