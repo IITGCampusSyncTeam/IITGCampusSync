@@ -40,7 +40,7 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
     final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('user_id'); // Fetch stored user ID
+    final String? userId = prefs.getString('id'); // Fetch stored user ID
 
     if (userId == null) {
       print("⚠️ User ID not found in SharedPreferences. Cannot send token.");
