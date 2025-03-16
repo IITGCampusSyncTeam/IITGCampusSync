@@ -18,25 +18,25 @@ export {admin} ;
 // Save FCM token
 export const saveFcmToken = async (req, res) => {
     const { email, fcmToken } = req.body;
-     if (!email || !fcmToken) {
+console.log('Incoming Data:', req.body);
+    if (!email || !fcmToken) {
         return res.status(400).json({ error: "Email and FCM token are required" });
-      }
+    }
+
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOneAndUpdate(
+            { email },
+            { fcmToken },  // Directly update the token
+            { new: true }  // Return the updated user document
+        );
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Ensure token is not duplicated
-        if (!user.fcmTokens) user.fcmTokens = [];
-        if (!user.fcmTokens.includes(fcmToken)) {
-            user.fcmTokens.push(fcmToken);
-            await user.save();
-        }
-
-        res.status(200).json({ message: '✅ FCM token saved successfully' });
+        res.status(200).json({ message: '✅ FCM token updated successfully' });
     } catch (err) {
-        console.error('❌ Error saving FCM token:', err);
+        console.error('❌ Error updating FCM token:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

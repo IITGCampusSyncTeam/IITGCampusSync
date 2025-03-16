@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/notification_services.dart';
@@ -41,13 +40,14 @@ Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
     final prefs = await SharedPreferences.getInstance();
     final String? email = prefs.getString('email'); // Fetch stored user ID
-
+    print(email);
+    print(token);
     if (email == null) {
       print("⚠️ User ID not found in SharedPreferences. Cannot send token.");
       return;
     }
 
-    final url = '${AuthConfig.serverUrl}/save-token';
+    final url = 'http://10.150.47.182:3000/api/firebase/save-token';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -90,6 +90,7 @@ void main() async {
   final accessToken = prefs.getString('access_token');
   if (accessToken != null && accessToken.isNotEmpty) {
     // Send token to backend
+
     await sendFCMTokenToServer(token);
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
       print('Refreshed FCM Token: $newToken');
