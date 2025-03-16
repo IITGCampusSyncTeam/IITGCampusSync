@@ -96,9 +96,13 @@ export const mobileRedirectHandler = async (req, res, next) => {
             existingUser = await newUser.save();
         }
 
-        const userTags = await Tag.find({ users: existingUser._id })
-            .select("_id title")
-            .lean();
+        console.log("Existing user tags:", existingUser.tag);
+
+        const userTags = existingUser.tag && Array.isArray(existingUser.tag)
+            ? await Tag.find({ _id: { $in: existingUser.tag } })
+                .select("_id title")
+                .lean()
+            : [];
 
         // Format tags as [{id, name}]
         const formattedTags = userTags.map(tag => ({
@@ -106,13 +110,13 @@ export const mobileRedirectHandler = async (req, res, next) => {
             name: tag.title,
         }));
 
-        // Generate JWT token
-        const token = existingUser.generateJWT();
+        // Convert user data to JSON (removing `tag` field to prevent conflicts)
+        const userData = existingUser.toObject();
+        delete userData.tag; 
 
-        // Send structured response with user details including tags
         return res.redirect(
             `iitgsync://success?token=${token}&user=${encodeURIComponent(JSON.stringify({
-                ...existingUser.toObject(),
+                ...userData,
                 tag: formattedTags
             }))}`
         );
