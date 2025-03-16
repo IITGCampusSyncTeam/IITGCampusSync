@@ -22,7 +22,7 @@ export const saveFcmToken = async (req, res) => {
         return res.status(400).json({ error: "Email and FCM token are required" });
       }
     try {
-        const user = await User.findById(email);
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
