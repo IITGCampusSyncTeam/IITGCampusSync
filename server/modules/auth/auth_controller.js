@@ -14,6 +14,7 @@ const tenant_id=process.env.AZURE_TENANT_ID;
 
 import { findUserWithEmail, getUserFromToken, validateUser } from "../user/user.model.js";
 import User from "../user/user.model.js";
+import Tag from "../tag/tagModel.js"; 
 
 // Fetch department information using Microsoft Graph API
 const getDepartment = async (access_token) => {
@@ -95,9 +96,26 @@ export const mobileRedirectHandler = async (req, res, next) => {
             existingUser = await newUser.save();
         }
 
+        const userTags = await Tag.find({ users: existingUser._id })
+            .select("_id title")
+            .lean();
+
+        // Format tags as [{id, name}]
+        const formattedTags = userTags.map(tag => ({
+            id: tag._id.toString(),
+            name: tag.title,
+        }));
+
+        // Generate JWT token
         const token = existingUser.generateJWT();
 
-        return res.redirect(`iitgsync://success?token=${token}&user=${existingUser}`);
+        // Send structured response with user details including tags
+        return res.redirect(
+            `iitgsync://success?token=${token}&user=${encodeURIComponent(JSON.stringify({
+                ...existingUser.toObject(),
+                tag: formattedTags
+            }))}`
+        );
     } catch (error) {
         console.error("Error in mobileRedirectHandler:", error);
         next(new AppError(500, "Mobile Redirect Failed"));

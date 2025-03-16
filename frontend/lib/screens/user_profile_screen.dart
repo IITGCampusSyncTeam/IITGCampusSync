@@ -77,7 +77,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       final response = await http.post(
         url,
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       print("🔴 Response status: ${response.statusCode}");

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/payment_screen.dart';
+import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -117,6 +118,7 @@ class _MyAppState extends State<MyApp> {
       ),
      // home: PaymentScreen(),
        home: const MyHomePage(title: 'IITGsync'),
+      //home:  EventShareScreen(),
     );
   }
 }
