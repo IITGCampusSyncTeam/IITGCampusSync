@@ -28,16 +28,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     String? userJson = prefs.getString('user_data');
 
     if (userJson != null) {
+      print("🔵 Retrieved User Data: $userJson"); // Debug print
+
       final user = jsonDecode(userJson);
+
       setState(() {
-        name = user['name'];
-        email = user['email'];
-        roll = user['rollNumber'].toString();
-        branch = user['department'];
-        tags = List<String>.from(user['tags'] ?? []);
+        name = user['name'] ?? '';
+        email = user['email'] ?? '';
+        roll = user['rollNumber']?.toString() ?? '';
+        branch = user['department'] ?? '';
+        tags = (user['tag'] as List<dynamic>?)
+            ?.map((tag) => tag['id'].toString()) // Extract only IDs
+            .toList() ?? [];
       });
     }
   }
+
 
   Future<void> fetchAvailableTags() async {
     try {
@@ -65,7 +71,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (tags.contains(tagId)) return;
 
     final token = await getAccessToken();
-    print("🟡 Retrieved Token: $token");
     if (token == 'error') {
       showSnackbar("Error: Authentication required!");
       return;
@@ -73,7 +78,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     try {
       final url = Uri.parse('${backend.uri}/api/user/$email/addtag/$tagId');
-      print("🔗 Sending request to: $url");
 
       final response = await http.post(
         url,
@@ -82,9 +86,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           'Authorization': 'Bearer $token',
         },
       );
-
-      print("🔴 Response status: ${response.statusCode}");
-      print("🔴 Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -97,10 +98,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       }
     } catch (e) {
       showSnackbar("Error: $e");
-      print("🔴 Exception caught: $e");
     }
   }
-
 
   Future<void> removeTag(String tagId) async {
     if (!tags.contains(tagId)) return;
@@ -136,7 +135,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     String? userJson = prefs.getString('user_data');
     if (userJson != null) {
       final user = jsonDecode(userJson);
-      user['tags'] = tags;
+      user['tag'] = tags; // Ensure consistency with login format
       await prefs.setString('user_data', jsonEncode(user));
     }
   }
@@ -199,7 +198,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
             SizedBox(height: 20),
 
-            // ✅ Available Tags (Vertical List)
+            // ✅ Available Tags (List)
             Text("Discover More Tags:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Expanded(
@@ -222,10 +221,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           : ElevatedButton(
                         onPressed: () => addTag(tag["id"]!),
                         child: Text("Add"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                        ),
                       ),
                     ),
                   );

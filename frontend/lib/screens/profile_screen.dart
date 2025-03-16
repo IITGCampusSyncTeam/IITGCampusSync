@@ -47,10 +47,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> updateUserDetails() async {
-    final token = await getAccessToken(); // Retrieve token here
+    final token = await getAccessToken(); // Retrieve token
     if (token == 'error') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: Authentication required !! ")),
+        SnackBar(content: Text("Error: Authentication required!")),
       );
       return;
     }
@@ -73,22 +73,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
+        final updatedData = jsonDecode(response.body);
+        print("Updated User Data: $updatedData");
 
-        final updatedUser = jsonDecode(response.body);
-        print("Updated User Data: $updatedUser");
-
-
+        // Update only specific fields in SharedPreferences
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_data', jsonEncode(updatedUser));
+        String? userJson = prefs.getString('user_data');
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Profile updated successfully!")),
-        );
+        if (userJson != null) {
+          Map<String, dynamic> existingUser = jsonDecode(userJson);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Home()),
-        );
+          // Only update the required fields
+          existingUser['hostel'] = updatedData['hostel'];
+          existingUser['roomnum'] = updatedData['roomnum'];
+          existingUser['contact'] = updatedData['contact'];
+
+          // Save updated data back
+          await prefs.setString('user_data', jsonEncode(existingUser));
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Profile updated successfully!")),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Home()),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to update profile")),
@@ -100,6 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
