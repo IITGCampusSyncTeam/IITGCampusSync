@@ -113,6 +113,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
         // Convert user data to JSON (removing `tag` field to prevent conflicts)
         const userData = existingUser.toObject();
         delete userData.tag; 
+        const token = existingUser.generateJWT(); 
 
         return res.redirect(
             `iitgsync://success?token=${token}&user=${encodeURIComponent(JSON.stringify({
