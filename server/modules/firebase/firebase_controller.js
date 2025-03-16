@@ -17,9 +17,12 @@ try {
 export {admin} ;
 // Save FCM token
 export const saveFcmToken = async (req, res) => {
-    const { userId, fcmToken } = req.body;
+    const { email, fcmToken } = req.body;
+     if (!email || !fcmToken) {
+        return res.status(400).json({ error: "Email and FCM token are required" });
+      }
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(email);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

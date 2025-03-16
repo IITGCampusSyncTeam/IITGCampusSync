@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
@@ -7,6 +8,7 @@ import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/endpoints.dart';
+import '../../main.dart';
 import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
@@ -78,7 +80,14 @@ Future<void> authenticate() async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_data', jsonEncode(user.toJson()));
       await prefs.setString('access_token', accessToken);
-      await prefs.setString('id', user.id);
+      await prefs.setString('email', user.email);
+      // Now fetch and send the FCM token
+      String? token = await FirebaseMessaging.instance.getToken();
+      sendFCMTokenToServer(token);
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        print('Refreshed FCM Token: $newToken');
+        sendFCMTokenToServer(newToken);
+      });
     } catch (e) {
       print('Error in parsing user data: $e');
       rethrow;

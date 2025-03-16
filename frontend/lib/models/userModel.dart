@@ -1,6 +1,6 @@
 class User {
   final String id;
-  final String fcmToken;
+  final String? fcmToken;
   final String name;
   final String email;
   final int rollNumber;
@@ -76,7 +76,7 @@ class User {
       'subscribedClubs': subscribedClubs,
       'clubsResponsible': clubsResponsible,
       'reminders': reminders,
-      'merchOrders' : merchOrders,
+      'merchOrders': merchOrders,
       '__v': version,
     };
   }

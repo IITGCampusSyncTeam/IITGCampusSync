@@ -40,9 +40,9 @@ FirebaseMessaging messaging = FirebaseMessaging.instance;
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
     final prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString('id'); // Fetch stored user ID
+    final String? email = prefs.getString('email'); // Fetch stored user ID
 
-    if (userId == null) {
+    if (email == null) {
       print("⚠️ User ID not found in SharedPreferences. Cannot send token.");
       return;
     }
@@ -53,7 +53,7 @@ Future<void> sendFCMTokenToServer(String? token) async {
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'userId': userId,
+          'email': email,
           'fcmToken': token,
         }),
       );
@@ -74,16 +74,28 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // await dotenv.load(fileName: ".env");
   // Initialize NotificationServices
   NotificationServices notificationServices = NotificationServices();
 
   // Request notification permissions
   notificationServices.requestNotificationPermission();
-
   // Get FCM Token
   String? token = await FirebaseMessaging.instance.getToken();
   print("FCM Token: $token"); // This line prints the token
+  // Save token locally
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (token != null) {
+    await prefs.setString('fcmToken', token);
+  }
+  final accessToken = prefs.getString('access_token');
+  if (accessToken != null && accessToken.isNotEmpty) {
+    // Send token to backend
+    await sendFCMTokenToServer(token);
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      print('Refreshed FCM Token: $newToken');
+      sendFCMTokenToServer(newToken);
+    });
+  }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -115,16 +127,16 @@ class _MyAppState extends State<MyApp> {
     messaging.requestPermission();
 
     // Get the initial token and send it to your server
-    messaging.getToken().then((token) {
-      print('Initial FCM Token: $token');
-      sendFCMTokenToServer(token);
-    });
+    // messaging.getToken().then((token) {
+    //   print('Initial FCM Token: $token');
+    //   sendFCMTokenToServer(token);
+    // });
 
     // Listen for token refresh and send the new token to your server
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      print('Refreshed FCM Token: $newToken');
-      sendFCMTokenToServer(newToken);
-    });
+    // FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+    //   print('Refreshed FCM Token: $newToken');
+    //   sendFCMTokenToServer(newToken);
+    // });
 
     // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
