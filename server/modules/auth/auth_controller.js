@@ -50,6 +50,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
     try {
         console.log("Mobile Redirect Handler Triggered");
         const { code } = req.query;
+
         if (!code) {
             console.error("No authorization code received.");
             throw new AppError(400, "No authorization code provided.");
@@ -117,7 +118,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 degree: userFromToken.data.jobTitle,
                 semester: calculateSemester(rollNumber),
                 department: department,
-                role: "normal", // default role
+                role: "normal",
             };
 
             console.log("Validating new user data...");
@@ -147,15 +148,18 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 .lean();
             console.log("Tags retrieved:", userTags);
 
+            // ✅ Ensure the `tag` field is properly formatted
             user.tag = userTags.map(tag => ({
                 id: tag._id.toString(),
-                name: tag.title,
+                name: tag.title,  // ✅ Make sure "title" is included
             }));
         }
 
         console.log("Generating JWT token...");
         const token = existingUser.generateJWT();
         console.log("JWT token generated successfully.");
+
+        console.log("Final user data before sending:", JSON.stringify(user, null, 2));
 
         console.log("Redirecting to mobile app with user data...");
         return res.redirect(
@@ -168,6 +172,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
         next(new AppError(500, "Mobile Redirect Failed"));
     }
 };
+
 
 // Handle logout by clearing token cookie
 export const logoutHandler = (req, res, next) => {
