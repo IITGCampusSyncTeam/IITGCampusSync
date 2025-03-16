@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,7 +9,7 @@ import '../../screens/login_screen.dart';
 
 Future<void> authenticate() async {
   try {
-    final result = await FlutterWebAuth.authenticate(
+    final result = await FlutterWebAuth2.authenticate(
       url: AuthEndpoints.getAccess,
       callbackUrlScheme: "iitgsync",
     );
@@ -35,11 +35,11 @@ Future<void> authenticate() async {
           .replaceAllMapped(
         RegExp(r"'_id':\s*'([^']*)'"),  // Fix _id formatting
             (match) => '"_id": "${match[1]}"',
-      )
+          )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' -> "key": "value"
             (match) => '"${match[1]}": "${match[2]}"',
-      )
+          )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number -> "key": number
             (match) => '"${match[1]}": ${match[2]}',
