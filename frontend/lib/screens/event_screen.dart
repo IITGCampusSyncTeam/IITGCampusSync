@@ -89,7 +89,24 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   Future<void> fetchEvents() async {
-    final url = '${AuthConfig.serverUrl}/get-events';
+    final url = '${AuthConfig.serverUrl}/api/events/get-all-events';
+    try {
+      final response = await http.get(Uri.parse(url));
+      print('Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        setState(() {
+          events = json.decode(response.body);
+        });
+      } else {
+        _showErrorDialog('Failed to load events');
+      }
+    } catch (e) {
+      _showErrorDialog('Error: $e');
+    }
+  }
+
+  Future<void> fetchUpcomingEvents() async {
+    final url = '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
     try {
       final response = await http.get(Uri.parse(url));
       print('Response body: ${response.body}');
@@ -120,7 +137,7 @@ class _EventScreenState extends State<EventScreen> {
       return;
     }
 
-    final url = '${AuthConfig.serverUrl}/create-event';
+    final url = '${AuthConfig.serverUrl}/api/events/create-event';
     try {
       final response = await http.post(
         Uri.parse(url),

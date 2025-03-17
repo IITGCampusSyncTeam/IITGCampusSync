@@ -100,10 +100,6 @@ app.use("/api/orders", orderRoutes);
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
 app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
 
-// Routes to create event and fetch events
-//app.post('/create-event', eventController.createEvent);
-//app.get('/get-events', eventController.getEvents);
-
 //event routes
 app.use("/api/events", eventRoutes);
 
