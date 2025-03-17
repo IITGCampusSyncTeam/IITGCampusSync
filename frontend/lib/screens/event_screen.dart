@@ -64,24 +64,6 @@ class _EventScreenState extends State<EventScreen> {
       "https://www.googleapis.com/auth/firebase.messaging"
     ];
 
-    // http.Client client = await auth.clientViaServiceAccount(
-    //   auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
-    //   scopes,
-    // );
-    //
-    // // Obtain the access token
-    // auth.AccessCredentials credentials =
-    //     await auth.obtainAccessCredentialsViaServiceAccount(
-    //         auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
-    //         scopes,
-    //         client);
-    //
-    // // Close the HTTP client
-    // client.close();
-    //
-    // // Return the access token
-    // return credentials.accessToken.data;
-
     final client = await auth.clientViaServiceAccount(
       auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
       scopes,
@@ -90,22 +72,6 @@ class _EventScreenState extends State<EventScreen> {
     return client.credentials.accessToken.data;
   }
 
-  // Future<void> fetchEvents() async {
-  //   final url = '${AuthConfig.serverUrl}/api/events/get-all-events';
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     print('Response body: ${response.body}');
-  //     if (response.statusCode == 200) {
-  //       setState(() {
-  //         events = json.decode(response.body);
-  //       });
-  //     } else {
-  //       _showErrorDialog('Failed to load events');
-  //     }
-  //   } catch (e) {
-  //     _showErrorDialog('Error: $e');
-  //   }
-  // }
   void loadEvents() async {
     try {
       final eventList = await eventAPI.fetchEvents();
@@ -128,22 +94,6 @@ class _EventScreenState extends State<EventScreen> {
     }
   }
 
-  // Future<void> fetchUpcomingEvents() async {
-  //   final url = '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
-  //   try {
-  //     final response = await http.get(Uri.parse(url));
-  //     print('Response body: ${response.body}');
-  //     if (response.statusCode == 200) {
-  //       setState(() {
-  //         events = json.decode(response.body);
-  //       });
-  //     } else {
-  //       _showErrorDialog('Failed to load events');
-  //     }
-  //   } catch (e) {
-  //     _showErrorDialog('Error: $e');
-  //   }
-  // }
   void createEvent() async {
     final title = titleController.text;
     final description = descriptionController.text;
@@ -161,6 +111,8 @@ class _EventScreenState extends State<EventScreen> {
     try {
       await eventAPI.createEvent(title, description, dateTime, club);
       loadEvents(); // Refresh the event list
+      _showSuccessDialog('Event created successfully');
+      _clearInputFields(); // Clear fields after submission
     } catch (e) {
       _showErrorDialog(e.toString());
     }
@@ -201,7 +153,8 @@ class _EventScreenState extends State<EventScreen> {
   //     if (response.statusCode == 201) {
   //       _showSuccessDialog('Event created successfully');
   //       fetchEvents(); // Refresh event list
-  //       _clearInputFields(); // Clear fields after submission
+  //
+
   //
   //       // Fetch all registered FCM tokens
   //       // final tokensResponse =

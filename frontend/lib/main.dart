@@ -17,25 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
-// Method to send FCM token to your server
-// Future<void> sendFCMTokenToServer(String? token) async {
-//   if (token != null) {
-//     final url = '${AuthConfig.serverUrl}/save-token';
-//     try {
-//       await http.post(
-//         Uri.parse(url),
-//         headers: {'Content-Type': 'application/json'},
-//         body: json.encode({
-//           'userId': '5f50b61f78d1e74d8c3f0002', // Make sure to include userId
-//           'fcmToken': token,
-//         }),
-//       );
-//       print("Token sent to server: $token");
-//     } catch (e) {
-//       print("Error sending token to server: $e");
-//     }
-//   }
-// }
+
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
     final prefs = await SharedPreferences.getInstance();
