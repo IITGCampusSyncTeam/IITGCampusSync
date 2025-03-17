@@ -68,6 +68,7 @@ class _HomeState extends State<Home> {
             label: "Home",
           ),
           BottomNavigationBarItem(
+            //TODO: replace with club screen
             icon: Icon(Icons.group),
             // label: "Clubs",
             label: "events",

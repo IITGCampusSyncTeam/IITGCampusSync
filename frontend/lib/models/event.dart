@@ -1,10 +1,14 @@
+import 'package:frontend/models/userModel.dart';
+
+import 'club_model.dart';
+
 class Event {
   String title;
   String description;
   DateTime dateTime;
-  String club; // Assuming this is a String representing Club ID
-  String createdBy; // Assuming this is a String representing User ID
-  List<String> participants;
+  Club club; // Assuming this is a String representing Club ID
+  User createdBy; // Assuming this is a String representing User ID
+  List<User> participants;
   List<String> feedbacks;
   List<String> notifications;
 
@@ -39,7 +43,7 @@ class Event {
       dateTime: DateTime.parse(json['dateTime']),
       club: json['club'],
       createdBy: json['createdBy'],
-      participants: List<String>.from(json['participants']),
+      participants: List<User>.from(json['participants']),
       feedbacks: List<String>.from(json['feedbacks']),
       notifications: List<String>.from(json['notifications']),
     );

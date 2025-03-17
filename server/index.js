@@ -17,7 +17,7 @@ import contestRoutes from './modules/contest/routes.js';
 import orderRoutes from "./modules/orders/ordersRoutes.js";
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
-
+import eventRoutes from './modules/event/eventRoutes.js'
 // Load environment variables
 //dotenv.config();
 
@@ -101,8 +101,11 @@ app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
 app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
 
 // Routes to create event and fetch events
-app.post('/create-event', eventController.createEvent);
-app.get('/get-events', eventController.getEvents);
+//app.post('/create-event', eventController.createEvent);
+//app.get('/get-events', eventController.getEvents);
+
+//event routes
+app.use("/api/events", eventRoutes);
 
 //routes
 app.use("/api/firebase", firebaseRoutes);
