@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/endpoints.dart';
+import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
@@ -13,17 +13,19 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   List events = [];
+  List upcomingEvents = [];
   final String serverKey = '';
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final dateTimeController = TextEditingController();
   final clubController = TextEditingController();
   NotificationServices notificationServices = NotificationServices();
+  EventAPI eventAPI = EventAPI();
 
   @override
   void initState() {
     super.initState();
-    fetchEvents();
+    loadEvents();
     notificationServices.requestNotificationPermission;
     notificationServices.forgroundMessage();
     notificationServices.firebaseInit(context);
@@ -88,42 +90,61 @@ class _EventScreenState extends State<EventScreen> {
     return client.credentials.accessToken.data;
   }
 
-  Future<void> fetchEvents() async {
-    final url = '${AuthConfig.serverUrl}/api/events/get-all-events';
+  // Future<void> fetchEvents() async {
+  //   final url = '${AuthConfig.serverUrl}/api/events/get-all-events';
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+  //     print('Response body: ${response.body}');
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         events = json.decode(response.body);
+  //       });
+  //     } else {
+  //       _showErrorDialog('Failed to load events');
+  //     }
+  //   } catch (e) {
+  //     _showErrorDialog('Error: $e');
+  //   }
+  // }
+  void loadEvents() async {
     try {
-      final response = await http.get(Uri.parse(url));
-      print('Response body: ${response.body}');
-      if (response.statusCode == 200) {
-        setState(() {
-          events = json.decode(response.body);
-        });
-      } else {
-        _showErrorDialog('Failed to load events');
-      }
+      final eventList = await eventAPI.fetchEvents();
+      setState(() {
+        events = eventList;
+      });
     } catch (e) {
-      _showErrorDialog('Error: $e');
+      _showErrorDialog(e.toString());
     }
   }
 
-  Future<void> fetchUpcomingEvents() async {
-    final url = '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+  void loadUpcomingEvents() async {
     try {
-      final response = await http.get(Uri.parse(url));
-      print('Response body: ${response.body}');
-      if (response.statusCode == 200) {
-        setState(() {
-          events = json.decode(response.body);
-        });
-      } else {
-        _showErrorDialog('Failed to load events');
-      }
+      final eventList = await eventAPI.fetchUpcomingEvents();
+      setState(() {
+        upcomingEvents = eventList;
+      });
     } catch (e) {
-      _showErrorDialog('Error: $e');
+      _showErrorDialog(e.toString());
     }
   }
 
-  Future<void> createEvent() async {
-    final String serverKey = await getServerKey();
+  // Future<void> fetchUpcomingEvents() async {
+  //   final url = '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+  //   try {
+  //     final response = await http.get(Uri.parse(url));
+  //     print('Response body: ${response.body}');
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         events = json.decode(response.body);
+  //       });
+  //     } else {
+  //       _showErrorDialog('Failed to load events');
+  //     }
+  //   } catch (e) {
+  //     _showErrorDialog('Error: $e');
+  //   }
+  // }
+  void createEvent() async {
     final title = titleController.text;
     final description = descriptionController.text;
     final dateTime = dateTimeController.text;
@@ -133,52 +154,75 @@ class _EventScreenState extends State<EventScreen> {
         description.isEmpty ||
         dateTime.isEmpty ||
         club.isEmpty) {
-      _showErrorDialog('Please fill in all the fields');
+      _showErrorDialog('Please fill in all fields');
       return;
     }
 
-    final url = '${AuthConfig.serverUrl}/api/events/create-event';
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'title': title,
-          'description': description,
-          'dateTime': dateTime,
-          'club': club,
-          'createdBy': '5f50b61f78d1e74d8c3f0002',
-          'participants': [],
-          'feedbacks': [],
-          'notifications': []
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        _showSuccessDialog('Event created successfully');
-        fetchEvents(); // Refresh event list
-        _clearInputFields(); // Clear fields after submission
-
-        // Fetch all registered FCM tokens
-        // final tokensResponse =
-        //     await http.get(Uri.parse('${AuthConfig.serverUrl}/get-tokens'));
-        // if (tokensResponse.statusCode == 200) {
-        //   // Explicitly cast dynamic values to String
-        //   List<String> tokens = (json.decode(tokensResponse.body) as List)
-        //       .map((item) => item.toString())
-        //       .toList();
-        //
-        //   await sendNotificationToAll(tokens, title, description, serverKey);
-        // } else {
-        //   _showErrorDialog('Failed to retrieve user tokens');
-        // }
-      } else {
-        _showErrorDialog('Error creating event');
-      }
+      await eventAPI.createEvent(title, description, dateTime, club);
+      loadEvents(); // Refresh the event list
     } catch (e) {
-      _showErrorDialog('Error: $e');
+      _showErrorDialog(e.toString());
     }
   }
+
+  // Future<void> createEvent() async {
+  //   final String serverKey = await getServerKey();
+  //   final title = titleController.text;
+  //   final description = descriptionController.text;
+  //   final dateTime = dateTimeController.text;
+  //   final club = clubController.text;
+  //
+  //   if (title.isEmpty ||
+  //       description.isEmpty ||
+  //       dateTime.isEmpty ||
+  //       club.isEmpty) {
+  //     _showErrorDialog('Please fill in all the fields');
+  //     return;
+  //   }
+  //
+  //   final url = '${AuthConfig.serverUrl}/api/events/create-event';
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: json.encode({
+  //         'title': title,
+  //         'description': description,
+  //         'dateTime': dateTime,
+  //         'club': club,
+  //         'createdBy': '5f50b61f78d1e74d8c3f0002',
+  //         'participants': [],
+  //         'feedbacks': [],
+  //         'notifications': []
+  //       }),
+  //     );
+  //
+  //     if (response.statusCode == 201) {
+  //       _showSuccessDialog('Event created successfully');
+  //       fetchEvents(); // Refresh event list
+  //       _clearInputFields(); // Clear fields after submission
+  //
+  //       // Fetch all registered FCM tokens
+  //       // final tokensResponse =
+  //       //     await http.get(Uri.parse('${AuthConfig.serverUrl}/get-tokens'));
+  //       // if (tokensResponse.statusCode == 200) {
+  //       //   // Explicitly cast dynamic values to String
+  //       //   List<String> tokens = (json.decode(tokensResponse.body) as List)
+  //       //       .map((item) => item.toString())
+  //       //       .toList();
+  //       //
+  //       //   await sendNotificationToAll(tokens, title, description, serverKey);
+  //       // } else {
+  //       //   _showErrorDialog('Failed to retrieve user tokens');
+  //       // }
+  //     } else {
+  //       _showErrorDialog('Error creating event');
+  //     }
+  //   } catch (e) {
+  //     _showErrorDialog('Error: $e');
+  //   }
+  // }
 
   Future<void> sendNotificationToAll(
       List<String> tokens, String title, String body, String serverKey) async {
@@ -209,44 +253,6 @@ class _EventScreenState extends State<EventScreen> {
       }
     }
   }
-
-  // Future<void> sendFCMMessage() async {
-  //   final String serverKey =
-  //       // Your FCM server key
-  //   final String fcmEndpoint =
-  //       'https://fcm.googleapis.com/v1/projects/iitg-campus-sync/messages:send';
-  //   final currentFCMToken = await FirebaseMessaging.instance.getToken();
-  //   print("fcmkey : $currentFCMToken");
-  //   final Map<String, dynamic> message = {
-  //     'message': {
-  //       'token':
-  //           currentFCMToken, // Token of the device you want to send the message to
-  //       'notification': {
-  //         'body': 'This is an FCM notification message!',
-  //         'title': 'FCM Message'
-  //       },
-  //       'data': {
-  //         'current_user_fcm_token':
-  //             currentFCMToken, // Include the current user's FCM token in data payload
-  //       },
-  //     }
-  //   };
-  //
-  //   final http.Response response = await http.post(
-  //     Uri.parse(fcmEndpoint),
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json',
-  //       'Authorization': 'Bearer $serverKey',
-  //     },
-  //     body: jsonEncode(message),
-  //   );
-  //
-  //   if (response.statusCode == 200) {
-  //     print('FCM message sent successfully');
-  //   } else {
-  //     print('Failed to send FCM message: ${response.statusCode}');
-  //   }
-  // }
 
   void _clearInputFields() {
     titleController.clear();

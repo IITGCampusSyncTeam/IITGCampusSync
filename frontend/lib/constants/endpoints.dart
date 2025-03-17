@@ -20,6 +20,8 @@ class Userendpoints {
 //change this later
 class UserEndPoints {
   static const currentUser = "${AuthConfig.serverUrl}/api/user/";
+  static const getUserFollowedEvents =
+      "${AuthConfig.serverUrl}/api/user/get-user-followed-events";
 }
 
 class ClubEndPoints {
@@ -38,6 +40,14 @@ class tokenlink {
 
 class redirecturi {
   static const Redirecturi = 'iitgsync://success';
+}
+
+class event {
+  static const getAllEvents =
+      '${AuthConfig.serverUrl}/api/events/get-all-events';
+  static const getUpcomingEvents =
+      '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+  static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
 }
 
 class payment {

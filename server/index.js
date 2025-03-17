@@ -88,6 +88,7 @@ app.get('/hello', (req, res) => {
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+
 app.use("/api/user", userRoutes);
 
 // Clubs routes
