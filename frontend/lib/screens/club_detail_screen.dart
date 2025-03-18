@@ -213,7 +213,8 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UploadFileScreen(clubId: widget.clubId),
+                          builder: (context) => UploadFileScreen(clubId: widget.clubId,viewerEmail: widget.userId
+                          ),
                         ),
                       );
                     },

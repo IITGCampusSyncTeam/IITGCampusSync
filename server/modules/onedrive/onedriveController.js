@@ -8,126 +8,123 @@ import catchAsync from "../../utils/catchAsync.js";
 import AppError from "../../utils/appError.js";
 import { getAccessTokenByEmail } from "../../utils/getAccessTokenByEmail.js";
 import Club from "../club/clubModel.js";
+import File from "./onedriveModel.js"; // ⬅️ updated file model
 
-// Create 'uploads' folder if it doesn't exist
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const uploadDir = path.join(__dirname, "../../../uploads");
+
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configure multer to use disk storage
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
         cb(null, uniqueSuffix + "-" + file.originalname);
     },
 });
-
 export const uploadMiddleware = multer({ storage }).single("file");
 
-// 📤 Upload file to OneDrive and generate public shareable link
+// 📤 Upload and store metadata
+// 📤 Upload and store metadata
 export const uploadToOneDrive = catchAsync(async (req, res, next) => {
-    const { clubId } = req.body;
+    const { category, referenceId } = req.body;
     const file = req.file;
 
     if (!file) return next(new AppError(400, "No file uploaded"));
-    if (!clubId) return next(new AppError(400, "Club ID is required"));
+    if (!category || !referenceId) return next(new AppError(400, "Category and Reference ID are required"));
 
-    const club = await Club.findById(clubId).populate("secretary");
-    if (!club || !club.secretary) return next(new AppError(404, "Club or Club Secretary not found"));
+    // Only club supported for now
+    if (category !== "club") {
+        return next(new AppError(400, "Currently only 'club' category is supported"));
+    }
 
-    const email = club.secretary.email;
-    const accessToken = await getAccessTokenByEmail(email);
+    const club = await Club.findById(referenceId).populate("secretary");
+    if (!club || !club.secretary) return next(new AppError(404, "Club or Secretary not found"));
+
+    const accessToken = await getAccessTokenByEmail(club.secretary.email);
     if (!accessToken) return next(new AppError(403, "Access token not found"));
 
-    const fileName = file.originalname;
-    const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/iitgsync/${fileName}:/content`;
+    const filePath = file.path;
+    const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/iitgsync/${file.originalname}:/content`;
 
-    const fileStream = fs.createReadStream(file.path);
-
-    // Upload file to OneDrive
-    await axios.put(uploadUrl, fileStream, {
+    // Upload with progress tracking
+    const fileStream = fs.createReadStream(filePath);
+    const uploadRes = await axios.put(uploadUrl, fileStream, {
         headers: {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": file.mimetype,
         },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        onUploadProgress: progressEvent => {
+            const percent = Math.round((progressEvent.loaded * 100) / file.size);
+            console.log(`Upload progress: ${percent}%`);
+        },
     });
 
-    // Make file publicly shareable
-    const sharingUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/iitgsync/${fileName}:/createLink`;
-    const sharingResponse = await axios.post(
-        sharingUrl,
+    const fileId = uploadRes.data?.id;
+
+    const shareUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${fileId}/createLink`;
+    const shareRes = await axios.post(
+        shareUrl,
         { type: "view", scope: "anonymous" },
         { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
-    const downloadLink = sharingResponse.data?.link?.webUrl;
-    if (!downloadLink) return next(new AppError(500, "Failed to get shareable link"));
+    const downloadLink = shareRes.data?.link?.webUrl;
+    fs.unlinkSync(filePath); // Cleanup
 
-    fs.unlinkSync(file.path); // cleanup uploaded file
+    // Store in DB
+    const savedFile = await File.create({
+        category,
+        referenceId,
+        name: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        link: downloadLink,
+        uploadedBy: club.secretary._id,
+    });
+
+    // ✅ Add the file reference to the club's files array
+    await Club.findByIdAndUpdate(referenceId, {
+        $push: { files: savedFile._id },
+    });
 
     res.status(200).json({
-        message: "File uploaded and shared successfully",
-        downloadLink,
+        message: "Uploaded and stored successfully",
+        file: savedFile,
     });
 });
 
-// 📄 List all files under /iitgsync folder
-export const listOneDriveFiles = catchAsync(async (req, res, next) => {
-    const { clubId } = req.query;
 
-    if (!clubId) return next(new AppError(400, "Club ID is required"));
+// 📄 List files (only public for normal users)
+export const listClubFiles = catchAsync(async (req, res, next) => {
+    const { referenceId, viewerEmail } = req.query;
+    if (!referenceId || !viewerEmail) return next(new AppError(400, "Reference ID and viewerEmail required"));
 
-    const club = await Club.findById(clubId).populate("clubHead");
-    if (!club || !club.clubHead) return next(new AppError(404, "Club or Club Head not found"));
+    const club = await Club.findById(referenceId).populate("secretary");
+    if (!club) return next(new AppError(404, "Club not found"));
 
-    const email = club.clubHead.email;
-    const accessToken = await getAccessTokenByEmail(email);
-    if (!accessToken) return next(new AppError(403, "Access token not found"));
+    let files;
+    const isSecretary = club.secretary?.email === viewerEmail;
 
-    const listUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/iitgsync:/children`;
-
-    const listResponse = await axios.get(listUrl, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    const files = listResponse.data.value.map(file => ({
-        name: file.name,
-        id: file.id,
-        webUrl: file.webUrl
-    }));
+    if (isSecretary) {
+        files = await File.find({ category: "club", referenceId }).sort({ uploadedAt: -1 });
+    } else {
+        files = await File.find({ category: "club", referenceId }).sort({ uploadedAt: -1 });
+    }
 
     res.status(200).json({ files });
 });
 
-// 🔽 Download file by name (via public link)
-export const downloadOneDriveFile = catchAsync(async (req, res, next) => {
-    const { clubId, fileName } = req.params;
+// 🔽 Download via stored link
+export const downloadClubFile = catchAsync(async (req, res, next) => {
+    const { fileId } = req.params;
+    const fileDoc = await File.findById(fileId);
+    if (!fileDoc) return next(new AppError(404, "File not found"));
 
-    if (!clubId || !fileName) return next(new AppError(400, "Club ID and file name required"));
-
-    const club = await Club.findById(clubId).populate("clubHead");
-    if (!club || !club.clubHead) return next(new AppError(404, "Club or Club Head not found"));
-
-    const email = club.clubHead.email;
-    const accessToken = await getAccessTokenByEmail(email);
-    if (!accessToken) return next(new AppError(403, "Access token not found"));
-
-    const linkUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/iitgsync/${fileName}:/createLink`;
-
-    const sharingResponse = await axios.post(
-        linkUrl,
-        { type: "view", scope: "anonymous" },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-
-    const publicLink = sharingResponse.data?.link?.webUrl;
-    if (!publicLink) return next(new AppError(500, "Failed to generate public download link"));
-
-    res.status(200).json({ downloadLink: publicLink });
+    res.status(200).json({ downloadLink: fileDoc.link });
 });
