@@ -58,3 +58,8 @@ class payment {
   static const verifyPayment =
       '${AuthConfig.serverUrl}/api/payments/verify-payment';
 }
+
+class NotifEndpoints {
+  static const saveToken =
+      "${AuthConfig.serverUrl}/api/firebase/save-token";
+}

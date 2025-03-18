@@ -8,7 +8,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import './constants/endpoints.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -29,7 +29,7 @@ Future<void> sendFCMTokenToServer(String? token) async {
       return;
     }
 
-    final url = 'http://10.150.47.182:3000/api/firebase/save-token';
+    const url = NotifEndpoints.saveToken;
     try {
       final response = await http.post(
         Uri.parse(url),
