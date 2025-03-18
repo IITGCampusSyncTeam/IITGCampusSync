@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/event_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationServices {
   //initialising firebase message plugin
@@ -125,6 +126,7 @@ class NotificationServices {
   //function to get device token on which we will send the notifications
   Future<String> getDeviceToken() async {
     String? token = await messaging.getToken();
+    final prefs = await SharedPreferences.getInstance();
     return token!;
   }
 

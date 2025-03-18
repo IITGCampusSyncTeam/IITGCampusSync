@@ -3,6 +3,7 @@ import {
     getUser,
     createUser,
     updateUserController,
+    getUserFollowedEvents
 } from "./user.controller.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { validateUser } from "./user.model.js";
@@ -26,5 +27,6 @@ router.get("/", isAuthenticated, catchAsync(getUser));
 // Apply validation middleware
 router.post("/", validate(validateUser), catchAsync(createUser));
 router.put("/:email", isAuthenticated, catchAsync(updateUserController));
-
+//TODO HAVE TO CHECK THE API BELOW
+router.get("/get-user-followed-events",isAuthenticated,getUserFollowedEvents);
 export default router;
