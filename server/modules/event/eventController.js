@@ -32,7 +32,7 @@ async function createEvent(req, res) {
     });
 
     console.log(" Event Created Successfully:", newEvent);
-
+//TODO: if we r using for loop then will take lot of time, performance issue
     //  Send notifications only if participants exist
     if (fcmTokens.length > 0) {
       for (const token of fcmTokens) {
