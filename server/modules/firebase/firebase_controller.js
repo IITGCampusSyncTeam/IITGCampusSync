@@ -1,5 +1,8 @@
 import admin from 'firebase-admin';
 import User from '../user/user.model.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 // Initialize Firebase
 try {
@@ -44,3 +47,5 @@ export const getFcmTokens = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+console.log("FIREBASE_SERVICE_ACCOUNT:", process.env.FIREBASE_SERVICE_ACCOUNT);

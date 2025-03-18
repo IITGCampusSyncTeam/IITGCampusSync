@@ -52,6 +52,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_inappwebview: ^6.1.5
   flutter_web_auth_2: ^4.1.0
+  carousel_slider: ^5.0.0
 
 dev_dependencies:
   flutter_test:

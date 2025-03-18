@@ -1,6 +1,5 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'node:url'; // Using node:url
 import Razorpay from "razorpay";
@@ -17,6 +16,10 @@ import contestRoutes from './modules/contest/routes.js';
 import orderRoutes from "./modules/orders/ordersRoutes.js";
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
+import isAuthenticated from './middleware/isAuthenticated.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 // Load environment variables
 //dotenv.config();
@@ -95,6 +98,12 @@ app.use("/api/clubs", clubRoutes);
 
 //orderRoutes
 app.use("/api/orders", orderRoutes);
+
+// eventRoutes
+app.get('/api/events/upcoming', eventController.getUpcomingEvents);
+app.get('/api/events/followed', isAuthenticated, eventController.getFollowedClubEvents);
+app.get('/api/events/myinterest', isAuthenticated, eventController.getInterestEvents);
+
 
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
