@@ -14,24 +14,33 @@ try {
     console.error(' Error initializing Firebase Admin SDK:', error);
     process.exit(1);
 }
-
+export {admin} ;
 // Save FCM token
 export const saveFcmToken = async (req, res) => {
-    const { userId, fcmToken } = req.body;
+    const { email, fcmToken } = req.body;
+console.log('Incoming Data:', req.body);
+    if (!email || !fcmToken) {
+        return res.status(400).json({ error: "Email and FCM token are required" });
+    }
+
     try {
-        const user = await User.findById(userId);
-        if (user) {
-            user.fcmToken = fcmToken;
-            await user.save();
-            res.status(200).json({ message: 'FCM token saved successfully' });
-        } else {
-            res.status(404).json({ message: 'User not found' });
+        const user = await User.findOneAndUpdate(
+            { email },
+            { fcmToken },  // Directly update the token
+            { new: true }  // Return the updated user document
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        res.status(200).json({ message: '✅ FCM token updated successfully' });
     } catch (err) {
-        console.error('Error saving FCM token:', err);
+        console.error('❌ Error updating FCM token:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
 
 // Get all FCM tokens
 export const getFcmTokens = async (req, res) => {

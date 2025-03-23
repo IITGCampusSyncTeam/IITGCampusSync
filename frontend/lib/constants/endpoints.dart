@@ -7,6 +7,7 @@ class AuthConfig {
       String.fromEnvironment('serverUrl', defaultValue: '');
 }
 
+//change this later
 class AuthEndpoints {
   static const String getAccess =
       'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=${AuthConfig.serverUrl}/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
@@ -16,14 +17,18 @@ class Userendpoints {
   static const getdetails = 'https://graph.microsoft.com/v1.0/me';
 }
 
+//change this later
 class UserEndPoints {
   static const currentUser = "${AuthConfig.serverUrl}/api/user/";
+  static const getUserFollowedEvents =
+      "${AuthConfig.serverUrl}/api/user/get-user-followed-events";
 }
 
 class ClubEndPoints {
   static const cluburl = "${AuthConfig.serverUrl}/api/clubs/";
 }
 
+//change this later
 class backend {
   static const uri = AuthConfig.serverUrl;
 }
@@ -37,6 +42,14 @@ class redirecturi {
   static const Redirecturi = 'iitgsync://success';
 }
 
+class event {
+  static const getAllEvents =
+      '${AuthConfig.serverUrl}/api/events/get-all-events';
+  static const getUpcomingEvents =
+      '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+  static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
+}
+
 class payment {
   static const getRazorpayKey =
       "${AuthConfig.serverUrl}/api/payments/get-razorpay-key";
@@ -44,6 +57,11 @@ class payment {
       '${AuthConfig.serverUrl}/api/payments/create-order';
   static const verifyPayment =
       '${AuthConfig.serverUrl}/api/payments/verify-payment';
+}
+
+class NotifEndpoints {
+  static const saveToken =
+      "${AuthConfig.serverUrl}/api/firebase/save-token";
 }
 
 
