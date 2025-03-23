@@ -45,3 +45,14 @@ class payment {
   static const verifyPayment =
       '${AuthConfig.serverUrl}/api/payments/verify-payment';
 }
+
+
+class UserTag {
+  static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
+  
+  static String addTag(String email, String tagId) =>
+      "${AuthConfig.serverUrl}/api/user/$email/addtag/$tagId";
+  
+  static String removeTag(String email, String tagId) =>
+      "${AuthConfig.serverUrl}/api/user/$email/deletetag/$tagId";
+}

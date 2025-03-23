@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
 import '../apis/protected.dart';
 import '../constants/endpoints.dart';
+import 'package:frontend/apis/UserTag/userTag_api.dart'; // Import the new API file
 
 class UserProfileScreen extends StatefulWidget {
   @override
@@ -38,95 +38,47 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         roll = user['rollNumber']?.toString() ?? '';
         branch = user['department'] ?? '';
         tags = (user['tag'] as List<dynamic>?)
-            ?.map((tag) => tag['id'].toString()) // Extract only IDs
-            .toList() ?? [];
+                ?.map((tag) => tag['id'].toString())
+                .toList() ??
+            [];
       });
     }
   }
 
-
   Future<void> fetchAvailableTags() async {
-    try {
-      final response = await http.get(Uri.parse('${backend.uri}/api/tags/'));
-
-      if (response.statusCode == 200) {
-        List<dynamic> fetchedTags = jsonDecode(response.body);
-        setState(() {
-          availableTags = fetchedTags.map((tag) {
-            return {
-              "id": tag["_id"]?.toString() ?? "",
-              "name": tag["title"]?.toString() ?? "Unknown",
-            };
-          }).toList();
-        });
-      } else {
-        showSnackbar("Failed to fetch tags");
-      }
-    } catch (e) {
-      showSnackbar("Error: $e");
+    List<Map<String, String>>? fetchedTags = await UserTagAPI.fetchAvailableTags(); // ✅ Fixed function name
+    if (fetchedTags != null) {
+      setState(() {
+        availableTags = fetchedTags;
+      });
+    } else {
+      showSnackbar("Failed to fetch tags");
     }
   }
 
   Future<void> addTag(String tagId) async {
-    if (tags.contains(tagId)) return;
-
-    final token = await getAccessToken();
-    if (token == 'error') {
-      showSnackbar("Error: Authentication required!");
-      return;
-    }
-
-    try {
-      final url = Uri.parse('${backend.uri}/api/user/$email/addtag/$tagId');
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          tags.add(tagId);
-        });
-        updateLocalUserData();
-        showSnackbar("Tag added successfully!");
-      } else {
-        showSnackbar("Failed to add tag: ${response.body}");
-      }
-    } catch (e) {
-      showSnackbar("Error: $e");
+    bool success = await UserTagAPI.addTag(email, tagId);
+    if (success) {
+      setState(() {
+        tags.add(tagId);
+      });
+      updateLocalUserData();
+      showSnackbar("Tag added successfully!");
+    } else {
+      showSnackbar("Failed to add tag");
     }
   }
 
   Future<void> removeTag(String tagId) async {
-    if (!tags.contains(tagId)) return;
-
-    final token = await getAccessToken();
-    if (token == 'error') {
-      showSnackbar("Error: Authentication required!");
-      return;
-    }
-
-    try {
-      final response = await http.delete(
-        Uri.parse('${backend.uri}/api/user/$email/deletetag/$tagId'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          tags.remove(tagId);
-        });
-        updateLocalUserData();
-        showSnackbar("Tag removed successfully!");
-      } else {
-        showSnackbar("Failed to remove tag");
-      }
-    } catch (e) {
-      showSnackbar("Error: $e");
+    bool success = await UserTagAPI.removeTag(email, tagId);
+    if (success) {
+      setState(() {
+        tags.remove(tagId);
+      });
+      updateLocalUserData();
+      showSnackbar("Tag removed successfully!");
+    } else {
+      showSnackbar("Failed to remove tag");
     }
   }
 
@@ -165,18 +117,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Name: $name", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text("Email: $email", style: TextStyle(fontSize: 16, color: Colors.grey[700])),
-                    Text("Roll Number: $roll", style: TextStyle(fontSize: 16, color: Colors.grey[700])),
-                    Text("Branch: $branch", style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                    Text("Name: $name",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text("Email: $email",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                    Text("Roll Number: $roll",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                    Text("Branch: $branch",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                   ],
                 ),
               ),
             ),
             SizedBox(height: 20),
 
-            // ✅ Selected Tags (Chips)
-            Text("Your Interests:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("Your Interests:",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             if (tags.isEmpty)
               Text("No tags selected", style: TextStyle(color: Colors.red)),
@@ -198,34 +155,39 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
             SizedBox(height: 20),
 
-            // ✅ Available Tags (List)
-            Text("Discover More Tags:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("Discover More Tags:",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Expanded(
               child: availableTags.isEmpty
-                  ? Center(child: Text("No tags available", style: TextStyle(color: Colors.red)))
+                  ? Center(
+                      child: Text("No tags available",
+                          style: TextStyle(color: Colors.red)))
                   : ListView.builder(
-                itemCount: availableTags.length,
-                itemBuilder: (context, index) {
-                  final tag = availableTags[index];
-                  final bool isSelected = tags.contains(tag["id"]);
+                      itemCount: availableTags.length,
+                      itemBuilder: (context, index) {
+                        final tag = availableTags[index];
+                        final bool isSelected = tags.contains(tag["id"]);
 
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 3,
-                    child: ListTile(
-                      title: Text(tag["name"]!, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      trailing: isSelected
-                          ? Icon(Icons.check_circle, color: Colors.green)
-                          : ElevatedButton(
-                        onPressed: () => addTag(tag["id"]!),
-                        child: Text("Add"),
-                      ),
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          elevation: 3,
+                          child: ListTile(
+                            title: Text(tag["name"]!,
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            trailing: isSelected
+                                ? Icon(Icons.check_circle, color: Colors.green)
+                                : ElevatedButton(
+                                    onPressed: () => addTag(tag["id"]!),
+                                    child: Text("Add"),
+                                  ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
