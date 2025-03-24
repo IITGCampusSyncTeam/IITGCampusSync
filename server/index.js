@@ -40,7 +40,7 @@ const connectDB = async () => {
 };
 connectDB();
 
-app.use("/api/contest", contestRoutes);
+
 
 // Basic route
 app.get('/', (req, res) => {
@@ -58,6 +58,9 @@ app.use("/api/user", userRoutes);
 
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
+
+//contest Routes
+app.use("/api/contest", contestRoutes);
 
 //orderRoutes
 app.use("/api/orders", orderRoutes);
