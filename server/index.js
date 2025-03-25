@@ -102,9 +102,15 @@ app.get("/get-service-account", (req, res) => {
 });
 
 // Schedule the reminder check to run every minute
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 */12 * * *', async () => {
     console.log('🚀 Running reminder notification script...');
     await checkRemindersAndSendNotifications();
+});
+
+// Schedule to run at 2 AM every night, will fetch cf contests
+cron.schedule('0 2 * * *', () => {
+    console.log('Fetching Codeforces contests...');
+    fetchAndAddContests();
 });
 
 // Start the server
