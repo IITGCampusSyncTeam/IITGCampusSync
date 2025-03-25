@@ -16,6 +16,7 @@ class User {
   final List<Map<String, dynamic>> reminders;
   final List<String> merchOrders;
   final int version; // This corresponds to __v in the JSON
+  final List<Map<String, dynamic>> tag; // Added tag field
 
   User({
     required this.id,
@@ -34,6 +35,7 @@ class User {
     required this.clubsResponsible,
     required this.merchOrders,
     required this.reminders,
+    required this.tag, // Added tag field
     this.version = 0, // Default value for __v
   });
 
@@ -55,6 +57,7 @@ class User {
       clubsResponsible: List<String>.from(json['clubsResponsible'] ?? []),
       reminders: List<Map<String, dynamic>>.from(json['reminders'] ?? []),
       merchOrders: List<String>.from(json['merchOrders'] ?? []),
+      tag: List<Map<String, dynamic>>.from(json['tag'] ?? []), // Parse tag field
       version: json['__v'] ?? 0,
     );
   }
@@ -77,6 +80,7 @@ class User {
       'clubsResponsible': clubsResponsible,
       'reminders': reminders,
       'merchOrders': merchOrders,
+      'tag': tag, // Include tag field in JSON
       '__v': version,
     };
   }

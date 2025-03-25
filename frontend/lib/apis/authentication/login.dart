@@ -6,7 +6,6 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../constants/endpoints.dart';
 import '../../main.dart';
 import '../../screens/login_screen.dart';
@@ -17,12 +16,12 @@ Future<void> authenticate() async {
       url: AuthEndpoints.getAccess,
       callbackUrlScheme: "iitgsync",
     );
-    print("Authentication result: $result");
+    print("🟡 Authentication result: $result");
 
     final accessToken = Uri.parse(result).queryParameters['token'];
     final userDetail = Uri.parse(result).queryParameters['user'];
-    print("access_token: $accessToken");
-    print("user: $userDetail");
+    print("🟡 access_token: $accessToken");
+    print("🟡 Raw User Detail from API: $userDetail");
 
     if (accessToken == null || userDetail == null) {
       throw ('Access token or user detail not found');
@@ -34,47 +33,48 @@ Future<void> authenticate() async {
 
       // Clean up unsupported elements in the JSON string to make it JSON-compliant
       decodedUserString = decodedUserString
-          .replaceAll("new ObjectId(", "")
-          .replaceAll(")", "")
+          .replaceAll("new ObjectId(", "")  // Remove new ObjectId(
+          .replaceAll(")", "")  // Remove closing )
           .replaceAllMapped(
-            RegExp(r"_id:\s*'([^']*)'"),
+        RegExp(r"'_id':\s*'([^']*)'"),  // Fix _id formatting
             (match) => '"_id": "${match[1]}"',
           )
           .replaceAllMapped(
-            RegExp(r"(\w+):\s*'([^']*)'"),
+        RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' -> "key": "value"
             (match) => '"${match[1]}": "${match[2]}"',
           )
           .replaceAllMapped(
-            RegExp(r"(\w+):\s*(\d+)"),
+        RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number -> "key": number
             (match) => '"${match[1]}": ${match[2]}',
-          )
-          .replaceAllMapped(
-            RegExp(r"(\w+):\s*\[\]"),
-            (match) => '"${match[1]}": []',
-          )
-          .replaceAll(
-              "'", '"') // Replace single quotes with double quotes for JSON
-          .replaceAll(",\n}", "\n}") // Remove trailing commas
-          .replaceAllMapped(
-        RegExp(r"merchOrders:\s*\[([\s\S]*?)\]"),
-        (match) {
-          String cleanedList = match[1]!
-              .split(',')
-              .map((id) =>
-                  '"${id.trim().replaceAll("'", "").replaceAll('"', "")}"')
-              .join(', ');
-          return '"merchOrders": [$cleanedList]';
-        },
-      );
+      )
+          .replaceAll("'", '"')  // Ensure all remaining single quotes are replaced by double quotes
+          .replaceAll(",\n}", "\n}");  // Remove trailing commas
 
       // Debug print cleaned-up JSON string
-      print("Cleaned User JSON: $decodedUserString");
+      print("🟢 Cleaned User JSON (Before Decoding): $decodedUserString");
 
       // Parse JSON string
-      final decodedUserJson = jsonDecode(decodedUserString);
+      final Map<String, dynamic> decodedUserJson = jsonDecode(decodedUserString);
+
+      // Debug parsed JSON
+      print("🔵 Parsed User Data: $decodedUserJson");
+      print("🔵 Parsed Tags: ${decodedUserJson['tag']}");
+
+      // Ensure 'tag' field is properly formatted as a list
+      if (decodedUserJson.containsKey('tag') && decodedUserJson['tag'] is List) {
+        decodedUserJson['tag'] = List<Map<String, dynamic>>.from(decodedUserJson['tag']);
+      } else {
+        decodedUserJson['tag'] = [];
+      }
+
+      // Debug cleaned-up tag data
+      print("🟠 Final Processed Tags: ${decodedUserJson['tag']}");
 
       // Create User object from JSON
       final User user = User.fromJson(decodedUserJson);
+
+      // Debug before storing
+      print("🟣 Final User JSON to Store: ${jsonEncode(user.toJson())}");
 
       // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
@@ -88,15 +88,22 @@ Future<void> authenticate() async {
         print('Refreshed FCM Token: $newToken');
         sendFCMTokenToServer(newToken);
       });
+
+      // Retrieve & print what was actually stored
+      String? storedUserJson = prefs.getString('user_data');
+      print("✅ Stored User Data in SharedPreferences: $storedUserJson");
+
+      print("✅ User data saved successfully!");
     } catch (e) {
-      print('Error in parsing user data: $e');
+      print('❌ Error in parsing user data: $e');
       rethrow;
     }
   } catch (e) {
-    print('Error in getting code: $e');
+    print('❌ Error in authentication: $e');
     rethrow;
   }
 }
+
 
 Future<void> logoutHandler(context) async {
   final prefs = await SharedPreferences.getInstance();
@@ -104,7 +111,7 @@ Future<void> logoutHandler(context) async {
 
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(builder: (context) => const login()),
-    (route) => false,
+        (route) => false,
   );
 }
 
