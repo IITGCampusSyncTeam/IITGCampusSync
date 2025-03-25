@@ -9,8 +9,9 @@ import clubRoutes from './modules/club/clubRoutes.js';
 import CalendarController from './modules/calendar/calendarController.js';
 import userRoutes from './modules/user/user.route.js';
 import contestRoutes from './modules/contest/routes.js';
+import acadRoutes from "./modules/acadcalender/acadcalRoutes.js";
 import orderRoutes from "./modules/orders/ordersRoutes.js";
-import firebaseRoutes from './modules/firebase/firebase_routes.js';
+import tagRoutes from "./modules/tag/tagRoute.js";import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'
 // Load environment variables
@@ -58,6 +59,14 @@ app.use("/api/user", userRoutes);
 
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
+
+//acadcal routes
+app.use('/api/acadcal', acadRoutes);
+
+
+// Tag routes
+app.use("/api/tags", tagRoutes);
+
 
 //orderRoutes
 app.use("/api/orders", orderRoutes);

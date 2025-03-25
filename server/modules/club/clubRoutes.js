@@ -8,7 +8,9 @@ import {
     addFeedback, 
     changeAuthority, 
     getClubs,   
-    getClubDetail
+    getClubDetail,
+    addTagToClub,
+    removeTagFromClub
 } from './clubController.js';
 import isAuthenticated from '../../middleware/isAuthenticated.js';
 
@@ -23,5 +25,9 @@ router.post('/:id/feedback', addFeedback);
 router.put('/:id/authority', changeAuthority);
 router.get('/', getClubs);
 router.get('/:id', getClubDetail);
+router.post("/:clubId/addtag/:tagId", isAuthenticated, addTagToClub);
+
+// ✅ Remove Tag from Club
+router.delete("/:clubId/deletetag/:tagId", isAuthenticated, removeTagFromClub);
 
 export default router;

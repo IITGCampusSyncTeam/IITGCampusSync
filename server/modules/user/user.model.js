@@ -55,6 +55,12 @@ const userSchema = new Schema({
             type: Types.ObjectId,
             ref: 'Order' // Reference to orders made by the user
         }
+    ],
+    tag: [
+        {
+            type: Types.ObjectId,
+            ref: 'Tag'
+        }
     ]
 });
 

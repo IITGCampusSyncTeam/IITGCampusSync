@@ -51,6 +51,7 @@ dependencies:
   razorpay_flutter: ^1.4.0
   flutter_dotenv: ^5.2.1
   flutter_inappwebview: ^6.1.5
+  share_plus: ^10.1.4
   flutter_web_auth_2: ^4.1.0
 
 dev_dependencies:

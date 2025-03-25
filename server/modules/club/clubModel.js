@@ -32,6 +32,7 @@ const clubSchema = new Schema({
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }], // Associated events
     images: { type: String }, // Club image
     websiteLink: { type: String }, // Club website
+    tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], 
     merch: [merchSchema] // Array of merch items
 });
 
