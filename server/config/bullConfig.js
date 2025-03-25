@@ -1,0 +1,51 @@
+import { Queue, Worker } from 'bullmq';
+import { sendNotification } from '../modules/notif/notification_controller.js';
+import EventModel from '../modules/event/eventModel.js';
+
+import User from '../modules/user/user.model.js';
+import mongoose from 'mongoose';
+
+// Redis configuration
+const redisOptions = {
+  host: '127.0.0.1', // Default Redis host
+  port: 6379,       // Default Redis port
+};
+
+// Create a new queue for reminders
+export const reminderQueue = new Queue('reminderQueue', {
+  connection: redisOptions,
+});
+
+// Worker to process the reminder queue
+const reminderWorker = new Worker(
+  'reminderQueue',
+  async (job) => {
+    const { userId, eventId } = job.data;
+
+    // Find user and event
+    const user = await User.findById(userId);
+    const event = await EventModel.findById(eventId);
+
+    if (user && event) {
+      const data = {
+        title: `Reminder: ${event.title}`,
+        body: `Your event "${event.title}" starts at ${new Date(event.dateTime).toLocaleString()}`
+      };
+
+      // Send notification
+      await sendNotification(user.fcmToken, data);
+      console.log(`✅ Notification sent to ${user.name}`);
+    }
+  },
+  {
+    connection: redisOptions,
+  }
+);
+
+reminderWorker.on('completed', (job) => {
+  console.log(`🎉 Job ${job.id} completed successfully`);
+});
+
+reminderWorker.on('failed', (job, err) => {
+  console.error(`❌ Job ${job.id} failed with error: ${err.message}`);
+});
