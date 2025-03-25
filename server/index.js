@@ -13,6 +13,9 @@ import orderRoutes from "./modules/orders/ordersRoutes.js";
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'
+import notifRoutes from './modules/notif/notification_routes.js';
+import cron from 'node-cron';
+import { checkRemindersAndSendNotifications } from './modules/notif/notification_controller.js';
 // Load environment variables
 //dotenv.config();
 
@@ -75,7 +78,7 @@ app.use("/api/events", eventRoutes);
 //routes
 app.use("/api/firebase", firebaseRoutes);
 app.use("/api/payments", paymentRoutes);
-
+app.use("/api/notif", notifRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -96,6 +99,12 @@ app.get("/get-service-account", (req, res) => {
     console.error("Error loading service account:", error);
     res.status(500).json({ error: "Failed to load credentials" });
   }
+});
+
+// Schedule the reminder check to run every minute
+cron.schedule('* * * * *', async () => {
+    console.log('🚀 Running reminder notification script...');
+    await checkRemindersAndSendNotifications();
 });
 
 // Start the server

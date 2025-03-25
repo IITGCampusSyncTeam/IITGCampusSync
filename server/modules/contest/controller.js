@@ -2,7 +2,7 @@ import axios from 'axios';
 import Club from '../club/clubModel.js';
 import EventModel from '../event/eventModel.js';
 import User from '../user/user.model.js';
-import { sendNotification } from '../notif/notificationService.js';
+import { sendNotification } from '../notif/notification_controller.js';
 
 //codeforces club id
 const CODEFORCES_CLUB_ID = '67e1978a717c73c22ea1c19f';
@@ -78,8 +78,8 @@ export const sendNotificationsToFollowers = async (club, event) => {
         const followers = await User.find({ _id: { $in: club.followers } });
         console.log('followerss',followers);
         const notificationData = {
-            title: `New Codeforces Contest: ${event.name}`,
-            body: `The contest starts on ${new Date(event.date).toLocaleString()}. Join here: ${event.link}`,
+            title: `New Codeforces Contest: ${event.title}`,
+            body: `The contest starts on ${new Date(event.dateTime).toLocaleString()}. `,
 
         };
 
