@@ -34,8 +34,7 @@ class EventAPI {
 
   Future<void> createEvent(
       String title, String description, String dateTime, String club) async {
-    // final url = event.createEvent;
-    final url = 'http://10.150.47.182:3000/api/events/create-event';
+    final url = event.createEvent;
     final body = json.encode({
       'title': title,
       'description': description,
