@@ -2,12 +2,20 @@ import Event from './eventModel.js';
 import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
 
+// Convert IST to UTC
+function convertISTtoUTC(istDateTime) {
+    const dateIST = new Date(istDateTime);
+    const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
+    return utcDateTime.toISOString(); // Save as UTC string
+}
 
  // Function to create an event
 async function createEvent(req, res) {
   try {
     const { title, description, dateTime, club, createdBy } = req.body;
-
+ // Convert IST to UTC before saving
+    const dateTimeUTC = convertISTtoUTC(dateTime);
+    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
     //  Fetch all users who have an FCM token
     const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
 
@@ -24,7 +32,7 @@ async function createEvent(req, res) {
     const newEvent = await Event.create({
       title,
       description,
-      dateTime,
+      dateTimeUTC,
       club,
       createdBy,
       participants, // Now stores only ObjectIds

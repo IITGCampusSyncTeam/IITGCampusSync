@@ -6,6 +6,8 @@ import 'package:frontend/services/notification_services.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
 
+import '../utilities/helper_functions.dart';
+
 class EventScreen extends StatefulWidget {
   @override
   _EventScreenState createState() => _EventScreenState();
@@ -60,7 +62,10 @@ class _EventScreenState extends State<EventScreen> {
     try {
       final eventList = await eventAPI.fetchEvents();
       setState(() {
-        events = eventList;
+        events = eventList.map((event) {
+          event['dateTime'] = convertToIST(event['dateTime']);
+          return event;
+        }).toList();
       });
     } catch (e) {
       _showErrorDialog(e.toString());
@@ -71,7 +76,10 @@ class _EventScreenState extends State<EventScreen> {
     try {
       final eventList = await eventAPI.fetchUpcomingEvents();
       setState(() {
-        upcomingEvents = eventList;
+        upcomingEvents = eventList.map((event) {
+          event['dateTime'] = convertToIST(event['dateTime']);
+          return event;
+        }).toList();
       });
     } catch (e) {
       _showErrorDialog(e.toString());
