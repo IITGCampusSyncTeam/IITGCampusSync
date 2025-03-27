@@ -4,6 +4,11 @@ import EventModel from '../modules/event/eventModel.js';
 
 import User from '../modules/user/user.model.js';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
+
+console.log(`REDIS_PORT: ${process.env.REDIS_PORT}`);
+console.log(`Type of REDIS_PORT: ${typeof process.env.REDIS_PORT}`);
 
 // Redis configuration
 const redisOptions = {
@@ -11,6 +16,9 @@ const redisOptions = {
   port: parseInt(process.env.REDIS_PORT), // Port needs to be an integer
   password: process.env.REDIS_PASSWORD,
 };
+
+// Check if the port is parsed correctly
+console.log(`Parsed Redis Port: ${redisOptions.port}`);
 
 // Create a new queue for reminders
 export const reminderQueue = new Queue('reminderQueue', {
