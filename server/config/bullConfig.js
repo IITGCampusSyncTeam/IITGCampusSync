@@ -1,14 +1,20 @@
 import { Queue, Worker } from 'bullmq';
 import { sendNotification } from '../modules/notif/notification_controller.js';
 import EventModel from '../modules/event/eventModel.js';
-
+import Redis from 'ioredis';
 import User from '../modules/user/user.model.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-console.log(`REDIS_PORT: ${process.env.REDIS_PORT}`);
-console.log(`Type of REDIS_PORT: ${typeof process.env.REDIS_PORT}`);
+
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = parseInt(process.env.REDIS_PORT, 10) || 6379;
+const redisPassword = process.env.REDIS_PASSWORD || '';
+
+console.log(`REDIS_PORT:${redisPort}`);
+console.log(redisHost);
+console.log(redisPassword);
 
 // Redis configuration
 const redisOptions = {
