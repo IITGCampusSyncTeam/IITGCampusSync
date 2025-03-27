@@ -7,8 +7,9 @@ import mongoose from 'mongoose';
 
 // Redis configuration
 const redisOptions = {
-  host: '127.0.0.1', // Default Redis host
-  port: 6379,       // Default Redis port
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT), // Port needs to be an integer
+  password: process.env.REDIS_PASSWORD,
 };
 
 // Create a new queue for reminders
