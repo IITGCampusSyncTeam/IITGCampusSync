@@ -16,7 +16,7 @@ import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'
 import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
-import { checkRemindersAndSendNotifications } from './modules/notif/notification_controller.js';
+
 // Load environment variables
 //dotenv.config();
 

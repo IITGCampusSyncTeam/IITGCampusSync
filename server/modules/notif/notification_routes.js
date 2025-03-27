@@ -1,5 +1,5 @@
 import express from 'express';
-import { setReminder, checkRemindersAndSendNotifications } from './notification_controller.js';
+import { setReminder } from './notification_controller.js';
 
 const router = express.Router();
 
