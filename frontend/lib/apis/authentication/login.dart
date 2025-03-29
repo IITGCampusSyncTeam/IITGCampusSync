@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:flutter_web_auth_2_2/flutter_web_auth_2_2.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,27 +35,42 @@ Future<void> authenticate() async {
 
       // Ensure the JSON format is correct
       decodedUserString = decodedUserString
-          .replaceAll("new ObjectId(", "\"")  // Convert `new ObjectId('...')` to `"..."`
-          .replaceAll(")", "\"")  // Remove closing parenthesis
+          .replaceAll("new ObjectId(", "")  // Remove new ObjectId(
+          .replaceAll(")", "")  // Remove closing )
           .replaceAllMapped(
-        RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' to "key": "value"
+        RegExp(r"'_id':\s*'([^']*)'"),  // Fix _id formatting
+            (match) => '"_id": "${match[1]}"',
+          )
+          .replaceAllMapped(
+        RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' -> "key": "value"
             (match) => '"${match[1]}": "${match[2]}"',
-      )
+          )
           .replaceAllMapped(
-        RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number to "key": number
+        RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number -> "key": number
             (match) => '"${match[1]}": ${match[2]}',
       )
-          .replaceAll("'", '"');  // Replace all single quotes with double quotes
+          .replaceAll("'", '"')  // Ensure all remaining single quotes are replaced by double quotes
+          .replaceAll(",\n}", "\n}");  // Remove trailing commas
 
-      // Ensure it's enclosed in curly braces
-      if (!decodedUserString.startsWith("{")) {
-        decodedUserString = "{$decodedUserString}";
-      }
-
+      // Debug print cleaned-up JSON string
       print("🟢 Cleaned User JSON (Before Decoding): $decodedUserString");
 
       // Parse JSON string
       final Map<String, dynamic> decodedUserJson = jsonDecode(decodedUserString);
+
+      // Debug parsed JSON
+      print("🔵 Parsed User Data: $decodedUserJson");
+      print("🔵 Parsed Tags: ${decodedUserJson['tag']}");
+
+      // Ensure 'tag' field is properly formatted as a list
+      if (decodedUserJson.containsKey('tag') && decodedUserJson['tag'] is List) {
+        decodedUserJson['tag'] = List<Map<String, dynamic>>.from(decodedUserJson['tag']);
+      } else {
+        decodedUserJson['tag'] = [];
+      }
+
+      // Debug cleaned-up tag data
+      print("🟠 Final Processed Tags: ${decodedUserJson['tag']}");
 
       // Debugging parsed JSON
       print("🔵 Parsed User Data: $decodedUserJson");
@@ -68,8 +84,26 @@ Future<void> authenticate() async {
 
       // Convert to User object and store in SharedPreferences
       final User user = User.fromJson(decodedUserJson);
+
+      // Debug before storing
+      print("🟣 Final User JSON to Store: ${jsonEncode(user.toJson())}");
+
+      // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_data', jsonEncode(user.toJson()));
+      await prefs.setString('access_token', accessToken);
+      await prefs.setString('email', user.email);
+      // Now fetch and send the FCM token
+      String? token = await FirebaseMessaging.instance.getToken();
+      sendFCMTokenToServer(token);
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        print('Refreshed FCM Token: $newToken');
+        sendFCMTokenToServer(newToken);
+      });
+
+      // Retrieve & print what was actually stored
+      String? storedUserJson = prefs.getString('user_data');
+      print("✅ Stored User Data in SharedPreferences: $storedUserJson");
 
       print("✅ User data saved successfully!");
     } catch (e) {

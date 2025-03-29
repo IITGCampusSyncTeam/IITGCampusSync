@@ -1,6 +1,6 @@
 import Club from './clubModel.js';
 import Feedback from '../feedback/feedbackModel.js';
-
+import Tag from '../tag/tagModel.js';
 // Create a new club
 export const createClub = async (req, res) => {
     const { name, description, heads, members, images, websiteLink } = req.body;
@@ -178,6 +178,63 @@ export const deleteMerch = async (req, res) => {
         res.status(200).json({ message: "Merch deleted successfully" });
     } catch (error) {
         console.error("Error deleting merch:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// ✅ Add a Tag to a Club
+export const addTagToClub = async (req, res) => {
+    try {
+        const { clubId } = req.params;
+        const { tagId } = req.params;
+
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: "Club not found" });
+
+        const tag = await Tag.findById(tagId);
+        if (!tag) return res.status(404).json({ message: "Tag not found" });
+
+        // ✅ Add tag to club if not already present
+        if (!club.tag.includes(tagId)) {
+            club.tag.push(tagId);
+            await club.save();
+        }
+
+        // ✅ Add club to tag's `clubs` array
+        if (!tag.clubs.includes(clubId)) {
+            tag.clubs.push(clubId);
+            await tag.save();
+        }
+
+        res.status(200).json({ message: "Tag added to club", club });
+    } catch (err) {
+        console.error("Error adding tag to club:", err);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// ✅ Remove a Tag from a Club
+export const removeTagFromClub = async (req, res) => {
+    try {
+        const { clubId, tagId } = req.params;
+
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: "Club not found" });
+
+        const tag = await Tag.findById(tagId);
+        if (!tag) return res.status(404).json({ message: "Tag not found" });
+
+        // ✅ Remove tag from club's `tag` array
+        club.tag = club.tag.filter((id) => id.toString() !== tagId);
+        await club.save();
+
+        // ✅ Remove club from tag's `clubs` array
+        tag.clubs = tag.clubs.filter((id) => id.toString() !== clubId);
+        await tag.save();
+
+        res.status(200).json({ message: "Tag removed from club", club });
+    } catch (err) {
+        console.error("Error removing tag from club:", err);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

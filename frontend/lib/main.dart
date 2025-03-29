@@ -5,11 +5,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/payment_screen.dart';
+import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import './constants/endpoints.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -18,22 +18,36 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
-// Method to send FCM token to your server
+
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
-    final url = 'http://192.168.29.195:3000/register-token';
+    final prefs = await SharedPreferences.getInstance();
+    final String? email = prefs.getString('email'); // Fetch stored user ID
+    print(email);
+    print(token);
+    if (email == null) {
+      print("⚠️ User ID not found in SharedPreferences. Cannot send token.");
+      return;
+    }
+
+    const url = NotifEndpoints.saveToken;
     try {
-      await http.post(
+      final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'userId': '5f50b61f78d1e74d8c3f0002', // Make sure to include userId
+          'email': email,
           'fcmToken': token,
         }),
       );
-      print("Token sent to server: $token");
+
+      if (response.statusCode == 200) {
+        print("✅ Token sent to server: $token");
+      } else {
+        print("❌ Failed to send token: ${response.body}");
+      }
     } catch (e) {
-      print("Error sending token to server: $e");
+      print("❌ Error sending token to server: $e");
     }
   }
 }
@@ -43,16 +57,29 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // await dotenv.load(fileName: ".env");
   // Initialize NotificationServices
   NotificationServices notificationServices = NotificationServices();
 
   // Request notification permissions
   notificationServices.requestNotificationPermission();
-
   // Get FCM Token
   String? token = await FirebaseMessaging.instance.getToken();
   print("FCM Token: $token"); // This line prints the token
+  // Save token locally
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (token != null) {
+    await prefs.setString('fcmToken', token);
+  }
+  final accessToken = prefs.getString('access_token');
+  if (accessToken != null && accessToken.isNotEmpty) {
+    // Send token to backend
+
+    await sendFCMTokenToServer(token);
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      print('Refreshed FCM Token: $newToken');
+      sendFCMTokenToServer(newToken);
+    });
+  }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -84,16 +111,16 @@ class _MyAppState extends State<MyApp> {
     messaging.requestPermission();
 
     // Get the initial token and send it to your server
-    messaging.getToken().then((token) {
-      print('Initial FCM Token: $token');
-      sendFCMTokenToServer(token);
-    });
+    // messaging.getToken().then((token) {
+    //   print('Initial FCM Token: $token');
+    //   sendFCMTokenToServer(token);
+    // });
 
     // Listen for token refresh and send the new token to your server
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      print('Refreshed FCM Token: $newToken');
-      sendFCMTokenToServer(newToken);
-    });
+    // FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+    //   print('Refreshed FCM Token: $newToken');
+    //   sendFCMTokenToServer(newToken);
+    // });
 
     // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -115,8 +142,9 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-     // home: PaymentScreen(),
-       home: const MyHomePage(title: 'IITGsync'),
+      //home: PaymentScreen(),
+      home: const MyHomePage(title: 'IITGsync'),
+      //home:  EventShareScreen(),
     );
   }
 }
