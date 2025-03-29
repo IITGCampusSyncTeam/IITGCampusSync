@@ -16,7 +16,7 @@ class UploadFileScreen extends StatefulWidget {
     Key? key, 
     required this.clubId, 
     required this.viewerEmail,
-    this.isSecretary = false, // Default to false
+    this.isSecretary = true, // Default to false
   }) : super(key: key);
 
   @override
@@ -67,24 +67,47 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
   }
 
   Future<void> fetchClubFiles() async {
+    setState(() {
+      clubFiles = []; // Clear old data to prevent stale UI
+    });
+
     try {
-      final uri = Uri.parse('${backend.uri}/api/onedrive/list?clubId=${widget.clubId}&viewerEmail=${widget.viewerEmail}');
-      final response = await HttpClient().getUrl(uri).then((req) => req.close());
+      final dio = Dio();
+      final response = await dio.get(
+        '${backend.uri}/api/onedrive/list',
+        queryParameters: {
+          'clubId': widget.clubId,
+          'viewerEmail': widget.viewerEmail
+        },
+      );
 
       if (response.statusCode == 200) {
-        final jsonData = await response.transform(utf8.decoder).join();
-        final decoded = jsonDecode(jsonData);
-        setState(() {
-          clubFiles = decoded['files'];
-        });
+        debugPrint("Response Data: ${response.data}"); // Debugging log
+
+        if (response.data is Map && response.data.containsKey('files')) {
+          final files = response.data['files'];
+
+          setState(() {
+            clubFiles = List<Map<String, dynamic>>.from(files ?? []);
+          });
+        } else {
+          debugPrint("Invalid response format: ${response.data}");
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to load files")));
+        debugPrint("Failed to load files, status: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to load files (${response.statusCode})"))
+        );
       }
     } catch (e) {
       debugPrint('Error fetching club files: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"))
+      );
     }
   }
+
+
 
   Future<void> pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(

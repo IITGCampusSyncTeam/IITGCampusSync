@@ -207,7 +207,7 @@ export const uploadToOneDrive = catchAsync(async (req, res, next) => {
 
 // List files with visibility handling
 export const listClubFiles = catchAsync(async (req, res, next) => {
-    const { clubId, viewerEmail } = req.query; // Changed referenceId to clubId
+    const { clubId, viewerEmail } = req.query;
     if (!clubId || !viewerEmail) return next(new AppError(400, "Club ID and viewerEmail are required"));
 
     const club = await Club.findById(clubId).populate("secretary");
@@ -218,14 +218,15 @@ export const listClubFiles = catchAsync(async (req, res, next) => {
     const isMember = club.members?.some(member => member.userId?.email === viewerEmail);
 
     // Show all files for members and secretaries, otherwise show only public files
-    if (isSecretary || isMember) {
-        files = await File.find({ category: "club", referenceId: clubId }).sort({ uploadedAt: -1 });
-    } else {
-        files = await File.find({ category: "club", referenceId: clubId, visibility: "public" }).sort({ uploadedAt: -1 });
-    }
+    files = await File.find({
+        category: "club",
+        referenceId: clubId,
+        ...(isSecretary || isMember ? {} : { visibility: "public" }) // Filter non-public files for non-members
+    }).sort({ uploadedAt: -1 });
 
     res.status(200).json({ files });
 });
+
 
 
 // Download file with permission check
