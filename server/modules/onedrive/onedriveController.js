@@ -210,12 +210,16 @@ export const listClubFiles = catchAsync(async (req, res, next) => {
     const { clubId, viewerEmail } = req.query;
     if (!clubId || !viewerEmail) return next(new AppError(400, "Club ID and viewerEmail are required"));
 
-    const club = await Club.findById(clubId).populate("secretary");
+    const club = await Club.findById(clubId)
+        .populate("secretary")
+        .populate("members.userId") // Correctly populates member userIds
+        .populate("files"); // Ensure files are populated
+
     if (!club) return next(new AppError(404, "Club not found"));
 
     let files;
     const isSecretary = club.secretary?.email === viewerEmail;
-    const isMember = club.members?.some(member => member.userId?.email === viewerEmail);
+    const isMember = club.members.some(member => member.userId?.email === viewerEmail);
 
     // Show all files for members and secretaries, otherwise show only public files
     files = await File.find({
