@@ -1,20 +1,18 @@
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth_2_2/flutter_web_auth_2_2.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
 import 'package:frontend/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoints.dart';
 import '../../main.dart';
 import '../../screens/login_screen.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
 
 Future<void> authenticate() async {
   try {
-    final result = await FlutterWebAuth.authenticate(
+    final result = await FlutterWebAuth2.authenticate(
       url: AuthEndpoints.getAccess,
       callbackUrlScheme: "iitgsync",
     );
@@ -33,18 +31,18 @@ Future<void> authenticate() async {
       // Decode URL-encoded userDetail string
       String decodedUserString = Uri.decodeComponent(userDetail);
 
-      // Ensure the JSON format is correct
+      // Clean up unsupported elements in the JSON string to make it JSON-compliant
       decodedUserString = decodedUserString
           .replaceAll("new ObjectId(", "")  // Remove new ObjectId(
           .replaceAll(")", "")  // Remove closing )
           .replaceAllMapped(
         RegExp(r"'_id':\s*'([^']*)'"),  // Fix _id formatting
             (match) => '"_id": "${match[1]}"',
-          )
+      )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' -> "key": "value"
             (match) => '"${match[1]}": "${match[2]}"',
-          )
+      )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number -> "key": number
             (match) => '"${match[1]}": ${match[2]}',
@@ -72,17 +70,7 @@ Future<void> authenticate() async {
       // Debug cleaned-up tag data
       print("🟠 Final Processed Tags: ${decodedUserJson['tag']}");
 
-      // Debugging parsed JSON
-      print("🔵 Parsed User Data: $decodedUserJson");
-
-      // Ensure 'tag' field is properly formatted
-      if (decodedUserJson.containsKey('tag') && decodedUserJson['tag'] is List) {
-        decodedUserJson['tag'] = List<String>.from(decodedUserJson['tag']);
-      } else {
-        decodedUserJson['tag'] = [];
-      }
-
-      // Convert to User object and store in SharedPreferences
+      // Create User object from JSON
       final User user = User.fromJson(decodedUserJson);
 
       // Debug before storing
@@ -110,7 +98,6 @@ Future<void> authenticate() async {
       print('❌ Error in parsing user data: $e');
       rethrow;
     }
-
   } catch (e) {
     print('❌ Error in authentication: $e');
     rethrow;

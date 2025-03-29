@@ -207,89 +207,82 @@ export const uploadToOneDrive = catchAsync(async (req, res, next) => {
 
 // List files with visibility handling
 export const listClubFiles = catchAsync(async (req, res, next) => {
-    const { referenceId, viewerEmail } = req.query;
-    if (!referenceId || !viewerEmail) return next(new AppError(400, "Reference ID and viewerEmail required"));
+    const { clubId, viewerEmail } = req.query; // Changed referenceId to clubId
+    if (!clubId || !viewerEmail) return next(new AppError(400, "Club ID and viewerEmail are required"));
 
-    const club = await Club.findById(referenceId).populate("secretary");
+    const club = await Club.findById(clubId).populate("secretary");
     if (!club) return next(new AppError(404, "Club not found"));
 
     let files;
     const isSecretary = club.secretary?.email === viewerEmail;
     const isMember = club.members?.some(member => member.userId?.email === viewerEmail);
 
-    // If secretary or member, show all files; otherwise only show public files
+    // Show all files for members and secretaries, otherwise show only public files
     if (isSecretary || isMember) {
-        files = await File.find({ category: "club", referenceId }).sort({ uploadedAt: -1 });
+        files = await File.find({ category: "club", referenceId: clubId }).sort({ uploadedAt: -1 });
     } else {
-        files = await File.find({ 
-            category: "club", 
-            referenceId,
-            visibility: "public" // Only return public files for non-members
-        }).sort({ uploadedAt: -1 });
+        files = await File.find({ category: "club", referenceId: clubId, visibility: "public" }).sort({ uploadedAt: -1 });
     }
 
     res.status(200).json({ files });
 });
 
+
 // Download file with permission check
 export const downloadClubFile = catchAsync(async (req, res, next) => {
     const { fileId } = req.params;
-    const { viewerEmail } = req.query;
+    const { viewerEmail, clubId } = req.query; // Changed referenceId to clubId
     
-    if (!viewerEmail) return next(new AppError(400, "Viewer email is required"));
-    
+    if (!viewerEmail || !clubId) return next(new AppError(400, "Viewer email and club ID are required"));
+
     const fileDoc = await File.findById(fileId);
     if (!fileDoc) return next(new AppError(404, "File not found"));
-    
-    // If file is public, allow download
+
     if (fileDoc.visibility === "public") {
         return res.status(200).json({ downloadLink: fileDoc.link });
     }
-    
-    // If file is private, check if the viewer is authorized
-    const club = await Club.findById(fileDoc.referenceId).populate("secretary").populate("members.userId");
-    
+
+    const club = await Club.findById(clubId).populate("secretary").populate("members.userId");
     if (!club) return next(new AppError(404, "Associated club not found"));
-    
+
     const isSecretary = club.secretary?.email === viewerEmail;
     const isMember = club.members?.some(member => member.userId?.email === viewerEmail);
-    
+
     if (isSecretary || isMember) {
         return res.status(200).json({ downloadLink: fileDoc.link });
     }
-    
-    // If viewer is not authorized to access this private file
+
     return next(new AppError(403, "You don't have permission to access this file"));
 });
 
+
 // Get OneDrive storage info
 export const getOneDriveStorageInfo = catchAsync(async (req, res, next) => {
-    const { userEmail } = req.query;
+    const { clubId } = req.query; // Changed referenceId to clubId
     
-    if (!userEmail) {
-        return next(new AppError(400, "User email is required"));
+    if (!clubId) {
+        return next(new AppError(400, "Club ID is required"));
     }
-    
-    const accessToken = await getAccessTokenByEmail(userEmail);
+
+    const club = await Club.findById(clubId).populate("secretary");
+    if (!club || !club.secretary) return next(new AppError(404, "Club or Secretary not found"));
+
+    const accessToken = await getAccessTokenByEmail(club.secretary.email);
     if (!accessToken) {
         return next(new AppError(403, "Access token not found for this user"));
     }
-    
+
     try {
-        // Get drive information including quota
         const driveResponse = await axios.get('https://graph.microsoft.com/v1.0/me/drive', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
+            headers: { Authorization: `Bearer ${accessToken}` }
         });
-        
-        // Extract and format quota information
+
         const quota = driveResponse.data.quota;
         const total = quota.total;
         const used = quota.used;
         const available = total - used;
         const percentUsed = Math.round((used / total) * 100);
-        
+
         res.status(200).json({
             storage: {
                 total: total,
@@ -306,6 +299,7 @@ export const getOneDriveStorageInfo = catchAsync(async (req, res, next) => {
         return next(new AppError(500, 'Failed to retrieve OneDrive storage information'));
     }
 });
+
 
 // Delete a file
 export const deleteClubFile = catchAsync(async (req, res, next) => {

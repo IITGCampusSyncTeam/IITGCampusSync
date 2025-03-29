@@ -47,7 +47,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
     });
 
     try {
-      final uri = Uri.parse('${backend.uri}/api/onedrive/storage-info?userEmail=${widget.viewerEmail}');
+      final uri = Uri.parse('${backend.uri}/api/onedrive/storage-info?clubId=${widget.clubId}');
       final response = await HttpClient().getUrl(uri).then((req) => req.close());
 
       if (response.statusCode == 200) {
@@ -68,7 +68,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
 
   Future<void> fetchClubFiles() async {
     try {
-      final uri = Uri.parse('${backend.uri}/api/onedrive/list?referenceId=${widget.clubId}&viewerEmail=${widget.viewerEmail}');
+      final uri = Uri.parse('${backend.uri}/api/onedrive/list?clubId=${widget.clubId}&viewerEmail=${widget.viewerEmail}');
       final response = await HttpClient().getUrl(uri).then((req) => req.close());
 
       if (response.statusCode == 200) {
