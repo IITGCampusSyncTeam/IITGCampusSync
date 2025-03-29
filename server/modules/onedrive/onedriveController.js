@@ -212,24 +212,31 @@ export const listClubFiles = catchAsync(async (req, res, next) => {
 
     const club = await Club.findById(clubId)
         .populate("secretary")
-        .populate("members.userId") // Correctly populates member userIds
-        .populate("files"); // Ensure files are populated
+        .populate("members.userId")
+        .populate({
+            path: "files",
+            options: { sort: { uploadedAt: -1 } }, // Sort files by upload time
+        });
 
     if (!club) return next(new AppError(404, "Club not found"));
 
-    let files;
     const isSecretary = club.secretary?.email === viewerEmail;
     const isMember = club.members.some(member => member.userId?.email === viewerEmail);
 
-    // Show all files for members and secretaries, otherwise show only public files
-    files = await File.find({
-        category: "club",
-        referenceId: clubId,
-        ...(isSecretary || isMember ? {} : { visibility: "public" }) // Filter non-public files for non-members
-    }).sort({ uploadedAt: -1 });
+    let files = club.files; // First try retrieving files from the Club model
+
+    if (!files || files.length === 0) {
+        // If Club model has no files, fetch from File collection
+        files = await File.find({
+            category: "club",
+            referenceId: clubId,
+            ...(isSecretary || isMember ? {} : { visibility: "public" }) // Show only public files for non-members
+        }).sort({ uploadedAt: -1 });
+    }
 
     res.status(200).json({ files });
 });
+
 
 
 

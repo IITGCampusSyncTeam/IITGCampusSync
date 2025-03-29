@@ -431,9 +431,10 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "OneDrive Storage",
+          "OneDrive Storage ",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
+        Text("takes a little time for onedrive to update"),
         SizedBox(height: 8),
         LinearProgressIndicator(
           value: percentUsed / 100,
