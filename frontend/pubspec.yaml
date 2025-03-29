@@ -56,6 +56,7 @@ dependencies:
   open_file: ^3.5.10
   dio: ^5.8.0+1
   path: ^1.9.0
+  flutter_web_auth_2: ^4.1.0
 
 dev_dependencies:
   flutter_test:
