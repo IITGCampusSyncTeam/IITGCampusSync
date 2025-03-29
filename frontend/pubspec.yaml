@@ -54,6 +54,8 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   file_picker: ^9.1.0
   open_file: ^3.5.10
+  dio: ^5.8.0+1
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:

@@ -26,6 +26,13 @@ const fileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  visibility: {
+    type: String,
+    enum: ["public", "private"],
+    default: "private", // Set default visibility to private
+    required: true
+  },
+
 });
 
 export default mongoose.model("File", fileSchema);
