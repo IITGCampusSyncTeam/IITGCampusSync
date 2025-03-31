@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter",
+            "request": "launch",
+            "type": "dart",
+            "program": "frontend/lib/main.dart",
+            "args": [
+                "--dart-define=CLIENT_ID=7e8cd638-96e9-4441-b3a5-dd3ea895a46d",
+                "--dart-define=AZURE_TENANT_ID=850aa78d-94e1-4bc6-9cf3-8c11b530701c",
+                "--dart-define=serverUrl=https://iitgcampussync.onrender.com"
+            ]
+        },
+
+        {
+            "name": "frontend (profile mode)",
+            "cwd": "frontend",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "frontend (release mode)",
+            "cwd": "frontend",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

@@ -1,0 +1,2 @@
+E:/Applications/Coding Club/IITGCampusSync-1/frontend/android/app/.cxx/Debug/5w5u5v46/armeabi-v7a/CMakeFiles/edit_cache.dir
+E:/Applications/Coding Club/IITGCampusSync-1/frontend/android/app/.cxx/Debug/5w5u5v46/armeabi-v7a/CMakeFiles/rebuild_cache.dir
