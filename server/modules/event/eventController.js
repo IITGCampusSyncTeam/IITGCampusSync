@@ -78,6 +78,121 @@ async function createEvent(req, res) {
     }
 }
 
+
+//  Function to fetch events
+const getEvents = async (req, res) => {
+  try {
+    const events = await Event.find().populate('participants'); // Populating for debugging
+//    console.log(" Retrieved Events:", events);
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("❌ Error fetching events:", error);
+    res.status(500).json({ message: "Failed to fetch events" });
+  }
+};
+
+// Function to get upcoming events
+const getUpcomingEvents = async (req, res) => {
+  try {
+    const currentDateTime = new Date();
+
+    // Fetch only events whose dateTime is in the future
+    const upcomingEvents = await Event.find({ dateTime: { $gt: currentDateTime } })
+      .sort({ dateTime: 1 }).limit(10); // Sort events in ascending order (earliest first)
+    console.log("upcoming:",upcomingEvents);
+    res.status(200).json({ status: "success", events: upcomingEvents });
+
+  } catch (error) {
+    console.error("❌ Error fetching upcoming events:", error);
+    res.status(500).json({ message: "Failed to fetch upcoming events" });
+  }
+};
+
+ // func to get past events of the club
+ const getPastEventsOfClub = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+
+    if (!clubId) {
+      return res.status(400).json({ error: 'Missing clubId in request params' });
+    }
+
+    const pastEvents = await EventModel.find({
+      club: clubId,
+      dateTime: { $lt: new Date() },
+    }).sort({ dateTime: -1 }); // sort by newest to oldest
+
+    res.status(200).json({ pastEvents });
+  } catch (error) {
+    console.error('Error fetching past events:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+//func for fetching events of followed clubs
+export const getFollowedClubEvents = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+
+    // Find clubs followed by the user
+    const followedClubs = await Club.find({ followers: userId }).populate('events');
+
+    if (!followedClubs.length) {
+      return res.status(404).json({ error: 'User is not following any clubs' });
+    }
+
+    // Collect events from all followed clubs
+    let allEvents = [];
+    followedClubs.forEach(club => {
+      allEvents = allEvents.concat(club.events);
+    });
+
+    // Optional: Sort events by date
+    allEvents.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+    res.status(200).json(allEvents);
+  } catch (error) {
+    console.error('Error fetching events from followed clubs:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+// Function to update event status
+export const updateEventStatus = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['drafted', 'tentative', 'published'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const updatedEvent = await EventModel.findByIdAndUpdate(
+      eventId,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    res.status(200).json({ message: 'Event status updated', updatedEvent });
+  } catch (error) {
+    console.error('Error updating event status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+//  Export functions properly
+export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus};
+
  // Function to create an event
 //async function createEvent(req, res) {
 //  try {
@@ -138,36 +253,3 @@ async function createEvent(req, res) {
 //    res.status(500).json({ status: "error", message: "Internal Server Error" });
 //  }
 //}
-
-//  Function to fetch events
-const getEvents = async (req, res) => {
-  try {
-    const events = await Event.find().populate('participants'); // Populating for debugging
-//    console.log(" Retrieved Events:", events);
-    res.status(200).json(events);
-  } catch (error) {
-    console.error("❌ Error fetching events:", error);
-    res.status(500).json({ message: "Failed to fetch events" });
-  }
-};
-
-// Function to get upcoming events
-const getUpcomingEvents = async (req, res) => {
-  try {
-    const currentDateTime = new Date();
-
-    // Fetch only events whose dateTime is in the future
-    const upcomingEvents = await Event.find({ dateTime: { $gt: currentDateTime } })
-      .sort({ dateTime: 1 }); // Sort events in ascending order (earliest first)
-    console.log("upcoming:",upcomingEvents);
-    res.status(200).json({ status: "success", events: upcomingEvents });
-
-  } catch (error) {
-    console.error("❌ Error fetching upcoming events:", error);
-    res.status(500).json({ message: "Failed to fetch upcoming events" });
-  }
-};
-
-//  Export functions properly
-export default { createEvent, getEvents , getUpcomingEvents};
-
