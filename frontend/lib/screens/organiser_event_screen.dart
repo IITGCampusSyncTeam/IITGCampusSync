@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Event Screen
-class EventScreen extends StatelessWidget {
+class OrganiserEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +26,8 @@ class EventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Basic Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Basic Details',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Text('Name: Tech Conference 2024'),
                     Text('Organizing Body: XYZ Club'),
@@ -41,7 +42,8 @@ class EventScreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
             ListTile(
-              title: Text('Organizers Profile', style: TextStyle(color: Colors.blue)),
+              title: Text('Organizers Profile',
+                  style: TextStyle(color: Colors.blue)),
               onTap: () {},
             ),
             Card(
@@ -50,7 +52,8 @@ class EventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Interactions', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Interactions',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Text('Register or RSVP, Add to Google Calendar, Share'),
                   ],
@@ -64,7 +67,8 @@ class EventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('More Events / Related Events', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('More Events / Related Events',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Text('Optional if related events exist'),
                   ],
@@ -78,7 +82,8 @@ class EventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Rating (after event)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Rating (after event)',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Text('Ideating'),
                   ],
@@ -88,7 +93,6 @@ class EventScreen extends StatelessWidget {
           ],
         ),
       ),
-
     );
   }
 }

@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/sharing.dart';
+import 'package:frontend/screens/past_event_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import './constants/endpoints.dart';
 import 'firebase_options.dart';
 
@@ -192,7 +192,7 @@ class MyHomePageState extends State<MyHomePage> {
         // Navigate to ProfileScreen if access token is present
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Home()),
+          MaterialPageRoute(builder: (context) => PastEventScreen()),
         );
       } else {
         // Navigate to login if no access token is found

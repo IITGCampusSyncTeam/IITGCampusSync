@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/event_creation_form_screen.dart';
-import 'package:my_app/tentative_event_add_screen.dart';
+import 'package:frontend/screens/tentative_event_add_screen.dart';
 
+import 'event_creation_form_screen.dart';
 
 class EventPlannerScreen extends StatelessWidget {
   @override
@@ -23,40 +23,45 @@ class EventPlannerScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DropdownButton<String>(
-                  hint: Text('Filter by Date'),
-                  items: ['Today', 'This Week', 'This Month'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                ),
-                DropdownButton<String>(
-                  hint: Text('Filter by Venue'),
-                  items: ['Auditorium', 'Hall A', 'Hall B'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                ),
-                DropdownButton<String>(
-                  hint: Text('Filter by Tags'),
-                  items: ['Tech', 'Cultural', 'Sports'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                ),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  DropdownButton<String>(
+                    hint: Text('Filter by Date'),
+                    items: ['Today', 'This Week', 'This Month']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {},
+                  ),
+                  DropdownButton<String>(
+                    hint: Text('Filter by Venue'),
+                    items:
+                        ['Auditorium', 'Hall A', 'Hall B'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {},
+                  ),
+                  DropdownButton<String>(
+                    hint: Text('Filter by Tags'),
+                    items: ['Tech', 'Cultural', 'Sports'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {},
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 16),
             Text(
@@ -73,7 +78,8 @@ class EventPlannerScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TentativeEventAddScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => TentativeEventAddScreen()),
                 );
               },
               child: Text('Add Tentative Event'),
@@ -98,7 +104,8 @@ class EventPlannerScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EventCreationFormScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => EventCreationFormScreen()),
                 );
               },
               child: Text('Create Event'),
