@@ -3,12 +3,16 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
+import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 import './constants/endpoints.dart';
 import 'firebase_options.dart';
 
@@ -18,6 +22,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
+final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 Future<void> sendFCMTokenToServer(String? token) async {
   if (token != null) {
@@ -54,14 +60,28 @@ Future<void> sendFCMTokenToServer(String? token) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  tz.initializeTimeZones();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Initialize notification plugin
+  const AndroidInitializationSettings androidInit =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initSettings = InitializationSettings(
+    android: androidInit,
+  );
+  // Request exact alarm permission (Android 12+)
+  final androidPlugin =
+      _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+  if (androidPlugin != null) {
+    await androidPlugin.requestExactAlarmsPermission();
+  }
 
   // Initialize NotificationServices
   NotificationServices notificationServices = NotificationServices();
 
   // Request notification permissions
   notificationServices.requestNotificationPermission();
+
   // Get FCM Token
   String? token = await FirebaseMessaging.instance.getToken();
   print("FCM Token: $token"); // This line prints the token
@@ -82,7 +102,9 @@ void main() async {
   }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+  tz.initializeTimeZones();
+  final String timeZoneName = await tz.local.name;
+  tz.setLocalLocation(tz.getLocation(timeZoneName));
   runApp(const MyApp());
 }
 
@@ -101,8 +123,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     // Initialize Firebase notifications
-    _notificationServices.firebaseInit(context);
-
+    // _notificationServices.firebaseInit(context);
+    initializeTimeZone();
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+    _notificationServices.initLocalNotifications(context);
     // Set up foreground notification presentation options
     _notificationServices.forgroundMessage();
     messaging = FirebaseMessaging.instance;
