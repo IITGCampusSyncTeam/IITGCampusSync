@@ -1,10 +1,11 @@
 import express from 'express';
-import { setReminder } from './notification_controller.js';
+import { setReminder ,setReminderForFollowers } from './notification_controller.js';
 
 const router = express.Router();
 
 // Route to set reminder
 router.post('/set-reminder', setReminder);
+router.post('/set-rem-for-followers',setReminderForFollowers);
 
 //// Route to manually trigger checking reminders
 //router.get('/check-reminders', async (req, res) => {

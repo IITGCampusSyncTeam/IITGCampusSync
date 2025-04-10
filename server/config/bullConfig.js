@@ -1,55 +1,61 @@
+
 import { Queue, Worker } from 'bullmq';
 import { sendNotification } from '../modules/notif/notification_controller.js';
 import EventModel from '../modules/event/eventModel.js';
-import Redis from 'ioredis';
+import Club from '../modules/club/clubModel.js';
 import User from '../modules/user/user.model.js';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
-
-const redisHost = process.env.REDIS_HOST || 'localhost';
-const redisPort = parseInt(process.env.REDIS_PORT, 10) || 6379;
-const redisPassword = process.env.REDIS_PASSWORD || '';
-
-console.log(`REDIS_PORT:${redisPort}`);
-console.log(redisHost);
-console.log(redisPassword);
-
-// Redis configuration
 const redisOptions = {
-  host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT), // Port needs to be an integer
-  password: process.env.REDIS_PASSWORD,
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+  password: process.env.REDIS_PASSWORD || '',
 };
 
-// Check if the port is parsed correctly
-console.log(`Parsed Redis Port: ${redisOptions.port}`);
-
-// Create a new queue for reminders
+// Reminder Queue
 export const reminderQueue = new Queue('reminderQueue', {
   connection: redisOptions,
 });
 
-// Worker to process the reminder queue
+// Worker for processing reminder jobs
 const reminderWorker = new Worker(
   'reminderQueue',
   async (job) => {
-    const { userId, eventId } = job.data;
+    const { name, data } = job;
 
-    // Find user and event
-    const user = await User.findById(userId);
-    const event = await EventModel.findById(eventId);
+    if (name === 'sendReminder') {
+      const { userId, eventId } = data;
+      const user = await User.findById(userId);
+      const event = await EventModel.findById(eventId);
+      if (user && event) {
+        await sendNotification(user.fcmToken, {
+          title: `Reminder: ${event.title}`,
+          body: `Your event "${event.title}" starts at ${new Date(event.dateTime).toLocaleString()}`
+        });
+        console.log(`✅ Reminder sent to ${user.name}`);
+      }
+    }
 
-    if (user && event) {
-      const data = {
-        title: `Reminder: ${event.title}`,
-        body: `Your event "${event.title}" starts at ${new Date(event.dateTime).toLocaleString()}`
-      };
+    if (name === 'sendClubReminder') {
+      const { eventId } = data;
+      const event = await EventModel.findById(eventId).populate('club');
+      const club = event.club;
 
-      // Send notification
-      await sendNotification(user.fcmToken, data);
-      console.log(`✅ Notification sent to ${user.name}`);
+      if (!club) throw new Error('Club not found for this event');
+
+      const populatedClub = await ClubModel.findById(club._id).populate('followers');
+
+      for (const follower of populatedClub.followers) {
+        if (follower.fcmToken) {
+          await sendNotification(follower.fcmToken, {
+            title: `⏰ Reminder from ${club.name}`,
+            body: `The event "${event.title}" starts at ${new Date(event.dateTime).toLocaleString()}`
+          });
+          console.log(`🔔 Sent to follower ${follower.name}`);
+        }
+      }
     }
   },
   {
@@ -57,10 +63,11 @@ const reminderWorker = new Worker(
   }
 );
 
+// Worker Events
 reminderWorker.on('completed', (job) => {
-  console.log(`🎉 Job ${job.id} completed successfully`);
+  console.log(`🎉 Job ${job.id} completed`);
 });
 
 reminderWorker.on('failed', (job, err) => {
-  console.error(`❌ Job ${job.id} failed with error: ${err.message}`);
+  console.error(`❌ Job ${job.id} failed: ${err.message}`);
 });
