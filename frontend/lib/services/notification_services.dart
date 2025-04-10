@@ -100,51 +100,6 @@ class NotificationServices {
     isInitialized = true;
   }
 
-  //function to initialise flutter local notification plugin to show notifications for android when app is active
-  // Future<void> initLocalNotifications(BuildContext context) async {
-  //   if (isInitialized) return;
-  //   final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
-  //   tz.setLocalLocation(tz.getLocation(currentTimeZone));
-  //   var androidInitializationSettings =
-  //       const AndroidInitializationSettings('@mipmap/ic_launcher');
-  //   var iosInitializationSettings = const DarwinInitializationSettings();
-  //
-  //   var initializationSetting = InitializationSettings(
-  //       android: androidInitializationSettings, iOS: iosInitializationSettings);
-  //   const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  //     'daily_channel_id', // Must match the ID in notificationDetails()
-  //     'Daily Notifications',
-  //     description: 'Daily Notification Channel',
-  //     importance: Importance.max,
-  //   );
-  //
-  //   await _flutterLocalNotificationsPlugin
-  //       .resolvePlatformSpecificImplementation<
-  //           AndroidFlutterLocalNotificationsPlugin>()
-  //       ?.createNotificationChannel(channel);
-  //
-  //   await _flutterLocalNotificationsPlugin
-  //       .resolvePlatformSpecificImplementation<
-  //           AndroidFlutterLocalNotificationsPlugin>()
-  //       ?.requestExactAlarmsPermission();
-  //
-  //   await _flutterLocalNotificationsPlugin.initialize(
-  //     initializationSetting,
-  //     onDidReceiveNotificationResponse: (NotificationResponse response) {
-  //       print("notif clicked: ${response.payload}");
-  //       if (response.payload != null) {
-  //         Map<String, dynamic> data = jsonDecode(response.payload!);
-  //         if (data['type'] == 'msj') {
-  //           Navigator.push(
-  //             context,
-  //             MaterialPageRoute(builder: (context) => EventScreen()),
-  //           );
-  //         }
-  //       }
-  //     },
-  //   );
-  // }
-
   void OnNotificationTap(NotificationResponse response) {
     print("notif clicked: ${response.payload}");
   }
@@ -214,74 +169,6 @@ class NotificationServices {
       }
     }
   }
-
-  // void requestNotificationPermission() async {
-  //   NotificationSettings settings = await messaging.requestPermission(
-  //     alert: true,
-  //     announcement: true,
-  //     badge: true,
-  //     carPlay: true,
-  //     criticalAlert: true,
-  //     provisional: true,
-  //     sound: false,
-  //   );
-  //
-  //   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //     if (kDebugMode) {
-  //       print('user granted permission');
-  //     }
-  //   } else if (settings.authorizationStatus ==
-  //       AuthorizationStatus.provisional) {
-  //     if (kDebugMode) {
-  //       print('user granted provisional permission');
-  //     }
-  //   } else {
-  //     //appsetting.AppSettings.openNotificationSettings();
-  //     if (kDebugMode) {
-  //       print('user denied permission');
-  //     }
-  //   }
-  // }
-  //
-  // function to show visible notification when app is active
-  // Future<void> showNotification(RemoteMessage message) async {
-  //   AndroidNotificationChannel channel = AndroidNotificationChannel(
-  //     message.notification!.android!.channelId.toString(),
-  //     message.notification!.android!.channelId.toString(),
-  //     importance: Importance.max,
-  //     showBadge: true,
-  //     playSound: true,
-  //   );
-  //
-  //   AndroidNotificationDetails androidNotificationDetails =
-  //       AndroidNotificationDetails(
-  //           channel.id.toString(), channel.name.toString(),
-  //           channelDescription: 'your channel description',
-  //           importance: Importance.high,
-  //           priority: Priority.high,
-  //           playSound: true,
-  //           ticker: 'ticker',
-  //           sound: channel.sound
-  //           //     sound: RawResourceAndroidNotificationSound('jetsons_doorbell')
-  //           //  icon: largeIconPath
-  //           );
-  //
-  //   const DarwinNotificationDetails darwinNotificationDetails =
-  //       DarwinNotificationDetails(
-  //           presentAlert: true, presentBadge: true, presentSound: true);
-  //
-  //   NotificationDetails notificationDetails = NotificationDetails(
-  //       android: androidNotificationDetails, iOS: darwinNotificationDetails);
-  //
-  //   Future.delayed(Duration.zero, () {
-  //     _flutterLocalNotificationsPlugin.show(
-  //       0,
-  //       message.notification!.title.toString(),
-  //       message.notification!.body.toString(),
-  //       notificationDetails,
-  //     );
-  //   });
-  // }
 
   //function to get device token on which we will send the notifications
   Future<String> getDeviceToken() async {

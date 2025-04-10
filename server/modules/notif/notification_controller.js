@@ -25,7 +25,7 @@ export const sendNotification = async (token, data) => {
 
 
 
-
+//set reminder by the user
 export const setReminder = async (req, res) => {
   try {
     const { userId, eventId, hoursBefore } = req.body;

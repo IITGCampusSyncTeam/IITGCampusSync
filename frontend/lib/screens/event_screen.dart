@@ -6,7 +6,6 @@ import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
-import 'package:timezone/timezone.dart' as tz;
 
 import '../utilities/helper_functions.dart';
 
@@ -285,42 +284,6 @@ class _EventScreenState extends State<EventScreen> {
                                 SizedBox(height: 4),
                                 Text('Date: ${event['dateTime']}'),
                                 SizedBox(height: 8),
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    print(
-                                      tz.TZDateTime.now(tz.local)
-                                          .add(const Duration(seconds: 5)),
-                                    );
-                                    await flutterLocalNotificationsPlugin
-                                        .zonedSchedule(
-                                            2,
-                                            'scheduled title',
-                                            'scheduled body',
-                                            tz.TZDateTime.now(tz.local).add(
-                                                const Duration(seconds: 20)),
-                                            notificationDetails(),
-                                            androidScheduleMode:
-                                                AndroidScheduleMode
-                                                    .inexactAllowWhileIdle);
-
-                                    //
-                                    // print(scheduledTime);
-                                    // notificationServices
-                                    //     .scheduleLocalNotification(
-                                    //         id: 13,
-                                    //         title: "dd",
-                                    //         body: "dd",
-                                    //         scheduledDateTime: scheduledTime);
-                                  },
-
-                                  // onPressed: () => _showReminderDialog(event),
-                                  icon: Icon(Icons.alarm),
-                                  label: Text('Set Reminder'),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  ),
-                                ),
                               ],
                             ),
                           ),
