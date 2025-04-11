@@ -197,44 +197,6 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  void _showReminderDialog(Map<String, dynamic> event) async {
-    final DateTime? pickedDateTime = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    ).then((date) async {
-      if (date != null) {
-        final TimeOfDay? pickedTime = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-        );
-        if (pickedTime != null) {
-          return DateTime(date.year, date.month, date.day, pickedTime.hour,
-              pickedTime.minute);
-        }
-      }
-      return null;
-    });
-
-    if (pickedDateTime != null) {
-      final scheduledTime = pickedDateTime;
-
-      await notificationServices.scheduleLocalNotification(
-        id: DateTime.now()
-            .millisecondsSinceEpoch
-            .remainder(100000), // unique ID
-        title: event['title'],
-        body: event['description'],
-        scheduledDateTime: scheduledTime,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reminder set for ${event['title']}')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

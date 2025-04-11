@@ -25,14 +25,6 @@ String _formatTime(DateTime date) {
   return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }
 
-// for scheduling local reminders
-Future<void> requestExactAlarmsPermission() async {
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.requestExactAlarmsPermission();
-}
-
 void initializeTimeZone() {
   tz.initializeTimeZones();
   final String timeZoneName = tz.local.name;

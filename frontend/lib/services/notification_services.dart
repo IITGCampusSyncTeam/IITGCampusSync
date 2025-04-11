@@ -8,7 +8,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/event_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
 
 class NotificationServices {
   //initialising firebase message plugin
@@ -235,68 +234,6 @@ class NotificationServices {
     return _flutterLocalNotificationsPlugin.show(
         id, title, body, notificationDetails());
   }
-
-  Future<void> scheduleLocalNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDateTime,
-  }) async {
-    try {
-      final androidPlugin = _flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
-
-      await androidPlugin
-          ?.requestNotificationsPermission(); // POST_NOTIFICATIONS
-      await androidPlugin
-          ?.requestExactAlarmsPermission(); // SCHEDULE_EXACT_ALARM
-      final now = tz.TZDateTime.now(tz.local);
-      final scheduledDate = tz.TZDateTime.from(scheduledDateTime, tz.local);
-
-      print("scheduled date: $scheduledDate");
-      print("Current: ${tz.TZDateTime.now(tz.local)}");
-      await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledDate,
-        notificationDetails(), // using your defined details
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: null, // if you want *exact one-time* trigger
-      );
-
-      print("notification scheduled ✅");
-    } catch (e, stackTrace) {
-      print("❌ Error scheduling notification: $e");
-      print("📄 Stack trace: $stackTrace");
-    }
-  }
-
-  // //scheduled notifs
-  // Future<void> scheduleLocalNotification({
-  //   required int id,
-  //   required String title,
-  //   required String body,
-  //   required DateTime scheduledDateTime,
-  // }) async {
-  //   final now = tz.TZDateTime.now(tz.local);
-  //
-  //   var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day,
-  //       scheduledDateTime.hour, scheduledDateTime.minute);
-  //   print("scheduled date: $scheduledDate");
-  //   //schedule the notif
-  //   await _flutterLocalNotificationsPlugin.zonedSchedule(
-  //     id,
-  //     title,
-  //     body,
-  //     scheduledDate,
-  //     const NotificationDetails(),
-  //     androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-  //     matchDateTimeComponents: DateTimeComponents.time,
-  //   );
-  //   print("notifications scheduled");
-  // }
 
   // cancel all notifs
   Future<void> cancelAllNotifications() async {
