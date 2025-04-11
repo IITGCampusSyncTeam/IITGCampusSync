@@ -96,36 +96,79 @@ export const sendNotificationsToFollowers = async (club, event) => {
 };
 
 export const removeFinishedContests = async () => {
-    try {
-        const response = await axios.get('https://codeforces.com/api/contest.list');
-        if (response.data.status !== 'OK') {
-            console.error('Error fetching contests from Codeforces');
-            return;
-        }
-
-        const finishedContests = response.data.result.filter(
-            (contest) => contest.phase === 'FINISHED'
-        ); // Get only finished contests
-
-        for (const contest of finishedContests) {
-            const existingEvent = await EventModel.findOne({
-                title: contest.name,
-                club: CODEFORCES_CLUB_ID,
-            });
-
-            if (existingEvent) {
-                // Remove the finished event from the club's events list
-                await EventModel.findByIdAndDelete(existingEvent._id);
-                await Club.updateOne(
-                    { _id: CODEFORCES_CLUB_ID },
-                    { $pull: { events: existingEvent._id } }
-                );
-                console.log(`Removed finished contest: ${contest.name}`);
-            }
-        }
-
-        console.log('Finished contest removal completed');
-    } catch (error) {
-        console.error('Error removing finished contests:', error);
+  try {
+    const response = await axios.get('https://codeforces.com/api/contest.list');
+    if (response.data.status !== 'OK') {
+      console.error('Error fetching contests from Codeforces');
+      return;
     }
+
+    const finishedContests = response.data.result.filter(
+      (contest) => contest.phase === 'FINISHED'
+    );
+
+    // Find the club by name
+    const codeforcesClub = await Club.findOne({ name:"codeforces" });
+
+    if (!codeforcesClub) {
+      console.error(`Club with name '${codeforces}' not found.`);
+      return;
+    }
+
+    for (const contest of finishedContests) {
+      const existingEvent = await EventModel.findOne({
+        title: contest.name,
+        club: codeforcesClub._id,
+      });
+
+      if (existingEvent) {
+        await EventModel.findByIdAndDelete(existingEvent._id);
+        await Club.updateOne(
+          { _id: codeforcesClub._id },
+          { $pull: { events: existingEvent._id } }
+        );
+        console.log(`Removed finished contest: ${contest.name}`);
+      }
+    }
+
+    console.log('Finished contest removal completed');
+  } catch (error) {
+    console.error('Error removing finished contests:', error);
+  }
 };
+
+//
+//export const removeFinishedContests = async () => {
+//    try {
+//        const response = await axios.get('https://codeforces.com/api/contest.list');
+//        if (response.data.status !== 'OK') {
+//            console.error('Error fetching contests from Codeforces');
+//            return;
+//        }
+//
+//        const finishedContests = response.data.result.filter(
+//            (contest) => contest.phase === 'FINISHED'
+//        ); // Get only finished contests
+//
+//        for (const contest of finishedContests) {
+//            const existingEvent = await EventModel.findOne({
+//                title: contest.name,
+//                club: CODEFORCES_CLUB_ID,
+//            });
+//
+//            if (existingEvent) {
+//                // Remove the finished event from the club's events list
+//                await EventModel.findByIdAndDelete(existingEvent._id);
+//                await Club.updateOne(
+//                    { _id: CODEFORCES_CLUB_ID },
+//                    { $pull: { events: existingEvent._id } }
+//                );
+//                console.log(`Removed finished contest: ${contest.name}`);
+//            }
+//        }
+//
+//        console.log('Finished contest removal completed');
+//    } catch (error) {
+//        console.error('Error removing finished contests:', error);
+//    }
+//};

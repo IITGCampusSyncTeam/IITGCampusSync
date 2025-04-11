@@ -129,8 +129,9 @@ const getUpcomingEvents = async (req, res) => {
   }
 };
 
+
 //func for fetching events of followed clubs
-export const getFollowedClubEvents = async (req, res) => {
+const getFollowedClubEvents = async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -138,32 +139,44 @@ export const getFollowedClubEvents = async (req, res) => {
       return res.status(400).json({ error: 'Missing userId' });
     }
 
-    // Find clubs followed by the user
-    const followedClubs = await Club.find({ followers: userId }).populate('events');
+    // Find the user and populate their subscribed clubs' events
+    const user = await User.findById(userId).populate({
+      path: 'subscribedClubs',
+      populate: {
+        path: 'events',
+        model: 'Event'
+      }
+    });
 
-    if (!followedClubs.length) {
-      return res.status(404).json({ error: 'User is not following any clubs' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Collect events from all followed clubs
+    const followedClubs = user.subscribedClubs;
+
+    if (!followedClubs || followedClubs.length === 0) {
+      return res.status(404).json({ error: 'User is not subscribed to any clubs' });
+    }
+
+    // Collect all events
     let allEvents = [];
     followedClubs.forEach(club => {
       allEvents = allEvents.concat(club.events);
     });
 
-    // Optional: Sort events by date
+    // Sort events by date
     allEvents.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
 
     res.status(200).json(allEvents);
   } catch (error) {
-    console.error('Error fetching events from followed clubs:', error);
+    console.error('Error fetching events from subscribed clubs:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 
 // Function to update event status
-export const updateEventStatus = async (req, res) => {
+const updateEventStatus = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { status } = req.body;
@@ -190,66 +203,63 @@ export const updateEventStatus = async (req, res) => {
   }
 };
 
-//  Export functions properly
-export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus};
+const editEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const updateData = req.body;
 
- // Function to create an event
-//async function createEvent(req, res) {
+    if (!eventId) {
+      return res.status(400).json({ error: "Missing eventId" });
+    }
+
+    const updatedEvent = await EventModel.findByIdAndUpdate(
+      eventId,
+      updateData,
+      { new: true } // return the updated document
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.status(200).json({ message: "Event updated successfully", event: updatedEvent });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//  Export functions properly
+export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent};
+
+//func for fetching events of followed clubs
+//export const getFollowedClubEvents = async (req, res) => {
 //  try {
-//    const { title, description, dateTime, club, createdBy } = req.body;
-// // Convert IST to UTC before saving
-//    const dateTimeUTC = convertISTtoUTC(dateTime);
-//    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
-//    //  Fetch all users who have an FCM token
-//    const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
+//    const { userId } = req.params;
 //
-//    console.log(" Fetched Users with FCM Tokens:", users);
-//
-//    //  Extract user IDs for participants and FCM tokens separately
-//    const participants = users.map(user => user._id);  // Store only ObjectIds
-//    const fcmTokens = users.map(user => user.fcmToken); // Store FCM tokens separately
-//
-//    console.log("✅ Processed Participants (ObjectIds):", participants);
-//    console.log("✅ FCM Tokens for Notifications:", fcmTokens);
-//
-//    // Save event in MongoDB
-//    const newEvent = await Event.create({
-//      title,
-//      description,
-//      dateTimeUTC,
-//      club,
-//      createdBy,
-//      participants, // Now stores only ObjectIds
-//      notifications: [],
-//    });
-//
-//    console.log(" Event Created Successfully:", newEvent);
-////TODO: if we r using for loop then will take lot of time, performance issue
-//    //  Send notifications only if participants exist
-//    if (fcmTokens.length > 0) {
-//      for (const token of fcmTokens) {
-//        const message = {
-//          notification: {
-//            title: title,
-//            body: description,
-//          },
-//          token: token,
-//        };
-//
-//        try {
-//          const response = await admin.messaging().send(message);
-//          console.log("✅ Notification sent successfully:", response);
-//        } catch (error) {
-//          console.error("❌ Error sending notification:", error);
-//        }
-//      }
-//    } else {
-//      console.log("⚠️ No FCM tokens found, skipping notifications.");
+//    if (!userId) {
+//      return res.status(400).json({ error: 'Missing userId' });
 //    }
 //
-//    res.status(201).json({ status: "success", event: newEvent });
+//    // Find clubs followed by the user
+//    const followedClubs = await Club.find({ followers: userId }).populate('events');
+//
+//    if (!followedClubs.length) {
+//      return res.status(404).json({ error: 'User is not following any clubs' });
+//    }
+//
+//    // Collect events from all followed clubs
+//    let allEvents = [];
+//    followedClubs.forEach(club => {
+//      allEvents = allEvents.concat(club.events);
+//    });
+//
+//    // Optional: Sort events by date
+//    allEvents.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+//
+//    res.status(200).json(allEvents);
 //  } catch (error) {
-//    console.error("❌ Error creating event:", error);
-//    res.status(500).json({ status: "error", message: "Internal Server Error" });
+//    console.error('Error fetching events from followed clubs:', error);
+//    res.status(500).json({ error: 'Internal server error' });
 //  }
-//}
+//};

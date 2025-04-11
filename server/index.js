@@ -116,6 +116,8 @@ app.get("/get-service-account", (req, res) => {
 cron.schedule('0 */12 * * *', () => {
     console.log('Fetching Codeforces contests...');
     fetchAndAddContests();
+    removeFinishedContests();
+
 });
 
 // Start the server
