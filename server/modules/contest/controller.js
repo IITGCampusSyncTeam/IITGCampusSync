@@ -4,9 +4,6 @@ import EventModel from '../event/eventModel.js';
 import User from '../user/user.model.js';
 import { sendNotification } from '../notif/notification_controller.js';
 
-//codeforces club id
-const CODEFORCES_CLUB_ID = '67e1978a717c73c22ea1c19f';
-
 export const getContestList = async (req, res) => {
     try {
         const response = await axios.get('https://codeforces.com/api/contest.list');
@@ -21,8 +18,6 @@ export const getContestList = async (req, res) => {
     }
 };
 
-
-
 export const fetchAndAddContests = async () => {
     try {
         const response = await axios.get('https://codeforces.com/api/contest.list');
@@ -33,34 +28,31 @@ export const fetchAndAddContests = async () => {
 
         const contests = response.data.result.filter(
             (contest) => contest.phase === 'BEFORE'
-        ); // Get only upcoming contests
+        );
 
-        // Fetch Codeforces club
-        const club = await Club.findById(CODEFORCES_CLUB_ID);
+        // Fetch Codeforces club by name
+        const club = await Club.findOne({ name: 'codeforces' });
         if (!club) {
             console.error('Codeforces club not found');
             return;
         }
 
         for (const contest of contests) {
-            const existingEvent = await EventModel.findOne({ title: contest.name, club: CODEFORCES_CLUB_ID });
-            console.log('Checking for existing event:', contest.name, CODEFORCES_CLUB_ID);
+            const existingEvent = await EventModel.findOne({ title: contest.name, club: club._id });
+            console.log('Checking for existing event:', contest.name, club._id);
 
-            if (existingEvent==null) {
-                // Create a new event for the contest
+            if (!existingEvent) {
                 const newEvent = new EventModel({
                     title: contest.name,
                     description: `Codeforces contest: ${contest.name}`,
                     dateTime: new Date(contest.startTimeSeconds * 1000),
-                    club: CODEFORCES_CLUB_ID
+                    club: club._id
                 });
-
 
                 await newEvent.save();
                 club.events.push(newEvent._id);
                 await club.save();
 
-                // Send notifications to followers
                 await sendNotificationsToFollowers(club, newEvent);
             }
         }
@@ -70,7 +62,6 @@ export const fetchAndAddContests = async () => {
         console.error('Error fetching contests:', error);
     }
 };
-
 
 
 export const sendNotificationsToFollowers = async (club, event) => {
