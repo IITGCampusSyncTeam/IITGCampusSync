@@ -241,6 +241,7 @@ export const listClubFiles = catchAsync(async (req, res, next) => {
 
 
 // Download file with permission check
+// can't dowload through public link , only for view , change this later if found any solution
 export const downloadClubFile = catchAsync(async (req, res, next) => {
     const { fileId } = req.params;
     const { viewerEmail, clubId } = req.query; // Changed referenceId to clubId
@@ -316,7 +317,8 @@ export const getOneDriveStorageInfo = catchAsync(async (req, res, next) => {
 // Delete a file
 export const deleteClubFile = catchAsync(async (req, res, next) => {
     const { fileId } = req.params;
-    const { userEmail } = req.body;
+      const { userEmail } = req.query;
+
     
     if (!userEmail) return next(new AppError(400, "User email is required"));
     

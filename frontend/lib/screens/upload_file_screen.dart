@@ -290,7 +290,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
       final dio = Dio();
       final response = await dio.delete(
         '${backend.uri}/api/onedrive/file/$fileId',
-        data: {
+        queryParameters: {
           'userEmail': widget.viewerEmail,
         },
         options: Options(
@@ -299,7 +299,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
           },
         ),
       );
-
+      print(response);
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File deleted successfully")));
         fetchClubFiles();
@@ -314,9 +314,10 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
 
   Widget fileItem(Map file) {
     final bool isPublic = file['visibility'] == 'public';
+    final String? fileLink = file['link']; // Get file preview link
 
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: ListTile(
         leading: Icon(
           _getFileIcon(file['mimeType']),
@@ -334,38 +335,40 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
                   size: 16,
                   color: isPublic ? Colors.green : Colors.grey,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   isPublic ? "Public" : "Private",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isPublic ? Colors.green : Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 12, color: isPublic ? Colors.green : Colors.grey),
                 ),
               ],
             ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(Icons.download, color: Colors.blue),
-              onPressed: () => downloadFile(file['_id']),
-              tooltip: 'Download',
-            ),
-            if (widget.isSecretary)
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () => _showDeleteConfirmation(file),
-                tooltip: 'Delete',
-              ),
-          ],
-        ),
-        onTap: () => downloadFile(file['_id']),
+        trailing: widget.isSecretary
+            ? IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+          onPressed: () => _showDeleteConfirmation(file),
+          tooltip: 'Delete',
+        )
+            : null, // Remove download button, keep delete button for secretaries
+        onTap: fileLink != null ? () => _openFilePreview(fileLink) : null, // Open link on tap
       ),
     );
   }
+
+// Function to open file in browser
+  void _openFilePreview(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint("Could not open file preview");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot open file preview")),
+      );
+    }
+  }
+
 
   void _showDeleteConfirmation(Map file) {
     showDialog(
