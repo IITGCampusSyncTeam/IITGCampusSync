@@ -7,6 +7,7 @@ import 'package:frontend/apis/protected.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/endpoints.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UploadFileScreen extends StatefulWidget {
   final String clubId;
@@ -15,7 +16,7 @@ class UploadFileScreen extends StatefulWidget {
 
   const UploadFileScreen({
     Key? key, 
-    required this.clubId, 
+    required this.clubId,
     required this.viewerEmail,
     this.isSecretary = true, // Default to false
   }) : super(key: key);
@@ -34,6 +35,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
   List<dynamic> clubFiles = [];
   Map<String, dynamic> storageInfo = {};
   bool isLoadingStorage = true;
+  String userEmail= '';
 
 
   @override
@@ -41,7 +43,37 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
     super.initState();
     fetchClubFiles();
     fetchStorageInfo();
+    fetchUserEmail();
   }
+
+  Future<void> fetchUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? userDataString = prefs.getString('user_data');
+
+    print("Fetching user email...");
+    print("Stored user_data: $userDataString"); // Debugging
+
+    if (userDataString == null || userDataString.isEmpty) {
+      print("User data not found in SharedPreferences.");
+      return;
+    }
+
+    try {
+      final dynamic decodedUser = jsonDecode(userDataString);
+
+      if (decodedUser is Map<String, dynamic> && decodedUser.containsKey('email')) {
+        setState(() {
+          userEmail = decodedUser['email']; // or whatever variable you're using
+        });
+        print("User Email: $userEmail");
+      } else {
+        print("User data structure does not contain 'email'.");
+      }
+    } catch (e) {
+      print("Error decoding user data: $e");
+    }
+  }
+
 
   Future<void> fetchStorageInfo() async {
     setState(() {
@@ -264,37 +296,38 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
     }
   }
 
-  Future<void> downloadFile(String fileId) async {
-    try {
-      final uri = Uri.parse('${backend.uri}/api/onedrive/download/$fileId?viewerEmail=${widget.viewerEmail}');
-      final response = await HttpClient().getUrl(uri).then((req) => req.close());
-
-      if (response.statusCode == 200) {
-        final jsonData = await response.transform(utf8.decoder).join();
-        final decoded = jsonDecode(jsonData);
-        final downloadLink = decoded['downloadLink'];
-        
-        if (await canLaunchUrl(Uri.parse(downloadLink))) {
-          await launchUrl(Uri.parse(downloadLink), mode: LaunchMode.externalApplication);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot open file")));
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to get download link")));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-    }
-  }
+  // Future<void> downloadFile(String fileId) async {
+  //   try {
+  //     final uri = Uri.parse('${backend.uri}/api/onedrive/download/$fileId?viewerEmail=${widget.viewerEmail}');
+  //     final response = await HttpClient().getUrl(uri).then((req) => req.close());
+  //
+  //     if (response.statusCode == 200) {
+  //       final jsonData = await response.transform(utf8.decoder).join();
+  //       final decoded = jsonDecode(jsonData);
+  //       final downloadLink = decoded['downloadLink'];
+  //
+  //       if (await canLaunchUrl(Uri.parse(downloadLink))) {
+  //         await launchUrl(Uri.parse(downloadLink), mode: LaunchMode.externalApplication);
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Cannot open file")));
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to get download link")));
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+  //   }
+  // }
 
   Future<void> deleteFile(String fileId) async {
+
     try {
       final dio = Dio();
       String token = await getAccessToken();
       final response = await dio.delete(
         '${backend.uri}/api/onedrive/file/$fileId',
         queryParameters: {
-          'userEmail': widget.viewerEmail,
+          'userEmail': userEmail,
         },
         options: Options(
           headers: {

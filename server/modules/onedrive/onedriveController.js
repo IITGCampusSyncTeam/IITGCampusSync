@@ -327,10 +327,10 @@ export const deleteClubFile = catchAsync(async (req, res, next) => {
     
     const club = await Club.findById(fileDoc.referenceId).populate("secretary");
     if (!club) return next(new AppError(404, "Associated club not found"));
-    console.log("club", club);
-    console.log("fileDoc", fileDoc);
-    console.log("userEmail", userEmail);
-    console.log("club.secretary.email", club.secretary.email);    
+    // console.log("club", club);
+    // console.log("fileDoc", fileDoc);
+    // console.log("userEmail", userEmail);
+    // console.log("club.secretary.email", club.secretary.email);    
     // Only secretary can delete files
     if (club.secretary?.email.trim().toLowerCase() !== userEmail.trim().toLowerCase()) {
         return next(new AppError(403, "Only the club secretary can delete files"));
