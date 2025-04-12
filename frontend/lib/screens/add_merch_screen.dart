@@ -75,6 +75,7 @@ class _AddMerchScreenState extends State<AddMerchScreen> {
       } else {
         final responseData = jsonDecode(response.body);
         setState(() {
+          print("hii");
           _errorMessage = responseData["message"] ?? 'Failed to add merch. Please try again!';
         });
       }
