@@ -144,7 +144,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       //home: PaymentScreen(),
-      //home: const MyHomePage(title: 'IITGsync'),
+     // home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
       home:ClubsScreen(),
     );

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/apis/protected.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/endpoints.dart';
@@ -33,6 +34,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
   List<dynamic> clubFiles = [];
   Map<String, dynamic> storageInfo = {};
   bool isLoadingStorage = true;
+
 
   @override
   void initState() {
@@ -288,6 +290,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
   Future<void> deleteFile(String fileId) async {
     try {
       final dio = Dio();
+      String token = await getAccessToken();
       final response = await dio.delete(
         '${backend.uri}/api/onedrive/file/$fileId',
         queryParameters: {
@@ -296,6 +299,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
           },
         ),
       );
