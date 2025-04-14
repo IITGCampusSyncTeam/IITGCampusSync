@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/upload_file_screen.dart';
 import 'package:http/http.dart' as http;
 import '../constants/endpoints.dart';
 import '../models/club_model.dart';
@@ -184,7 +185,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
               // Modify Button (Only for Secretary)
               if (isSecretary)
                 Center(
-                  child: ElevatedButton.icon(
+                  child: Column( children: [ ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -206,6 +207,33 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       ),
                     ),
                   ),
+
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UploadFileScreen(clubId: widget.clubId,viewerEmail: widget.userId
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.upload_file, color: Colors.white),
+                    label: const Text(
+                      "Upload File",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                      ],
+                  ),
+
                 ),
             ],
           ),

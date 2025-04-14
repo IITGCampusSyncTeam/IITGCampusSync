@@ -93,4 +93,9 @@ class ClubMembers {
 
   static String removeMember(String clubId, String email) =>
       "$baseUrl/$clubId/removemember/$email";
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 17a011c173a2b49e786808ab48e6c0ee057677a0

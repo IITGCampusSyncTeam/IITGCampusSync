@@ -95,11 +95,10 @@ export const getClubDetail = async (req, res) => {
 
     try {
         const club = await Club.findById(id)
-            .populate('heads', 'name')
-            //.populate('members.userId', 'name')
-            .populate('events')
-            .populate('merch')
-            .lean(); // Use lean() to allow direct mutation
+            .populate('heads', 'name')  // Populate heads with names
+           // .populate('members.userId', 'name')  // Populate member user names
+            .populate('events')  // Populate all event details
+            .populate('merch');  // Populate all merch details
 
         if (!club) return res.status(404).json({ message: 'Club not found' });
 
