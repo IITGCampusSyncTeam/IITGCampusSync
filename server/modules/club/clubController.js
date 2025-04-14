@@ -96,7 +96,7 @@ export const getClubDetail = async (req, res) => {
     try {
         const club = await Club.findById(id)
             .populate('heads', 'name')
-            .populate('members.userId', 'name')
+            //.populate('members.userId', 'name')
             .populate('events')
             .populate('merch')
             .lean(); // Use lean() to allow direct mutation
