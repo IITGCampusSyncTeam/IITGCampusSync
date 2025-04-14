@@ -95,15 +95,28 @@ export const getClubDetail = async (req, res) => {
 
     try {
         const club = await Club.findById(id)
-            .populate('heads', 'name')  // Populate heads with names
-            .populate('members.userId', 'name')  // Populate member user names
-            .populate('events')  // Populate all event details
-            .populate('merch');  // Populate all merch details
+            .populate('heads', 'name')
+            .populate('members.userId', 'name')
+            .populate('events')
+            .populate('merch')
+            .lean(); // Use lean() to allow direct mutation
 
         if (!club) return res.status(404).json({ message: 'Club not found' });
 
+        // Format the tags associated with the club
+        if (club.tag && club.tag.length > 0) {
+            const tags = await Tag.find({ _id: { $in: club.tag } }).select('_id title').lean();
+            club.tag = tags.map(tag => ({
+                id: tag._id.toString(),
+                name: tag.title,
+            }));
+        } else {
+            club.tag = [];
+        }
+
         res.status(200).json(club);
     } catch (err) {
+        console.error("Error fetching club details:", err);
         res.status(500).json({ message: 'Error fetching club details', error: err });
     }
 };
