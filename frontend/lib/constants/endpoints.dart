@@ -74,3 +74,14 @@ class UserTag {
   static String removeTag(String email, String tagId) =>
       "${AuthConfig.serverUrl}/api/user/$email/deletetag/$tagId";
 }
+
+class ClubTag {
+  static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
+
+  static String addTag(String clubId, String tagId) =>
+      "${AuthConfig.serverUrl}/api/clubs/$clubId/addtag/$tagId";
+
+  static String removeTag(String clubId, String tagId) =>
+      "${AuthConfig.serverUrl}/api/clubs/$clubId/deletetag/$tagId";
+}
+

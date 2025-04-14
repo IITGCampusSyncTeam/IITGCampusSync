@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/club_profile_screen.dart';
 import 'package:frontend/screens/clubs_screen.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
@@ -144,8 +145,9 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       //home: PaymentScreen(),
-     // home: const MyHomePage(title: 'IITGsync'),
+     // //home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
+      home : ClubProfileScreen(),
       home:ClubsScreen(),
     );
   }
