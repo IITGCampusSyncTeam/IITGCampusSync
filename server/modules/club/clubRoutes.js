@@ -33,7 +33,7 @@ router.post("/:clubId/addtag/:tagId", isAuthenticated, addTagToClub);
 router.delete("/:clubId/deletetag/:tagId", isAuthenticated, removeTagFromClub);
 
 // ✅ New member routes
-router.put('/:clubId/member/:email', isAuthenticated, addOrEditMember);
-router.delete('/:clubId/member/:email', isAuthenticated, removeMember);
+router.put('/:clubId/addmember/:email', isAuthenticated, addOrEditMember);
+router.delete('/:clubId/removemember/:email', isAuthenticated, removeMember);
 
 export default router;

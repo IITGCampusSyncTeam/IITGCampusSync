@@ -85,3 +85,13 @@ class ClubTag {
       "${AuthConfig.serverUrl}/api/clubs/$clubId/deletetag/$tagId";
 }
 
+class ClubMembers {
+  static const String baseUrl = "${AuthConfig.serverUrl}/api/clubs";
+
+  static String addOrEditMember(String clubId, String email) =>
+      "$baseUrl/$clubId/addmember/$email";
+
+  static String removeMember(String clubId, String email) =>
+      "$baseUrl/$clubId/removemember/$email";
+}
+

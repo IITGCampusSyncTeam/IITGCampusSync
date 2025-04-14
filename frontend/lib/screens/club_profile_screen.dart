@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../constants/endpoints.dart';
 import '../models/club_model.dart';
-import '../apis/Club/ClubTag_api.dart'; // Correct API
+import '../apis/Club/ClubTag_api.dart';
+import '../apis/Club/ClubMem_api.dart';
 import 'merch_detail_screen.dart';
 import 'merch_management_screen.dart';
 
@@ -21,6 +22,10 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
   String errorMessage = '';
   List<String> tags = [];
   List<Map<String, String>> availableTags = [];
+
+  final TextEditingController emailController = TextEditingController();
+  String selectedRole = 'core';
+  final List<String> roles = ['secy', 'head', 'core'];
 
   @override
   void initState() {
@@ -40,6 +45,7 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
         final Map<String, dynamic> data = jsonDecode(response.body);
         setState(() {
           club = Club.fromJson(data);
+          print(data);
           tags = (data['tag'] as List<dynamic>)
               .map((tag) => tag['id'].toString())
               .toList();
@@ -60,8 +66,7 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
   }
 
   Future<void> fetchAvailableTags() async {
-    List<Map<String, String>>? fetchedTags =
-    await ClubTagAPI.fetchAvailableTags();
+    List<Map<String, String>>? fetchedTags = await ClubTagAPI.fetchAvailableTags();
     if (fetchedTags != null) {
       setState(() {
         availableTags = fetchedTags;
@@ -92,6 +97,36 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
       showSnackbar("Tag removed successfully!");
     } else {
       showSnackbar("Failed to remove tag");
+    }
+  }
+
+  Future<void> handleAddOrEditMember() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      showSnackbar("Email cannot be empty.");
+      return;
+    }
+
+    bool success = await ClubMemberAPI.addOrEditMember(clubId, email, selectedRole);
+    if (success) {
+      showSnackbar("Member added/updated successfully.");
+    } else {
+      showSnackbar("Failed to add/update member.");
+    }
+  }
+
+  Future<void> handleRemoveMember() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      showSnackbar("Email cannot be empty.");
+      return;
+    }
+
+    bool success = await ClubMemberAPI.removeMember(clubId, email);
+    if (success) {
+      showSnackbar("Member removed successfully.");
+    } else {
+      showSnackbar("Failed to remove member.");
     }
   }
 
@@ -131,20 +166,16 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
         ),
       )
           : Padding(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 10),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(club!.description,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      height: 1.5,
-                      fontWeight: FontWeight.w400)),
+                  style:
+                  const TextStyle(fontSize: 18, height: 1.5)),
               const SizedBox(height: 20),
-
-              // 🔷 Tag Display Section
               const Text("Club Interests:",
                   style: TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
@@ -159,7 +190,6 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                         (tag) => tag["id"] == tagId,
                     orElse: () => {"name": "Unknown"},
                   )["name"]!;
-
                   return Chip(
                     label: Text(tagName,
                         style:
@@ -170,27 +200,24 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                   );
                 }).toList(),
               ),
-
               const SizedBox(height: 20),
-
               const Text("Add Tags to Your Club:",
                   style: TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               availableTags.isEmpty
-                  ? const Center(
-                  child: Text("No tags available",
-                      style: TextStyle(color: Colors.red)))
+                  ? const Center(child: Text("No tags available"))
                   : ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: availableTags.length,
                 itemBuilder: (context, index) {
                   final tag = availableTags[index];
-                  final bool isSelected = tags.contains(tag["id"]);
-
+                  final bool isSelected =
+                  tags.contains(tag["id"]);
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    margin:
+                    const EdgeInsets.symmetric(vertical: 5),
                     shape: RoundedRectangleBorder(
                         borderRadius:
                         BorderRadius.circular(10)),
@@ -212,16 +239,11 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                   );
                 },
               ),
-
               const SizedBox(height: 20),
-
-              // Merch Section
               if (club!.merch.isNotEmpty) ...[
-                const Text(
-                  'Merch',
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
-                ),
+                const Text('Merch',
+                    style: TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 180,
@@ -235,62 +257,60 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MerchDetailScreen(
-                                  merch: merchItem),
+                              builder: (context) =>
+                                  MerchDetailScreen(
+                                      merch: merchItem),
                             ),
                           );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                              borderRadius:
+                              BorderRadius.circular(12)),
                           elevation: 5,
-                          shadowColor: Colors.grey.shade300,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 8),
                           child: Container(
                             width: 140,
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius:
+                              BorderRadius.circular(12),
                               color: Colors.white,
                             ),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment:
+                              MainAxisAlignment.center,
                               children: [
                                 Container(
                                   height: 80,
                                   width: 80,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: Colors.blueAccent.shade100,
-                                    borderRadius: BorderRadius.circular(8),
+                                    color:
+                                    Colors.blueAccent.shade100,
+                                    borderRadius:
+                                    BorderRadius.circular(8),
                                   ),
-                                  child: const Text(
-                                    "Image",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                  child: const Text("Image",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight:
+                                          FontWeight.bold)),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  merchItem.name,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                Text(merchItem.name,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 5),
-                                Text(
-                                  "₹${merchItem.price}",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.blueGrey.shade700),
-                                ),
+                                Text("₹${merchItem.price}",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors
+                                            .blueGrey.shade700)),
                               ],
                             ),
                           ),
@@ -300,10 +320,7 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                   ),
                 ),
               ],
-
               const SizedBox(height: 20),
-
-              // Modify Button
               Center(
                 child: ElevatedButton.icon(
                   onPressed: () {
@@ -315,8 +332,7 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                       ),
                     );
                   },
-                  icon:
-                  const Icon(Icons.edit, color: Colors.white),
+                  icon: const Icon(Icons.edit, color: Colors.white),
                   label: const Text("Modify Merch",
                       style: TextStyle(
                           fontSize: 16,
@@ -331,6 +347,81 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(height: 30),
+              const Divider(thickness: 1),
+              const Text("Club Member Management",
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Enter Member Email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: InputDecoration(
+                  labelText: "Select Responsibility",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                items: roles
+                    .map((role) => DropdownMenuItem<String>(
+                  value: role,
+                  child: Text(role.toUpperCase()),
+                ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedRole = value;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: handleAddOrEditMember,
+                      icon: const Icon(Icons.person_add),
+                      label: const Text("Add / Edit Member"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: handleRemoveMember,
+                      icon: const Icon(Icons.delete),
+                      label: const Text("Remove Member"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
