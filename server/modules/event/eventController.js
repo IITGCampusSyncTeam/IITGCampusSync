@@ -2,65 +2,142 @@ import Event from './eventModel.js';
 import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
 
+// Convert IST to UTC
+function convertISTtoUTC(istDateTime) {
+    const dateIST = new Date(istDateTime);
+    const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
+    return utcDateTime.toISOString(); // Save as UTC string
+}
+
+// Function to create an event
+async function createEvent(req, res) {
+    try {
+        const { title, description, dateTime, club, createdBy } = req.body;
+
+        // Convert IST to UTC before saving
+        const dateTimeUTC = convertISTtoUTC(dateTime);
+        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+
+        // Fetch the club and populate followers
+        const associatedClub = await Club.findById(club).populate('followers');
+
+        if (!associatedClub) {
+            return res.status(404).json({ status: "error", message: "Club not found" });
+        }
+
+        console.log("Associated Club:", associatedClub.name);
+        console.log("Followers of Club:", associatedClub.followers.length);
+
+        // Get FCM tokens of followers
+        const fcmTokens = associatedClub.followers
+            .filter(user => user.fcmToken) // Filter only users with valid FCM tokens
+            .map(user => user.fcmToken);
+
+        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
+
+        // Save event in MongoDB
+        const newEvent = await Event.create({
+            title,
+            description,
+            dateTimeUTC,
+            club,
+            createdBy,
+            participants: associatedClub.followers.map(user => user._id), // Store follower IDs
+            notifications: [],
+        });
+
+        console.log("✅ Event Created Successfully:", newEvent);
+
+//TODO: if we r using for loop then will take lot of time, performance issue
+        // Send notifications to club followers
+        if (fcmTokens.length > 0) {
+            for (const token of fcmTokens) {
+                const message = {
+                    notification: {
+                        title: `New Event: ${title}`,
+                        body: description,
+                    },
+                    token: token,
+                };
+
+                try {
+                    const response = await admin.messaging().send(message);
+                    console.log("✅ Notification sent successfully:", response);
+                } catch (error) {
+                    console.error("❌ Error sending notification:", error);
+                }
+            }
+        } else {
+            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
+        }
+
+        res.status(201).json({ status: "success", event: newEvent });
+    } catch (error) {
+        console.error("❌ Error creating event:", error);
+        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
+}
 
  // Function to create an event
-async function createEvent(req, res) {
-  try {
-    const { title, description, dateTime, club, createdBy } = req.body;
-
-    //  Fetch all users who have an FCM token
-    const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
-
-    console.log(" Fetched Users with FCM Tokens:", users);
-
-    //  Extract user IDs for participants and FCM tokens separately
-    const participants = users.map(user => user._id);  // Store only ObjectIds
-    const fcmTokens = users.map(user => user.fcmToken); // Store FCM tokens separately
-
-    console.log("✅ Processed Participants (ObjectIds):", participants);
-    console.log("✅ FCM Tokens for Notifications:", fcmTokens);
-
-    // Save event in MongoDB
-    const newEvent = await Event.create({
-      title,
-      description,
-      dateTime,
-      club,
-      createdBy,
-      participants, // Now stores only ObjectIds
-      notifications: [],
-    });
-
-    console.log(" Event Created Successfully:", newEvent);
-//TODO: if we r using for loop then will take lot of time, performance issue
-    //  Send notifications only if participants exist
-    if (fcmTokens.length > 0) {
-      for (const token of fcmTokens) {
-        const message = {
-          notification: {
-            title: title,
-            body: description,
-          },
-          token: token,
-        };
-
-        try {
-          const response = await admin.messaging().send(message);
-          console.log("✅ Notification sent successfully:", response);
-        } catch (error) {
-          console.error("❌ Error sending notification:", error);
-        }
-      }
-    } else {
-      console.log("⚠️ No FCM tokens found, skipping notifications.");
-    }
-
-    res.status(201).json({ status: "success", event: newEvent });
-  } catch (error) {
-    console.error("❌ Error creating event:", error);
-    res.status(500).json({ status: "error", message: "Internal Server Error" });
-  }
-}
+//async function createEvent(req, res) {
+//  try {
+//    const { title, description, dateTime, club, createdBy } = req.body;
+// // Convert IST to UTC before saving
+//    const dateTimeUTC = convertISTtoUTC(dateTime);
+//    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+//    //  Fetch all users who have an FCM token
+//    const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
+//
+//    console.log(" Fetched Users with FCM Tokens:", users);
+//
+//    //  Extract user IDs for participants and FCM tokens separately
+//    const participants = users.map(user => user._id);  // Store only ObjectIds
+//    const fcmTokens = users.map(user => user.fcmToken); // Store FCM tokens separately
+//
+//    console.log("✅ Processed Participants (ObjectIds):", participants);
+//    console.log("✅ FCM Tokens for Notifications:", fcmTokens);
+//
+//    // Save event in MongoDB
+//    const newEvent = await Event.create({
+//      title,
+//      description,
+//      dateTimeUTC,
+//      club,
+//      createdBy,
+//      participants, // Now stores only ObjectIds
+//      notifications: [],
+//    });
+//
+//    console.log(" Event Created Successfully:", newEvent);
+////TODO: if we r using for loop then will take lot of time, performance issue
+//    //  Send notifications only if participants exist
+//    if (fcmTokens.length > 0) {
+//      for (const token of fcmTokens) {
+//        const message = {
+//          notification: {
+//            title: title,
+//            body: description,
+//          },
+//          token: token,
+//        };
+//
+//        try {
+//          const response = await admin.messaging().send(message);
+//          console.log("✅ Notification sent successfully:", response);
+//        } catch (error) {
+//          console.error("❌ Error sending notification:", error);
+//        }
+//      }
+//    } else {
+//      console.log("⚠️ No FCM tokens found, skipping notifications.");
+//    }
+//
+//    res.status(201).json({ status: "success", event: newEvent });
+//  } catch (error) {
+//    console.error("❌ Error creating event:", error);
+//    res.status(500).json({ status: "error", message: "Internal Server Error" });
+//  }
+//}
 
 //  Function to fetch events
 const getEvents = async (req, res) => {
