@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http;
+
+import '../utilities/helper_functions.dart';
 
 class EventScreen extends StatefulWidget {
   @override
@@ -20,7 +23,20 @@ class _EventScreenState extends State<EventScreen> {
   final dateTimeController = TextEditingController();
   final clubController = TextEditingController();
   NotificationServices notificationServices = NotificationServices();
+  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   EventAPI eventAPI = EventAPI();
+  //notif details setup
+  NotificationDetails notificationDetails() {
+    return const NotificationDetails(
+      android: AndroidNotificationDetails(
+          'daily_channel_id', 'Daily Notifications',
+          channelDescription: 'Daily Notification Channel',
+          importance: Importance.max,
+          priority: Priority.high),
+      iOS: DarwinNotificationDetails(),
+    );
+  }
 
   @override
   void initState() {
@@ -28,7 +44,7 @@ class _EventScreenState extends State<EventScreen> {
     loadEvents();
     notificationServices.requestNotificationPermission;
     notificationServices.forgroundMessage();
-    notificationServices.firebaseInit(context);
+    // notificationServices.firebaseInit(context);
     notificationServices.setupInteractMessage(context);
     notificationServices.getDeviceToken().then((value) {
       print('device token');
@@ -60,7 +76,10 @@ class _EventScreenState extends State<EventScreen> {
     try {
       final eventList = await eventAPI.fetchEvents();
       setState(() {
-        events = eventList;
+        events = eventList.map((event) {
+          event['dateTime'] = convertToIST(event['dateTime']);
+          return event;
+        }).toList();
       });
     } catch (e) {
       _showErrorDialog(e.toString());
@@ -71,7 +90,10 @@ class _EventScreenState extends State<EventScreen> {
     try {
       final eventList = await eventAPI.fetchUpcomingEvents();
       setState(() {
-        upcomingEvents = eventList;
+        upcomingEvents = eventList.map((event) {
+          event['dateTime'] = convertToIST(event['dateTime']);
+          return event;
+        }).toList();
       });
     } catch (e) {
       _showErrorDialog(e.toString());
@@ -217,10 +239,25 @@ class _EventScreenState extends State<EventScreen> {
                         return Card(
                           child: ListTile(
                             title: Text(event['title']),
-                            subtitle: Text(event['description']),
-                            trailing: Text(event['dateTime']),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(event['description']),
+                                SizedBox(height: 4),
+                                Text('Date: ${event['dateTime']}'),
+                                SizedBox(height: 8),
+                              ],
+                            ),
                           ),
                         );
+
+                        // return Card(
+                        //   child: ListTile(
+                        //     title: Text(event['title']),
+                        //     subtitle: Text(event['description']),
+                        //     trailing: Text(event['dateTime']),
+                        //   ),
+                        // );
                       },
                     )
                   : Center(child: Text('No events found')),

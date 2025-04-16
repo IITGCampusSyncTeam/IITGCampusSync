@@ -34,7 +34,10 @@ const clubSchema = new Schema({
     websiteLink: { type: String }, // Club website
     merch: [merchSchema], // Array of merch items
     files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }], // Associated files
+    followers:[{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
     tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], 
+
 });
 
 const Club = mongoose.model('Club', clubSchema);

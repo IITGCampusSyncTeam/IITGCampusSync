@@ -10,6 +10,11 @@ const eventSchema = new mongoose.Schema({
   feedbacks: [String],
   notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
+  status: {
+      type: String,
+      enum: ['drafted', 'tentative', 'published'],
+      default: 'drafted',
+    },
 });
 
 

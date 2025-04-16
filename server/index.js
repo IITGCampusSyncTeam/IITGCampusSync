@@ -15,6 +15,9 @@ import onedriveRoutes from "./modules/onedrive/onedriveRoutes.js";
 import tagRoutes from "./modules/tag/tagRoute.js";import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'
+import notifRoutes from './modules/notif/notification_routes.js';
+import cron from 'node-cron';
+
 // Load environment variables
 //dotenv.config();
 
@@ -42,7 +45,7 @@ const connectDB = async () => {
 };
 connectDB();
 
-app.use("/api/contest", contestRoutes);
+
 
 // Basic route
 app.get('/', (req, res) => {
@@ -61,12 +64,17 @@ app.use("/api/user", userRoutes);
 // Clubs routes
 app.use("/api/clubs", clubRoutes);
 
+
+//contest Routes
+app.use("/api/contest", contestRoutes);
+
 //acadcal routes
 app.use('/api/acadcal', acadRoutes);
 
 
 // Tag routes
 app.use("/api/tags", tagRoutes);
+
 
 
 //orderRoutes
@@ -85,7 +93,7 @@ app.use("/api/events", eventRoutes);
 //routes
 app.use("/api/firebase", firebaseRoutes);
 app.use("/api/payments", paymentRoutes);
-
+app.use("/api/notif", notifRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -106,6 +114,14 @@ app.get("/get-service-account", (req, res) => {
     console.error("Error loading service account:", error);
     res.status(500).json({ error: "Failed to load credentials" });
   }
+});
+
+// Schedule to run every 12 hrs, will fetch cf contests
+cron.schedule('0 */12 * * *', () => {
+    console.log('Fetching Codeforces contests...');
+    fetchAndAddContests();
+    removeFinishedContests();
+
 });
 
 // Start the server

@@ -89,7 +89,7 @@ export const getClubs = async (req, res) => {
     }
 };
 
-
+// fetching all club info
 export const getClubDetail = async (req, res) => {
     const { id } = req.params;
 
@@ -316,4 +316,61 @@ export const removeMember = async (req, res) => {
 
 
 
+
+//func for following a club
+export const followClub = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+    const { userId } = req.body;
+
+    if (!clubId || !userId) {
+      return res.status(400).json({ error: 'Missing clubId or userId' });
+    }
+
+    const club = await Club.findById(clubId);
+
+    if (!club) {
+      return res.status(404).json({ error: 'Club not found' });
+    }
+
+    // Check if user already follows the club
+    const alreadyFollowing = club.followers.includes(userId);
+
+    if (alreadyFollowing) {
+      return res.status(400).json({ error: 'User already follows this club' });
+    }
+
+    // Add user to followers
+    club.followers.push(userId);
+    await club.save();
+
+    res.status(200).json({ message: 'User successfully followed the club' });
+  } catch (error) {
+    console.error('Error following club:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Function to edit event info
+export const editEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const updates = req.body;
+
+    const updatedEvent = await EventModel.findByIdAndUpdate(
+      eventId,
+      updates,
+      { new: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    res.status(200).json({ message: 'Event updated successfully', updatedEvent });
+  } catch (error) {
+    console.error('Error updating event info:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
