@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class TentativeEventAddScreen extends StatefulWidget {
   @override
   _TentativeEventAddScreenState createState() => _TentativeEventAddScreenState();
@@ -9,6 +8,7 @@ class TentativeEventAddScreen extends StatefulWidget {
 class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
   final TextEditingController _eventNameController = TextEditingController();
   DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
   String? _selectedVenue;
 
   @override
@@ -20,6 +20,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Event Name Field
             TextField(
               controller: _eventNameController,
               decoration: InputDecoration(
@@ -28,6 +29,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               ),
             ),
             SizedBox(height: 16),
+            // Date Picker
             ListTile(
               title: Text(_selectedDate == null
                   ? 'Pick Event Date'
@@ -48,6 +50,26 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               },
             ),
             SizedBox(height: 16),
+            // Time Picker
+            ListTile(
+              title: Text(_selectedTime == null
+                  ? 'Pick Event Time'
+                  : 'Event Time: ${_selectedTime!.format(context)}'),
+              trailing: Icon(Icons.access_time),
+              onTap: () async {
+                TimeOfDay? pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                if (pickedTime != null) {
+                  setState(() {
+                    _selectedTime = pickedTime;
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 16),
+            // Venue Dropdown
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Select Venue',
@@ -66,10 +88,31 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               },
             ),
             SizedBox(height: 16),
+            // Add Event Button
             ElevatedButton(
               onPressed: () {
-                if (_eventNameController.text.isNotEmpty && _selectedDate != null && _selectedVenue != null) {
+                if (_eventNameController.text.isNotEmpty &&
+                    _selectedDate != null &&
+                    _selectedTime != null &&
+                    _selectedVenue != null) {
+                  // Process the event creation here.
+                  final eventDateTime = DateTime(
+                    _selectedDate!.year,
+                    _selectedDate!.month,
+                    _selectedDate!.day,
+                    _selectedTime!.hour,
+                    _selectedTime!.minute,
+                  );
+                  print('Event: ${_eventNameController.text}');
+                  print('Date & Time: $eventDateTime');
+                  print('Venue: $_selectedVenue');
+                  
                   Navigator.pop(context);
+                } else {
+                  // Optionally provide feedback if not all fields are filled.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please fill all fields')),
+                  );
                 }
               },
               child: Text('Add Event'),
