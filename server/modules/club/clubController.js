@@ -94,31 +94,45 @@ export const getClubDetail = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const club = await Club.findById(id)
-            .populate('heads', 'name')  // Populate heads with names
-           // .populate('members.userId', 'name')  // Populate member user names
-            .populate('events')  // Populate all event details
-            .populate('merch');  // Populate all merch details
+        console.log("Fetching club from database...");
+        const clubDoc = await Club.findById(id)
+            .populate('heads', 'name')        // Populate heads with names
+            .populate('events')               // Populate all event details
+            .populate('merch');               // Populate all merch details
 
-        if (!club) return res.status(404).json({ message: 'Club not found' });
+        if (!clubDoc) {
+            console.log("Club not found.");
+            return res.status(404).json({ message: 'Club not found' });
+        }
 
-        // Format the tags associated with the club
-        if (club.tag && club.tag.length > 0) {
-            const tags = await Tag.find({ _id: { $in: club.tag } }).select('_id title').lean();
-            club.tag = tags.map(tag => ({
+        const club = clubDoc.toObject(); // Convert Mongoose doc to plain object
+        console.log("Club fetched:", club);
+
+        // Handle tags
+        if (!club.tag || club.tag.length === 0) {
+            console.log("Club has no associated tags.");
+            club.tag = [];
+        } else {
+            console.log("Fetching tag names for club...");
+            const tagDocs = await Tag.find({ _id: { $in: club.tag } })
+                .select("_id title")
+                .lean();
+            console.log("Tags retrieved:", tagDocs);
+
+            club.tag = tagDocs.map(tag => ({
                 id: tag._id.toString(),
                 name: tag.title,
             }));
-        } else {
-            club.tag = [];
         }
 
+        console.log("Final club data before sending:", JSON.stringify(club, null, 2));
         res.status(200).json(club);
     } catch (err) {
         console.error("Error fetching club details:", err);
         res.status(500).json({ message: 'Error fetching club details', error: err });
     }
 };
+
 
 export const addMerch = async (req, res) => {
     try {
