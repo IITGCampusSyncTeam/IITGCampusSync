@@ -12,6 +12,8 @@ import {
     addTagToClub,
     removeTagFromClub,
     followClub,
+    addOrEditMember,
+    removeMember
 } from './clubController.js';
 import isAuthenticated from '../../middleware/isAuthenticated.js';
 
@@ -32,5 +34,9 @@ router.post("/:clubId/follow", isAuthenticated, followClub);
 
 // ✅ Remove Tag from Club
 router.delete("/:clubId/deletetag/:tagId", isAuthenticated, removeTagFromClub);
+
+// ✅ New member routes
+router.put('/:clubId/addmember/:email', isAuthenticated, addOrEditMember);
+router.delete('/:clubId/removemember/:email', isAuthenticated, removeMember);
 
 export default router;

@@ -11,6 +11,7 @@ import userRoutes from './modules/user/user.route.js';
 import contestRoutes from './modules/contest/routes.js';
 import acadRoutes from "./modules/acadcalender/acadcalRoutes.js";
 import orderRoutes from "./modules/orders/ordersRoutes.js";
+import onedriveRoutes from "./modules/onedrive/onedriveRoutes.js";
 import tagRoutes from "./modules/tag/tagRoute.js";import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'
@@ -78,6 +79,9 @@ app.use("/api/tags", tagRoutes);
 
 //orderRoutes
 app.use("/api/orders", orderRoutes);
+
+//onedriveRoutes
+app.use("/api/onedrive",onedriveRoutes);
 
 // Calendar routes
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);

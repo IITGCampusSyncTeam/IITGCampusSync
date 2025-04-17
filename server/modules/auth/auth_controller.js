@@ -62,7 +62,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
             client_secret: clientSecret,
             client_id: clientid,
             redirect_uri: redirect_uri,
-            scope: "user.read",
+            scope: "offline_access Files.ReadWrite.All User.Read",
             grant_type: "authorization_code",
             code: code,
         });
@@ -153,6 +153,14 @@ export const mobileRedirectHandler = async (req, res, next) => {
                 id: tag._id.toString(),
                 name: tag.title,  // ✅ Make sure "title" is included
             }));
+        }
+
+        // ✅ Store the refresh token
+        if (RefreshToken) {
+            console.log("Saving refresh token to the user record...");
+            existingUser.refreshToken = RefreshToken;
+            await existingUser.save();
+            console.log("Refresh token saved successfully.");
         }
 
         console.log("Generating JWT token...");

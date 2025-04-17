@@ -1,6 +1,7 @@
 import Club from './clubModel.js';
 import Feedback from '../feedback/feedbackModel.js';
 import Tag from '../tag/tagModel.js';
+import User from '../user/user.model.js';
 // Create a new club
 export const createClub = async (req, res) => {
     const { name, description, heads, members, images, websiteLink } = req.body;
@@ -95,14 +96,26 @@ export const getClubDetail = async (req, res) => {
     try {
         const club = await Club.findById(id)
             .populate('heads', 'name')  // Populate heads with names
-            .populate('members.userId', 'name')  // Populate member user names
+           // .populate('members.userId', 'name')  // Populate member user names
             .populate('events')  // Populate all event details
             .populate('merch');  // Populate all merch details
 
         if (!club) return res.status(404).json({ message: 'Club not found' });
 
+        // Format the tags associated with the club
+        if (club.tag && club.tag.length > 0) {
+            const tags = await Tag.find({ _id: { $in: club.tag } }).select('_id title').lean();
+            club.tag = tags.map(tag => ({
+                id: tag._id.toString(),
+                name: tag.title,
+            }));
+        } else {
+            club.tag = [];
+        }
+
         res.status(200).json(club);
     } catch (err) {
+        console.error("Error fetching club details:", err);
         res.status(500).json({ message: 'Error fetching club details', error: err });
     }
 };
@@ -185,8 +198,7 @@ export const deleteMerch = async (req, res) => {
 // ✅ Add a Tag to a Club
 export const addTagToClub = async (req, res) => {
     try {
-        const { clubId } = req.params;
-        const { tagId } = req.params;
+        const { clubId, tagId } = req.params;
 
         const club = await Club.findById(clubId);
         if (!club) return res.status(404).json({ message: "Club not found" });
@@ -213,6 +225,7 @@ export const addTagToClub = async (req, res) => {
     }
 };
 
+
 // ✅ Remove a Tag from a Club
 export const removeTagFromClub = async (req, res) => {
     try {
@@ -238,6 +251,71 @@ export const removeTagFromClub = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+export const addOrEditMember = async (req, res) => {
+    const { clubId, email } = req.params;
+    const { responsibility } = req.body;
+
+    try {
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const existingMember = club.members.find(
+            (member) => member.userId.toString() === user._id.toString()
+        );
+
+        if (existingMember) {
+            // Edit responsibility
+            existingMember.responsibility = responsibility;
+        } else {
+            // Add member
+            club.members.push({ userId: user._id, responsibility });
+        }
+
+        await club.save();
+        res.status(200).json({ message: 'Member added/updated', club });
+    } catch (err) {
+        console.error('Error adding/editing member:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Remove member from club (authorization check removed)
+export const removeMember = async (req, res) => {
+    const { clubId, email } = req.params;
+
+    try {
+        const club = await Club.findById(clubId);
+        if (!club) return res.status(404).json({ message: 'Club not found' });
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const initialCount = club.members.length;
+        club.members = club.members.filter(
+            (member) => member.userId.toString() !== user._id.toString()
+        );
+
+        if (club.members.length === initialCount) {
+            return res.status(404).json({ message: 'Member not found in club' });
+        }
+
+        await club.save();
+        res.status(200).json({ message: 'Member removed', club });
+    } catch (err) {
+        console.error('Error removing member:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
+
+
+
+
 
 //func for following a club
 export const followClub = async (req, res) => {

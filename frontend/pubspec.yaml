@@ -52,11 +52,16 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_inappwebview: ^6.1.5
   share_plus: ^10.1.4
+  file_picker: ^9.1.0
+  open_file: ^3.5.10
+  dio: ^5.8.0+1
+  path: ^1.9.0
   flutter_web_auth_2: ^4.1.0
   timezone: ^0.10.0
   android_intent_plus: ^5.3.0
   permission_handler: ^11.4.0
   flutter_timezone: ^4.1.0
+  flutter_web_auth: ^0.6.0
 
 dev_dependencies:
   flutter_test:

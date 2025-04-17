@@ -18,6 +18,10 @@ const userSchema = new Schema({
     degree: { type: String, required: true },
     department: { type: String, required: true },
     role: { type: String, enum: ['normal', 'club_head', 'higher_authority'], default: 'normal' },
+    refreshToken: {
+        type: String,
+        select: false, // prevents it from being sent in queries unless explicitly selected
+    },
     profilePicture: {
         type: String,
         validate: {
