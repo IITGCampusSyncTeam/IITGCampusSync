@@ -45,6 +45,7 @@ class _ClubProfileScreenState extends State<ClubProfileScreen> {
         final Map<String, dynamic> data = jsonDecode(response.body);
         setState(() {
           club = Club.fromJson(data);
+          print("data");
           print(data);
           tags = (data['tag'] as List<dynamic>)
               .map((tag) => tag['id'].toString())
