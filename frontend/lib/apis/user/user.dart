@@ -1,14 +1,8 @@
 import 'dart:convert';
 
-import 'package:frontend/apis/authentication/login.dart';
-import 'package:http/http.dart' as http;
-import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/apis/protected.dart';
-import 'dart:io';
-
-
-
-
+import 'package:frontend/constants/endpoints.dart';
+import 'package:http/http.dart' as http;
 
 Future<Map<String, String>?> fetchUserDetails() async {
   final header = await getAccessToken();
@@ -20,7 +14,7 @@ Future<Map<String, String>?> fetchUserDetails() async {
     final resp = await http.get(
       Uri.parse(UserEndPoints.currentUser),
       headers: {
-        "Authorization": "Bearer $header",//make sure to include Bearer
+        "Authorization": "Bearer $header", //make sure to include Bearer
         "Content-Type": "application/json",
       },
     );
@@ -50,11 +44,38 @@ Future<Map<String, String>?> fetchUserDetails() async {
         'branch': branch,
       };
     }
-
-
   } catch (e) {
     print("error is: $e");
     rethrow;
   }
 }
 
+//for fetching events conducted by clubs the user is following
+Future<List<dynamic>> getUserFollowedEvents() async {
+  final header = await getAccessToken();
+  print(header);
+  if (header == 'error') {
+    throw ('token not found');
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse(UserEndPoints.getUserFollowedEvents),
+      headers: {
+        "Authorization": "Bearer $header",
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['events']; // List of upcoming events
+    } else {
+      print("Error: ${response.body}");
+      return [];
+    }
+  } catch (e) {
+    print("Error fetching events: $e");
+    return [];
+  }
+}

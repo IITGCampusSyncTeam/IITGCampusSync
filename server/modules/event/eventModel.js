@@ -9,6 +9,7 @@ const eventSchema = new mongoose.Schema({
   participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   feedbacks: [String],
   notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
+  tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
 });
 
 

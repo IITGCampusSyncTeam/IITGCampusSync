@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/event_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'login_screen.dart';
-import 'clubs_screen.dart';
 import 'cart_screen.dart';
+import 'login_screen.dart';
 import 'orders_screen.dart';
+import 'user_profile_screen.dart'; // Import the profile screen
 
 /// Home page with bottom navigation for Home, Clubs, Cart, and Orders.
 class Home extends StatefulWidget {
@@ -21,8 +22,10 @@ class _HomeState extends State<Home> {
   // List of pages for each tab.
   final List<Widget> _pages = [
     const HomeContent(),
-    const ClubsScreen(), // ClubsScreen has its own AppBar
+    EventScreen(),
+    // const ClubsScreen(), // ClubsScreen has its own AppBar
     const CartScreen(),
+
     OrdersPage(),
   ];
 
@@ -41,19 +44,30 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: _selectedIndex == 0
           ? AppBar(
-        title: const Text(
-          "IITGSync",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
-        elevation: 3, // Soft shadow for depth
-        actions: [
+              title: const Text(
+                "IITGSync",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Colors.blueAccent,
+              elevation: 3, // Soft shadow for depth
+              actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+            icon: const Icon(Icons.person), // Profile icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfileScreen(),
+                ),
+              );
+            },
           ),
-        ],
-      )
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () => _logout(context),
+                ),
+              ],
+            )
           : null, // No AppBar on Clubs, Cart, Orders
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -66,8 +80,10 @@ class _HomeState extends State<Home> {
             label: "Home",
           ),
           BottomNavigationBarItem(
+            //TODO: replace with club screen
             icon: Icon(Icons.group),
-            label: "Clubs",
+            // label: "Clubs",
+            label: "events",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
