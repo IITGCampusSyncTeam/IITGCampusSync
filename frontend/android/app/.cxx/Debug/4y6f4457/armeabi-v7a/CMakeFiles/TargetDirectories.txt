@@ -1,2 +1,0 @@
-C:/Users/coolm/Documents/IITGCampusSync/frontend/android/app/.cxx/Debug/4y6f4457/armeabi-v7a/CMakeFiles/edit_cache.dir
-C:/Users/coolm/Documents/IITGCampusSync/frontend/android/app/.cxx/Debug/4y6f4457/armeabi-v7a/CMakeFiles/rebuild_cache.dir

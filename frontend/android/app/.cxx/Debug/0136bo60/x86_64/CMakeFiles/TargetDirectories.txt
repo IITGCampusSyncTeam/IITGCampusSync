@@ -1,2 +1,0 @@
-/Users/yatikajena/Desktop/IITGCampusSync/frontend/android/app/.cxx/Debug/0136bo60/x86_64/CMakeFiles/edit_cache.dir
-/Users/yatikajena/Desktop/IITGCampusSync/frontend/android/app/.cxx/Debug/0136bo60/x86_64/CMakeFiles/rebuild_cache.dir
