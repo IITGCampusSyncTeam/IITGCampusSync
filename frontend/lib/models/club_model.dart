@@ -34,7 +34,8 @@ class Club {
   final List<String> events;
   final String images;
   final String websiteLink;
-  final List<Merch> merch;  // ✅ Now uses Merch from merch_model.dart
+  final List<Map<String, dynamic>> tag;
+  final List<Merch> merch;// ✅ Now uses Merch from merch_model.dart
 
   Club({
     required this.id,
@@ -46,6 +47,7 @@ class Club {
     required this.events,
     required this.images,
     required this.websiteLink,
+    required this.tag,
     required this.merch,
   });
 
@@ -62,6 +64,7 @@ class Club {
       events: List<String>.from(json['events'] ?? []),
       images: json['images'] ?? '',
       websiteLink: json['websiteLink'] ?? '',
+      tag: List<Map<String, dynamic>>.from(json['tag'] ?? []),
       merch: (json['merch'] as List<dynamic>?)
           ?.map((item) => Merch.fromJson(item))
           .toList() ?? [],

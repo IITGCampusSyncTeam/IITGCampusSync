@@ -38,11 +38,11 @@ Future<void> authenticate() async {
           .replaceAllMapped(
         RegExp(r"'_id':\s*'([^']*)'"),  // Fix _id formatting
             (match) => '"_id": "${match[1]}"',
-          )
+      )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*'([^']*)'"),  // Convert 'key': 'value' -> "key": "value"
             (match) => '"${match[1]}": "${match[2]}"',
-          )
+      )
           .replaceAllMapped(
         RegExp(r"'(\w+)':\s*(\d+)"),  // Convert 'key': number -> "key": number
             (match) => '"${match[1]}": ${match[2]}',
