@@ -1,0 +1,2 @@
+C:/Users/coolm/Documents/IITGCampusSync/frontend/android/app/.cxx/Debug/4y6f4457/x86/CMakeFiles/edit_cache.dir
+C:/Users/coolm/Documents/IITGCampusSync/frontend/android/app/.cxx/Debug/4y6f4457/x86/CMakeFiles/rebuild_cache.dir
