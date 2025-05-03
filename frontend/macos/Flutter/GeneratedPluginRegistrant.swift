@@ -14,7 +14,6 @@ import flutter_appauth
 import flutter_inappwebview_macos
 import flutter_local_notifications
 import flutter_timezone
-import flutter_web_auth
 import flutter_web_auth_2
 import open_file_mac
 import path_provider_foundation
@@ -33,7 +32,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   InAppWebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "InAppWebViewFlutterPlugin"))
   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
   FlutterTimezonePlugin.register(with: registry.registrar(forPlugin: "FlutterTimezonePlugin"))
-  FlutterWebAuthPlugin.register(with: registry.registrar(forPlugin: "FlutterWebAuthPlugin"))
   FlutterWebAuth2Plugin.register(with: registry.registrar(forPlugin: "FlutterWebAuth2Plugin"))
   OpenFilePlugin.register(with: registry.registrar(forPlugin: "OpenFilePlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))

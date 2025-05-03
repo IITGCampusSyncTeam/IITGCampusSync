@@ -1,32 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/event.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/widgets/calendar_widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/eventProvider.dart';
+import '../providers/eventProvider.dart'; // Import the provider
 
-class CalendarScreen extends StatefulWidget {
-  final String userID;
-  const CalendarScreen({super.key, this.userID = ""});
+class OrganizerCalendarScreen extends StatefulWidget {
+  final String organizerID;
+  const OrganizerCalendarScreen({super.key, this.organizerID = ""});
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  State<OrganizerCalendarScreen> createState() => _OrganizerCalendarScreenState();
 }
 
-enum ViewType { timeline, grid, calendar }
+enum ViewType { timeline, weekly, monthly }
 
-class _CalendarScreenState extends State<CalendarScreen> {
+class _OrganizerCalendarScreenState extends State<OrganizerCalendarScreen> {
   ViewType _currentView = ViewType.timeline;
-  bool _showMyEventsOnly = false;
 
   @override
   void initState() {
     super.initState();
     // Initialize the provider by fetching events when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<EventProvider>(context, listen: false);
-      provider.fetchAllEvents();
+      Provider.of<EventProvider>(context, listen: false).fetchAllEvents();
     });
   }
 
@@ -39,24 +36,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: Scaffold(
         body: Column(
           children: [
-            // Toggle buttons for All events and My events
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildToggleButton('All events', !_showMyEventsOnly),
-                    _buildToggleButton('My events', _showMyEventsOnly),
-                  ],
-                ),
-              ),
-            ),
-            
             // Search bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -102,7 +81,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
               ),
             ),
-            
+
             // View selector buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -119,27 +98,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.grid_view),
-                    color: _currentView == ViewType.grid ? Colors.blue : Colors.grey,
+                    icon: Icon(Icons.view_week),
+                    color: _currentView == ViewType.weekly ? Colors.blue : Colors.grey,
                     onPressed: () {
                       setState(() {
-                        _currentView = ViewType.grid;
+                        _currentView = ViewType.weekly;
                       });
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    color: _currentView == ViewType.calendar ? Colors.blue : Colors.grey,
+                    icon: Icon(Icons.calendar_month),
+                    color: _currentView == ViewType.monthly ? Colors.blue : Colors.grey,
                     onPressed: () {
                       setState(() {
-                        _currentView = ViewType.calendar;
+                        _currentView = ViewType.monthly;
                       });
                     },
                   ),
                 ],
               ),
             ),
-            
+
             // Main content with loading state from provider
             Expanded(
               child: eventProvider.isLoading
@@ -150,47 +129,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildToggleButton(String text, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showMyEventsOnly = text == 'My events';
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: isSelected ? Colors.black : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
+        // Add floating action button for creating new events
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // Navigate to create event screen or show dialog
+          },
+          child: Icon(Icons.add),
+          tooltip: 'Create Event',
         ),
       ),
     );
   }
 
+  // Modified to use the provider
   Widget _buildCurrentView(EventProvider provider) {
-    // Filter events based on the toggle selection
-    List<Event> filteredEvents = _showMyEventsOnly
-        ? provider.allEvents.where((event) => 
-            event.participants.contains(widget.userID)).toList()
-        : provider.allEvents;
-
     switch (_currentView) {
       case ViewType.timeline:
-        return buildTimelineView(filteredEvents, widget.userID);
-      case ViewType.grid:
-        return buildGridView(filteredEvents, widget.userID);
-      case ViewType.calendar:
+        return buildTimelineView(
+          provider.allEvents, 
+          widget.organizerID
+        );
+      case ViewType.weekly:
+        return buildWeeklyView(
+          provider.getEventsForWeek(provider.selectedDate),
+          provider.selectedDate,
+          widget.organizerID,
+          (newDate) => provider.setSelectedDate(newDate)
+        );
+      case ViewType.monthly:
         return buildCalendarView(
           provider.getEventsForMonth(
             provider.selectedDate.year, 
