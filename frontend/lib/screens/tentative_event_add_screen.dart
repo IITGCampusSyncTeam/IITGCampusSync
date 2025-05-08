@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-
 class TentativeEventAddScreen extends StatefulWidget {
   @override
-  _TentativeEventAddScreenState createState() => _TentativeEventAddScreenState();
+  _TentativeEventAddScreenState createState() =>
+      _TentativeEventAddScreenState();
 }
 
 class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
   final TextEditingController _eventNameController = TextEditingController();
   DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
   String? _selectedVenue;
 
   @override
@@ -31,7 +32,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
             ListTile(
               title: Text(_selectedDate == null
                   ? 'Pick Event Date'
-                  : 'Event Date: ${_selectedDate.toString().split(' ')[0]}'),
+                  : 'Event Date: ${_selectedDate!.toLocal().toString().split(' ')[0]}'),
               trailing: Icon(Icons.calendar_today),
               onTap: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -43,6 +44,24 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                 if (pickedDate != null) {
                   setState(() {
                     _selectedDate = pickedDate;
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 16),
+            ListTile(
+              title: Text(_selectedTime == null
+                  ? 'Pick Event Time'
+                  : 'Event Time: ${_selectedTime!.format(context)}'),
+              trailing: Icon(Icons.access_time),
+              onTap: () async {
+                TimeOfDay? pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                if (pickedTime != null) {
+                  setState(() {
+                    _selectedTime = pickedTime;
                   });
                 }
               },
@@ -68,7 +87,10 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                if (_eventNameController.text.isNotEmpty && _selectedDate != null && _selectedVenue != null) {
+                if (_eventNameController.text.isNotEmpty &&
+                    _selectedDate != null &&
+                    _selectedTime != null &&
+                    _selectedVenue != null) {
                   Navigator.pop(context);
                 }
               },

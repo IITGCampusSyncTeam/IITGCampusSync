@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/event_creation_form_screen.dart';
-import 'package:my_app/tentative_event_add_screen.dart';
+import 'package:frontend/screens/tentative_event_add_screen.dart';
 
+import 'event_creation_form_srceen.dart';
 
 class EventPlannerScreen extends StatelessWidget {
   @override
@@ -23,12 +23,14 @@ class EventPlannerScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              spacing: 16.0,
+              runSpacing: 12.0,
               children: [
                 DropdownButton<String>(
                   hint: Text('Filter by Date'),
-                  items: ['Today', 'This Week', 'This Month'].map((String value) {
+                  items:
+                      ['Today', 'This Week', 'This Month'].map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -73,7 +75,8 @@ class EventPlannerScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TentativeEventAddScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => TentativeEventAddScreen()),
                 );
               },
               child: Text('Add Tentative Event'),
@@ -98,7 +101,8 @@ class EventPlannerScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EventCreationFormScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => EventCreationFormScreen()),
                 );
               },
               child: Text('Create Event'),
