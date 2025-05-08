@@ -92,9 +92,9 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  runApp(MultiProvider(
-    providers: [ChangeNotifierProvider(create: (_) => EventProvider()),],
-    child: const MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => EventProvider()),
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -155,9 +155,9 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       //home: PaymentScreen(),
-    //home: const MyHomePage(title: 'IITGsync'),
+      //home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
-      home : ClubProfileScreen(),
+      home: ClubProfileScreen(),
       //home:ClubsScreen(),
     );
   }
