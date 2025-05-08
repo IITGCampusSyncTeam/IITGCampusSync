@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Ignore Android NDK build output
+android/app/.cxx/
+**/.cxx/
+**/CMakeFiles/
+*.cmake
