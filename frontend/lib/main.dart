@@ -4,8 +4,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/home.dart';
+import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/past_event_screen.dart';
+import 'package:frontend/screens/org_screens/past_event_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -149,7 +150,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: PastEventScreen(),
+      home: HomeScreen(),
       // home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
 

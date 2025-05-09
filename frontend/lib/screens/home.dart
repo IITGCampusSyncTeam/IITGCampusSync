@@ -51,17 +51,17 @@ class _HomeState extends State<Home> {
               backgroundColor: Colors.blueAccent,
               elevation: 3, // Soft shadow for depth
               actions: [
-          IconButton(
-            icon: const Icon(Icons.person), // Profile icon
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserProfileScreen(),
+                IconButton(
+                  icon: const Icon(Icons.person), // Profile icon
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProfileScreen(),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
                 IconButton(
                   icon: const Icon(Icons.logout),
                   onPressed: () => _logout(context),
