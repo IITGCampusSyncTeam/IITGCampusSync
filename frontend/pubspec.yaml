@@ -38,7 +38,6 @@ dependencies:
   shared_preferences: ^2.3.2
   timeline_tile: ^2.0.0
   firebase_messaging: ^15.1.2
-  flutter_local_notifications: ^19.0.0
   firebase_core: ^3.5.0
   googleapis_auth: ^1.6.0
   provider: ^6.1.2
@@ -64,6 +63,7 @@ dependencies:
   # flutter_web_auth: ^0.6.0
   flutter_typeahead: ^5.2.0
   syncfusion_flutter_calendar: ^28.2.11
+  flutter_local_notifications: ^19.1.0
 
 dev_dependencies:
   flutter_test:

@@ -3,14 +3,9 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/club_profile_screen.dart';
-import 'package:frontend/screens/clubs_screen.dart';
-import 'package:frontend/screens/calendar_screen.dart';
-import 'package:frontend/screens/club_profile_screen.dart';
-import 'package:frontend/screens/clubs_screen.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/login_screen.dart';
-import 'package:frontend/screens/organizer_calendar_screen.dart';
+import 'package:frontend/screens/past_event_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -154,10 +149,10 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      //home: PaymentScreen(),
-      //home: const MyHomePage(title: 'IITGsync'),
+      home: PastEventScreen(),
+      // home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
-      home: ClubProfileScreen(),
+
       //home:ClubsScreen(),
     );
   }
