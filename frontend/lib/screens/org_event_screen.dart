@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/event_creation_form_srceen.dart';
+
 
 // Event Screen
 class OrgEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Event Details')),
+      appBar: AppBar(
+  title: Text('Event Details'),
+  actions: [
+    IconButton(
+      icon: Icon(Icons.edit),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventCreationFormScreen(),
+          ),
+        );
+      },
+    ),
+  ],
+),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -45,20 +62,6 @@ class OrgEventScreen extends StatelessWidget {
               title: Text('Organizers Profile',
                   style: TextStyle(color: Colors.blue)),
               onTap: () {},
-            ),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Interactions',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    Text('Register or RSVP, Add to Google Calendar, Share'),
-                  ],
-                ),
-              ),
             ),
             SizedBox(height: 16),
             Card(
