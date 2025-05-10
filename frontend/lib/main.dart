@@ -9,7 +9,7 @@ import 'package:frontend/services/notification_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:frontend/screens/splash_screen.dart';
 import './constants/endpoints.dart';
 import 'firebase_options.dart';
 import 'providers/eventProvider.dart';
@@ -148,7 +148,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: Home(),
+      home: SplashScreen(),
       // home: const MyHomePage(title: 'IITGsync'),
       //home:  EventShareScreen(),
 

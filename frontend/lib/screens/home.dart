@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/event_screen.dart';
+import 'package:frontend/screens/login_options_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cart_screen.dart';
@@ -34,7 +35,7 @@ class _HomeState extends State<Home> {
     await prefs.clear(); // Clear all user data
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const login(),
+        builder: (context) => const LoginOptionsScreen(),
       ),
     );
   }
