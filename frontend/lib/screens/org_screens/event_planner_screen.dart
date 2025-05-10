@@ -22,8 +22,7 @@ class EventPlannerScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
               children: [
                 DropdownButton<String>(
                   hint: Text('Filter by Date'),

@@ -234,8 +234,7 @@ class MyEventScreen extends StatelessWidget {
                     height: 180,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image:
-                            NetworkImage('https://via.placeholder.com/400x200'),
+                        image: NetworkImage('https://i.imgur.com/5Qf4WcN.png'),
                         fit: BoxFit.cover,
                       ),
                       borderRadius:
