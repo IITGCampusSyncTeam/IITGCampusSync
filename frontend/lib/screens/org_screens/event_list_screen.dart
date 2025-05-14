@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/org_screens/event_creation_form_srceen.dart';
 
 class EventListScreen extends StatefulWidget {
   @override
@@ -60,10 +61,12 @@ class _EventListScreenState extends State<EventListScreen> {
               ),
               SizedBox(height: 16),
 
-              // Body Screen Switch
+              // Show All or My Events using same layout
               Expanded(
-                child: showMyEvents ? MyEventScreen() : OrgEventScreen(),
-              )
+                child: OrgEventScreen(
+                  isMyEvents: showMyEvents,
+                ),
+              ),
             ],
           ),
         ),
@@ -97,7 +100,11 @@ class _EventListScreenState extends State<EventListScreen> {
 }
 
 class OrgEventScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> events = [
+  final bool isMyEvents;
+
+  OrgEventScreen({this.isMyEvents = false});
+
+  final List<Map<String, dynamic>> allEvents = [
     {
       'date': '17 April',
       'title': 'Figma Workshop hehe',
@@ -106,6 +113,7 @@ class OrgEventScreen extends StatelessWidget {
       'datetime': '16 April, 7:00 PM',
       'venue': 'Lecture Hall',
       'tags': ['Design', 'Figma', 'DesforDev'],
+      'isMine': false,
     },
     {
       'date': '18 April',
@@ -115,33 +123,44 @@ class OrgEventScreen extends StatelessWidget {
       'datetime': '18 April, 5:00 PM',
       'venue': 'Room 101',
       'tags': ['Flutter', 'Mobile Dev'],
+      'isMine': true,
     },
   ];
 
   @override
   Widget build(BuildContext context) {
+    final events = isMyEvents
+        ? allEvents.where((e) => e['isMine'] == true).toList()
+        : allEvents;
+
     Map<String, List<Map<String, dynamic>>> groupedEvents = {};
     for (var event in events) {
       groupedEvents.putIfAbsent(event['date'], () => []).add(event);
     }
 
-    return ListView(
-      children: groupedEvents.entries.map((entry) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(entry.key,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.white)),
-            SizedBox(height: 8),
-            ...entry.value.map((event) => _eventCard(context, event)).toList(),
-            SizedBox(height: 16),
-          ],
-        );
-      }).toList(),
-    );
+    return events.isEmpty
+        ? Center(
+            child:
+                Text("No events found", style: TextStyle(color: Colors.white)))
+        : ListView(
+            children: groupedEvents.entries.map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(entry.key,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white)),
+                  SizedBox(height: 8),
+                  ...entry.value
+                      .map((event) => _eventCard(context, event))
+                      .toList(),
+                  SizedBox(height: 16),
+                ],
+              );
+            }).toList(),
+          );
   }
 
   Widget _eventCard(BuildContext context, Map<String, dynamic> event) {
@@ -154,7 +173,6 @@ class OrgEventScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Banner
           Stack(
             children: [
               ClipRRect(
@@ -166,14 +184,24 @@ class OrgEventScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white70,
-                  child: Icon(Icons.edit, color: Colors.black),
+              if (event['isMine'])
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white70,
+                    child: IconButton(
+                      icon: Icon(Icons.edit, color: Colors.black),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EventCreationFormScreen()),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              )
             ],
           ),
           Padding(
@@ -212,98 +240,6 @@ class OrgEventScreen extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-}
-
-class MyEventScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        Card(
-          margin: EdgeInsets.only(bottom: 16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 4,
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage('https://i.imgur.com/5Qf4WcN.png'),
-                        fit: BoxFit.cover,
-                      ),
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(12)),
-                    ),
-                  ),
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(12)),
-                      color: Colors.black.withOpacity(0.3),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 16,
-                    child: Text(
-                      'Tech Conference 2024',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('📍 Venue: Auditorium'),
-                    Text('📅 Date: 15 March 2024'),
-                    Text('⏰ Time: 10:00 AM - 2:00 PM'),
-                    Text('🎯 Organized by: XYZ Club'),
-                    SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        Chip(label: Text('Tech')),
-                        Chip(label: Text('Conference')),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton.icon(
-                          icon: Icon(Icons.check),
-                          label: Text('Registered'),
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurple),
-                        ),
-                        OutlinedButton.icon(
-                          icon: Icon(Icons.share),
-                          label: Text('Share'),
-                          onPressed: () {},
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        )
-      ],
     );
   }
 }
