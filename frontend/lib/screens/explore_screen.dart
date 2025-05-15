@@ -1,26 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:frontend/apis/events/event_api.dart';
+import 'package:frontend/services/notification_services.dart';
+import '../utilities/helper_functions.dart';
+import 'package:frontend/models/event.dart'; // Import the Event model
 
-class ExploreScreen extends StatelessWidget {
+class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
+
+  @override
+  _ExploreScreenState createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  List<Event> events = []; // Now using the Event model
+  bool isLoading = true;
+  EventAPI eventAPI = EventAPI();
+  NotificationServices notificationServices = NotificationServices();
+  int _selectedIndex = 0; // Track the selected navigation item
+
+  // Pagination controls
+  int _eventsPerPage = 3; // Number of events to display per page
+  int _currentPage = 0; // Current page index (0-based)
+
+  // Setup notification details
+  NotificationDetails notificationDetails() {
+    return const NotificationDetails(
+      android: AndroidNotificationDetails(
+          'daily_channel_id', 'Daily Notifications',
+          channelDescription: 'Daily Notification Channel',
+          importance: Importance.max,
+          priority: Priority.high),
+      iOS: DarwinNotificationDetails(),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadEvents();
+
+    // Initialize notification services
+    notificationServices.requestNotificationPermission;
+    notificationServices.forgroundMessage();
+    notificationServices.setupInteractMessage(context);
+    notificationServices.getDeviceToken().then((value) {
+      print('device token');
+      print(value);
+    });
+  }
+
+  void loadEvents() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final eventList = await eventAPI.fetchEvents();
+      setState(() {
+        // Parse the events using the Event model
+        events = eventList.map((eventData) => Event.fromJson(eventData)).toList();
+        // Sort events by date (newest first)
+        events.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+        // Reset pagination when loading new events
+        _currentPage = 0;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showErrorDialog(e.toString());
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopBar(),
-              _buildFilterChips(),
-              _buildEventsList(),
-              _buildOrganisersSection(),
-            ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Future.delayed(Duration.zero);
+            loadEvents();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTopBar(),
+                _buildFilterChips(),
+                isLoading
+                    ? const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+                    : _buildEventsList(),
+                _buildOrganisersSection(),
+              ],
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      // Note: Bottom navigation bar is now handled by MainNavigationContainer
     );
   }
 
@@ -42,7 +143,10 @@ class ExploreScreen extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.notifications_none),
-                onPressed: () {},
+                onPressed: () {
+                  // Show notification permission or settings
+                  notificationServices.requestNotificationPermission;
+                },
               ),
             ],
           ),
@@ -59,7 +163,7 @@ class ExploreScreen extends StatelessWidget {
           Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: "Search products...",
+                hintText: "Search events...",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -98,13 +202,13 @@ class ExploreScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _buildFilterChip("Upcoming", true),
+              _buildFilterChip("All Events", true),
+              const SizedBox(width: 8),
+              _buildFilterChip("Upcoming", false),
               const SizedBox(width: 8),
               _buildFilterChip("Following", false),
               const SizedBox(width: 8),
               _buildFilterChip("My interests", false),
-              const SizedBox(width: 8),
-              _buildFilterChip("Others", false),
             ],
           ),
         ),
@@ -130,30 +234,119 @@ class ExploreScreen extends StatelessWidget {
   }
 
   Widget _buildEventsList() {
+    if (events.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: Center(child: Text('No events found')),
+      );
+    }
+
+    // Calculate pagination values
+    int totalEvents = events.length;
+    int totalPages = (totalEvents / _eventsPerPage).ceil();
+    int startIndex = _currentPage * _eventsPerPage;
+    int endIndex = (startIndex + _eventsPerPage) > totalEvents
+        ? totalEvents
+        : startIndex + _eventsPerPage;
+
+    // Get current page events
+    List<Event> currentEvents = events.sublist(startIndex, endIndex);
+
     return Column(
-      children: const [
-        EventCard(
-          banner: "DRIFTER",
-          title: "Figma Workshop hehe",
-          organizer: "Coding Club",
-          dateTime: "16 April, 7:00 PM",
-          location: "Lecture Hall",
-          tags: ["Design", "Figma", "DevRev"],
-          imageUrl:
-              "https://images.unsplash.com/photo-1581322339219-8d8282b70610",
-        ),
-        EventCard(
-          banner: "MERCADO CRYPTO",
-          title: "Crypto Basics",
-          organizer: "E-Cell",
-          dateTime: "18 April, 6:00 PM",
-          location: "Auditorium",
-          tags: ["Finance", "Blockchain", "Crypto"],
-          imageUrl:
-              "https://images.unsplash.com/photo-1581322339219-8d8282b70610",
-        ),
+      children: [
+        // Events for current page
+        ...currentEvents.map((event) {
+          return EventCard(
+            banner: event.title.toUpperCase(),
+            title: event.title,
+            organizer: event.club?.name ?? 'Unknown Organizer',
+            dateTime: event.dateTime.toString(), // Format this as needed
+            location: "TBD", // You might need to add location to your Event model
+            tags: event.getTagTitles(),
+            imageUrl: "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
+            description: event.description,
+          );
+        }).toList(),
+
+        // Pagination controls
+        _buildPaginationControls(totalPages),
       ],
     );
+  }
+
+  Widget _buildPaginationControls(int totalPages) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Previous button
+          ElevatedButton(
+            onPressed: _currentPage > 0
+                ? () {
+              setState(() {
+                _currentPage--;
+              });
+            }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              disabledBackgroundColor: Colors.grey,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            child: const Text('Previous'),
+          ),
+
+          // Page indicator
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'Page ${_currentPage + 1} of $totalPages',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // Next button
+          ElevatedButton(
+            onPressed: _currentPage < totalPages - 1
+                ? () {
+              setState(() {
+                _currentPage++;
+              });
+            }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              disabledBackgroundColor: Colors.grey,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            child: const Text('Next'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<String> _generateTags(Event event) {
+    if (event.tag.isNotEmpty) {
+      return event.getTagTitles();
+    }
+
+    List<String> tags = [];
+    if (event.club?.name != null) tags.add(event.club!.name);
+
+    // If no tags are available, add at least one default tag
+    if (tags.isEmpty) tags.add('Campus Event');
+
+    return tags;
   }
 
   Widget _buildOrganisersSection() {
@@ -180,16 +373,6 @@ class ExploreScreen extends StatelessWidget {
             ],
           ),
         ),
-        EventCard(
-          banner: "HOW EXACTLY\nDOES A MACHINE\nLEARN?",
-          title: "ML Intro Session",
-          organizer: "AI Club",
-          dateTime: "20 April, 5:30 PM",
-          location: "Seminar Hall",
-          tags: ["ML", "AI", "Basics"],
-          imageUrl:
-              "https://images.unsplash.com/photo-1581322339219-8d8282b70610",
-        ),
       ],
     );
   }
@@ -202,9 +385,36 @@ class ExploreScreen extends StatelessWidget {
             icon: Icon(Icons.calendar_today), label: "Calendar"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
       ],
-      currentIndex: 0,
+      currentIndex: _selectedIndex,
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.grey,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index; // Update the selected index
+        });
+
+        if (index == 1) {
+          print("Navigating to Calendar screen");
+          // Navigate to Calendar screen - replacing with print for debugging
+          try {
+            Navigator.of(context).pushNamed('/calendar');
+          } catch (e) {
+            print("Navigation error: $e");
+            // Fallback direct navigation if named route is not defined
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
+          }
+        } else if (index == 2) {
+          print("Navigating to Profile screen");
+          // Navigate to Profile screen - replacing with print for debugging
+          try {
+            Navigator.of(context).pushNamed('/profile');
+          } catch (e) {
+            print("Navigation error: $e");
+            // Fallback direct navigation if named route is not defined
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+          }
+        }
+      },
     );
   }
 }
@@ -249,6 +459,7 @@ class EventCard extends StatelessWidget {
   final String location;
   final List<String> tags;
   final String imageUrl;
+  final String description;
 
   const EventCard({
     super.key,
@@ -259,6 +470,7 @@ class EventCard extends StatelessWidget {
     required this.location,
     required this.tags,
     required this.imageUrl,
+    required this.description,
   });
 
   @override
@@ -280,12 +492,22 @@ class EventCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
                     imageUrl,
                     height: 160,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 160,
+                        width: double.infinity,
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Positioned(
@@ -346,21 +568,36 @@ class EventCard extends StatelessWidget {
                       const Icon(Icons.access_time,
                           size: 16, color: Colors.grey),
                       const SizedBox(width: 4),
-                      Text(
-                        dateTime,
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.grey),
+                      Expanded(
+                        child: Text(
+                          dateTime,
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      const SizedBox(width: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
                       const Icon(Icons.location_on,
                           size: 16, color: Colors.grey),
                       const SizedBox(width: 4),
-                      Text(
-                        location,
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.grey),
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: const TextStyle(fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -369,18 +606,18 @@ class EventCard extends StatelessWidget {
                     children: tags
                         .map(
                           (tag) => Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(
-                              tag,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        )
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          tag,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    )
                         .toList(),
                   ),
                 ],

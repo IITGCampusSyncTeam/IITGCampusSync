@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/login_options_screen.dart';
+import 'package:frontend/screens/nav_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Home()),
+            MaterialPageRoute(builder: (context) => MainNavigationContainer()),
           );
         }
       } else {

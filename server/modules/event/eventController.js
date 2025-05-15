@@ -82,7 +82,9 @@ async function createEvent(req, res) {
 //  Function to fetch events
 const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('participants'); // Populating for debugging
+    const events = await Event.find().populate('participants').populate({ path: 'club'}).populate({path:'tag'}); 
+    console.log(events)
+    // Populating for debugging
 //    console.log(" Retrieved Events:", events);
     res.status(200).json(events);
   } catch (error) {

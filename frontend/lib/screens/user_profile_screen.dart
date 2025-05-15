@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/login_options_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../apis/protected.dart';
@@ -22,7 +23,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     fetchUserData();
     fetchAvailableTags();
   }
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all user data
 
+    // Navigate back to Login Options screen
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginOptionsScreen()),
+          (Route<dynamic> route) => false,
+    );
+  }
   Future<void> fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userJson = prefs.getString('user_data');
@@ -188,6 +198,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         );
                       },
                     ),
+            ),
+            // 🔹 Logout Button
+            SizedBox(height: 16),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: _logout,
+                icon: Icon(Icons.logout),
+                label: Text("Logout"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+              ),
             ),
           ],
         ),

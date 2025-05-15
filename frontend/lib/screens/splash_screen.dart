@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:frontend/screens/login_screen.dart';
+import 'package:frontend/screens/nav_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/screens/home.dart';
 import 'login_options_screen.dart'; // Make sure this import is correct
@@ -21,13 +22,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1500),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
 
     // Start animation and check authentication after delay
     _animationController.forward();
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(milliseconds: 1500), () {
       _checkAuthAndNavigate();
     });
   }
@@ -42,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         // Navigate to Home if access token is present
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Home()),
+          MaterialPageRoute(builder: (context) => MainNavigationContainer()),
         );
       } else {
         // Navigate to login if no access token is found
