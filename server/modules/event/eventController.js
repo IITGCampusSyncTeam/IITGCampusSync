@@ -1,6 +1,7 @@
 import Event from './eventModel.js';
 import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
+import Club from '../club/clubModel.js'
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
@@ -8,74 +9,134 @@ function convertISTtoUTC(istDateTime) {
     const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
     return utcDateTime.toISOString(); // Save as UTC string
 }
+//
+//// Function to create an event
+//async function createEvent(req, res) {
+//    try {
+//        const { title, description, dateTime, club, createdBy } = req.body;
+//
+//        // Convert IST to UTC before saving
+//        const dateTimeUTC = convertISTtoUTC(dateTime);
+//        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+//
+//        // Fetch the club and populate followers
+//        const associatedClub = await Club.findById(club).populate('followers');
+//
+//        if (!associatedClub) {
+//            return res.status(404).json({ status: "error", message: "Club not found" });
+//        }
+//
+//        console.log("Associated Club:", associatedClub.name);
+//        console.log("Followers of Club:", associatedClub.followers.length);
+//
+//        // Get FCM tokens of followers
+//        const fcmTokens = associatedClub.followers
+//            .filter(user => user.fcmToken) // Filter only users with valid FCM tokens
+//            .map(user => user.fcmToken);
+//
+//        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
+//
+//        // Save event in MongoDB
+//        const newEvent = await Event.create({
+//            title,
+//            description,
+//            dateTimeUTC,
+//            club,
+//            createdBy,
+//            participants: associatedClub.followers.map(user => user._id), // Store follower IDs
+//            notifications: [],
+//        });
+//
+//        console.log("✅ Event Created Successfully:", newEvent);
+//
+////TODO: if we r using for loop then will take lot of time, performance issue
+//        // Send notifications to club followers
+//        if (fcmTokens.length > 0) {
+//            for (const token of fcmTokens) {
+//                const message = {
+//                    notification: {
+//                        title: `New Event: ${title}`,
+//                        body: description,
+//                    },
+//                    token: token,
+//                };
+//
+//                try {
+//                    const response = await admin.messaging().send(message);
+//                    console.log("✅ Notification sent successfully:", response);
+//                } catch (error) {
+//                    console.error("❌ Error sending notification:", error);
+//                }
+//            }
+//        } else {
+//            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
+//        }
+//
+//        res.status(201).json({ status: "success", event: newEvent });
+//    } catch (error) {
+//        console.error("❌ Error creating event:", error);
+//        res.status(500).json({ status: "error", message: "Internal Server Error" });
+//    }
+//}
+//
 
-// Function to create an event
 async function createEvent(req, res) {
-    try {
-        const { title, description, dateTime, club, createdBy } = req.body;
+  try {
+    const { title, description, dateTime, club, createdBy} = req.body; // ✅ Include venue
 
-        // Convert IST to UTC before saving
-        const dateTimeUTC = convertISTtoUTC(dateTime);
-        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+    const dateTimeUTC = convertISTtoUTC(dateTime);
+    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
 
-        // Fetch the club and populate followers
-        const associatedClub = await Club.findById(club).populate('followers');
 
-        if (!associatedClub) {
-            return res.status(404).json({ status: "error", message: "Club not found" });
-        }
 
-        console.log("Associated Club:", associatedClub.name);
-        console.log("Followers of Club:", associatedClub.followers.length);
-
-        // Get FCM tokens of followers
-        const fcmTokens = associatedClub.followers
-            .filter(user => user.fcmToken) // Filter only users with valid FCM tokens
-            .map(user => user.fcmToken);
-
-        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
-
-        // Save event in MongoDB
-        const newEvent = await Event.create({
-            title,
-            description,
-            dateTimeUTC,
-            club,
-            createdBy,
-            participants: associatedClub.followers.map(user => user._id), // Store follower IDs
-            notifications: [],
-        });
-
-        console.log("✅ Event Created Successfully:", newEvent);
-
-//TODO: if we r using for loop then will take lot of time, performance issue
-        // Send notifications to club followers
-        if (fcmTokens.length > 0) {
-            for (const token of fcmTokens) {
-                const message = {
-                    notification: {
-                        title: `New Event: ${title}`,
-                        body: description,
-                    },
-                    token: token,
-                };
-
-                try {
-                    const response = await admin.messaging().send(message);
-                    console.log("✅ Notification sent successfully:", response);
-                } catch (error) {
-                    console.error("❌ Error sending notification:", error);
-                }
-            }
-        } else {
-            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
-        }
-
-        res.status(201).json({ status: "success", event: newEvent });
-    } catch (error) {
-        console.error("❌ Error creating event:", error);
-        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    const associatedClub = await Club.findById(club).populate('followers');
+    if (!associatedClub) {
+      return res.status(404).json({ status: "error", message: "Club not found" });
     }
+
+    const fcmTokens = associatedClub.followers
+      .filter(user => user.fcmToken)
+      .map(user => user.fcmToken);
+
+    const newEvent = await Event.create({
+      title,
+      description,
+      dateTime: dateTimeUTC,
+      club,
+      createdBy,
+      participants: associatedClub.followers.map(user => user._id),
+      notifications: [],
+    });
+
+    console.log("✅ Event Created Successfully:", newEvent);
+
+    if (fcmTokens.length > 0) {
+      const messages = fcmTokens.map(token => ({
+        notification: {
+          title: `New Event: ${title}`,
+          body: description,
+        },
+        token: token,
+      }));
+
+      const results = await Promise.allSettled(
+        messages.map(message => admin.messaging().send(message))
+      );
+
+      results.forEach((result, idx) => {
+        if (result.status === "fulfilled") {
+          console.log(`✅ Notification sent to ${fcmTokens[idx]}:`, result.value);
+        } else {
+          console.error(`❌ Error sending to ${fcmTokens[idx]}:`, result.reason);
+        }
+      });
+    }
+
+    res.status(201).json({ status: "success", event: newEvent });
+  } catch (error) {
+    console.error("❌ Error creating event:", error);
+    res.status(500).json({ status: "error", message: "Internal Server Error" });
+  }
 }
 
 
@@ -231,8 +292,33 @@ const editEvent = async (req, res) => {
   }
 };
 
+// Function to create a tentative event
+const createTentativeEvent = async (req, res) => {
+  try {
+    const { title, date, venue } = req.body;
+
+    if (!title || !date || !venue) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const newEvent = await Event.create({
+      title,
+      description: "Tentative Event", // optional default
+      dateTime: new Date(date), // assuming frontend sends ISO string
+      venue,
+      status: "tentative"
+    });
+
+    return res.status(201).json({ message: "Tentative event created", event: newEvent });
+  } catch (error) {
+    console.error("Error creating tentative event:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 //  Export functions properly
-export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent};
+export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent,createTentativeEvent};
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {

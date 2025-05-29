@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/apis/events/event_api.dart';
-import 'package:frontend/services/notification_services.dart';
-import '../utilities/helper_functions.dart';
 import 'package:frontend/models/event.dart'; // Import the Event model
+import 'package:frontend/screens/payment_screen.dart';
+import 'package:frontend/services/notification_services.dart';
+
+import '../widgets/event_card.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -59,7 +61,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       final eventList = await eventAPI.fetchEvents();
       setState(() {
         // Parse the events using the Event model
-        events = eventList.map((eventData) => Event.fromJson(eventData)).toList();
+        events =
+            eventList.map((eventData) => Event.fromJson(eventData)).toList();
         // Sort events by date (newest first)
         events.sort((a, b) => b.dateTime.compareTo(a.dateTime));
         // Reset pagination when loading new events
@@ -111,9 +114,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 _buildFilterChips(),
                 isLoading
                     ? const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                )
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
                     : _buildEventsList(),
                 _buildOrganisersSection(),
               ],
@@ -139,12 +142,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => PaymentScreen()));
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.notifications_none),
                 onPressed: () {
-                  // Show notification permission or settings
+                  // Show notification permission or settings or show a new screen where notifs will be stored
                   notificationServices.requestNotificationPermission;
                 },
               ),
@@ -261,9 +267,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             title: event.title,
             organizer: event.club?.name ?? 'Unknown Organizer',
             dateTime: event.dateTime.toString(), // Format this as needed
-            location: "TBD", // You might need to add location to your Event model
+            location:
+                "TBD", // You might need to add location to your Event model
             tags: event.getTagTitles(),
-            imageUrl: "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
+            imageUrl:
+                "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
             description: event.description,
           );
         }).toList(),
@@ -284,10 +292,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage > 0
                 ? () {
-              setState(() {
-                _currentPage--;
-              });
-            }
+                    setState(() {
+                      _currentPage--;
+                    });
+                  }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -315,10 +323,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage < totalPages - 1
                 ? () {
-              setState(() {
-                _currentPage++;
-              });
-            }
+                    setState(() {
+                      _currentPage++;
+                    });
+                  }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -376,47 +384,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ],
     );
   }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today), label: "Calendar"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-      ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
-      onTap: (index) {
-        setState(() {
-          _selectedIndex = index; // Update the selected index
-        });
-
-        if (index == 1) {
-          print("Navigating to Calendar screen");
-          // Navigate to Calendar screen - replacing with print for debugging
-          try {
-            Navigator.of(context).pushNamed('/calendar');
-          } catch (e) {
-            print("Navigation error: $e");
-            // Fallback direct navigation if named route is not defined
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
-          }
-        } else if (index == 2) {
-          print("Navigating to Profile screen");
-          // Navigate to Profile screen - replacing with print for debugging
-          try {
-            Navigator.of(context).pushNamed('/profile');
-          } catch (e) {
-            print("Navigation error: $e");
-            // Fallback direct navigation if named route is not defined
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-          }
-        }
-      },
-    );
-  }
+  //
+  // Widget _buildBottomNavigationBar() {
+  //   return BottomNavigationBar(
+  //     items: const [
+  //       BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
+  //       BottomNavigationBarItem(
+  //           icon: Icon(Icons.calendar_today), label: "Calendar"),
+  //       BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+  //     ],
+  //     currentIndex: _selectedIndex,
+  //     selectedItemColor: Colors.black,
+  //     unselectedItemColor: Colors.grey,
+  //     onTap: (index) {
+  //       setState(() {
+  //         _selectedIndex = index; // Update the selected index
+  //       });
+  //
+  //       if (index == 1) {
+  //         print("Navigating to Calendar screen");
+  //         // Navigate to Calendar screen - replacing with print for debugging
+  //         try {
+  //           Navigator.of(context).pushNamed('/calendar');
+  //         } catch (e) {
+  //           print("Navigation error: $e");
+  //           // Fallback direct navigation if named route is not defined
+  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
+  //         }
+  //       } else if (index == 2) {
+  //         print("Navigating to Profile screen");
+  //         // Navigate to Profile screen - replacing with print for debugging
+  //         try {
+  //           Navigator.of(context).pushNamed('/profile');
+  //         } catch (e) {
+  //           print("Navigation error: $e");
+  //           // Fallback direct navigation if named route is not defined
+  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+  //         }
+  //       }
+  //     },
+  //   );
+  // }
 }
 
 class OrganiserItem extends StatelessWidget {
@@ -446,185 +454,6 @@ class OrganiserItem extends StatelessWidget {
             style: const TextStyle(fontSize: 12),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class EventCard extends StatelessWidget {
-  final String banner;
-  final String title;
-  final String organizer;
-  final String dateTime;
-  final String location;
-  final List<String> tags;
-  final String imageUrl;
-  final String description;
-
-  const EventCard({
-    super.key,
-    required this.banner,
-    required this.title,
-    required this.organizer,
-    required this.dateTime,
-    required this.location,
-    required this.tags,
-    required this.imageUrl,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 4)
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Image.network(
-                    imageUrl,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 160,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 30),
-                    child: Text(
-                      banner,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [Shadow(blurRadius: 5, color: Colors.black)],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.calendar_today_outlined),
-                      onPressed: () {},
-                      color: Colors.black,
-                      iconSize: 20,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    organizer,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time,
-                          size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          dateTime,
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on,
-                          size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          location,
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: const TextStyle(fontSize: 14),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: tags
-                        .map(
-                          (tag) => Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          tag,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    )
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

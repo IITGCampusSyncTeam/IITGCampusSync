@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../apis/events/event_api.dart';
+
 class TentativeEventAddScreen extends StatefulWidget {
   @override
   _TentativeEventAddScreenState createState() =>
@@ -67,11 +69,32 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                if (_eventNameController.text.isNotEmpty &&
+              onPressed: () async {
+                final eventName = _eventNameController.text;
+                if (eventName.isNotEmpty &&
                     _selectedDate != null &&
                     _selectedVenue != null) {
-                  Navigator.pop(context);
+                  try {
+                    await EventAPI().createTentativeEvent(
+                      eventName,
+                      _selectedDate!,
+                      _selectedVenue!,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tentative event created!')),
+                    );
+
+                    Navigator.pop(context);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error creating event: $e')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please fill all fields')),
+                  );
                 }
               },
               child: Text('Add Event'),
