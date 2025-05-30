@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/org_screens/event_creation_form_srceen.dart';
 
-class EventListScreen extends StatefulWidget {
+class MyEventsScreen extends StatefulWidget {
   @override
-  _EventListScreenState createState() => _EventListScreenState();
+  _MyEventsScreenState createState() => _MyEventsScreenState();
 }
 
-class _EventListScreenState extends State<EventListScreen> {
+class _MyEventsScreenState extends State<MyEventsScreen> {
   bool showMyEvents = false;
 
   @override

@@ -3,13 +3,12 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/explore_screen.dart';
-import 'package:frontend/screens/home.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/login_options_screen.dart';
-import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
 import 'package:frontend/screens/splash_screen.dart';
 import 'package:frontend/services/notification_services.dart';
+import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +17,8 @@ import './constants/endpoints.dart';
 import 'firebase_options.dart';
 import 'providers/eventProvider.dart';
 
+// Define global navigator key
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -120,27 +121,59 @@ class _MyAppState extends State<MyApp> {
     // Request permission for notifications
     messaging.requestPermission();
 
-    // Get the initial token and send it to your server
-    // messaging.getToken().then((token) {
-    //   print('Initial FCM Token: $token');
-    //   sendFCMTokenToServer(token);
-    // });
-
-    // Listen for token refresh and send the new token to your server
-    // FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-    //   print('Refreshed FCM Token: $newToken');
-    //   sendFCMTokenToServer(newToken);
-    // });
-
-    // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message while in the foreground!');
+      print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
 
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
+      RemoteNotification? notification = message.notification;
+      // For Android, you need to use the Android-specific details to show the notification
+      // with the channel you created.
+      AndroidNotification? android = message.notification?.android;
+
+      if (notification != null) {
+        print('Message also contained a notification: ${notification.title}');
+
+        // Show the notification using flutter_local_notifications
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode, // A unique ID for the notification
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel', // Use the same channel ID you created
+              'High Importance Notifications', // Channel name
+              channelDescription:
+                  'This channel is used for important notifications.',
+              icon: android
+                  ?.smallIcon, // Use icon from FCM payload if available, or fallback
+              // If android.smallIcon is null, you might need to provide a default
+              // e.g., '@mipmap/ic_launcher' or another drawable.
+              playSound: true,
+              importance: Importance.high,
+              // other properties...
+            ),
+            iOS: DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+              // subtitle: 'iOS subtitle', // Optional
+            ),
+          ),
+          payload: message.data['screen'] ??
+              'default_screen', // Optional: Pass data to handle taps
+        );
       }
     });
+    // Handle foreground notifications
+    // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    //   print('Got a message while in the foreground!');
+    //   print('Message data: ${message.data}');
+    //
+    //   if (message.notification != null) {
+    //     print('Message also contained a notification: ${message.notification}');
+    //     // Show notification manually when app is in foreground
+    //   }
+    // });
   }
 
   @override
@@ -152,10 +185,10 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
+        navigatorKey: navigatorKey,
+        // home: SplashScreen(),
         home: SplashScreen()
-       // MainNavigationContainer()
         // home: const MyHomePage(title: 'IITGsync'),
-        //home:  EventShareScreen(),
 
         //home:ClubsScreen(),
         );

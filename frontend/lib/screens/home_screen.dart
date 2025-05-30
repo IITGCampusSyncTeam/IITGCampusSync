@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/org_screens/event_list_screen.dart';
 import 'package:frontend/screens/org_screens/event_planner_screen.dart';
+import 'package:frontend/screens/org_screens/my_events_screen.dart';
+
 import 'calendar_screen.dart';
 import 'club_profile_screen.dart';
 
@@ -17,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     CalendarScreen(),
     EventPlannerScreen(),
-    EventListScreen(),
+    MyEventsScreen(),
     ClubProfileScreen(),
   ];
 

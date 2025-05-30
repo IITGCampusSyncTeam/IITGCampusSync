@@ -5,7 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:frontend/screens/event_screen.dart';
+import 'package:frontend/screens/explore_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,7 +53,6 @@ class NotificationServices {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-
     // Request permissions on iOS
     if (Platform.isIOS) {
       await _flutterLocalNotificationsPlugin
@@ -78,7 +77,7 @@ class NotificationServices {
             if (data['type'] == 'msj') {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => EventScreen()),
+                MaterialPageRoute(builder: (context) => ExploreScreen()),
               );
             }
           } catch (e) {
@@ -196,7 +195,7 @@ class NotificationServices {
   void handleMessage(BuildContext context, RemoteMessage message) {
     if (message.data['type'] == 'msj') {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => EventScreen()));
+          context, MaterialPageRoute(builder: (context) => ExploreScreen()));
     }
   }
 

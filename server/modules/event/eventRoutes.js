@@ -11,4 +11,6 @@ router.get("/past/:clubId", eventController.getPastEventsOfClub); // Past events
 router.get("/followed/:userId", eventController.getFollowedClubEvents); // Events from followed clubs
 router.put("/status/:eventId", eventController.updateEventStatus); // Update event status
 router.put("/edit/:eventId", eventController.editEvent); // Edit event info
+router.post('/tentative', eventController.createTentativeEvent);// add tentative event
+
 export default router;

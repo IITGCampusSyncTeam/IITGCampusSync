@@ -1,11 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:frontend/apis/UserTag/userTag_api.dart'; // Import the new API file
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import '../apis/protected.dart';
-import '../constants/endpoints.dart';
-import 'package:frontend/apis/UserTag/userTag_api.dart'; // Import the new API file
 
 class UserProfileScreen extends StatefulWidget {
   @override
@@ -16,13 +14,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String name = '', email = '', roll = '', branch = '';
   List<String> tags = []; // Store selected tag IDs
   List<Map<String, String>> availableTags = []; // Store tag ID & Name
-
+  bool isAdding = false;
   @override
   void initState() {
     super.initState();
     fetchUserData();
     fetchAvailableTags();
   }
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Clear all user data
@@ -30,9 +29,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     // Navigate back to Login Options screen
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginOptionsScreen()),
-          (Route<dynamic> route) => false,
+      (Route<dynamic> route) => false,
     );
   }
+
   Future<void> fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userJson = prefs.getString('user_data');
@@ -48,7 +48,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         roll = user['rollNumber']?.toString() ?? '';
         branch = user['department'] ?? '';
         tags = (user['tag'] as List<dynamic>?)
-                ?.map((tag) => tag['id'].toString())
+                ?.map((tag) => tag.toString())
                 .toList() ??
             [];
       });
@@ -56,7 +56,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> fetchAvailableTags() async {
-    List<Map<String, String>>? fetchedTags = await UserTagAPI.fetchAvailableTags(); // ✅ Fixed function name
+    List<Map<String, String>>? fetchedTags =
+        await UserTagAPI.fetchAvailableTags(); // ✅ Fixed function name
     if (fetchedTags != null) {
       setState(() {
         availableTags = fetchedTags;
@@ -66,17 +67,46 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  // Future<void> addTag(String tagId) async {
+  //   if (isAdding) return;
+  //   isAdding = true;
+  //
+  //   bool success = await UserTagAPI.addTag(email, tagId);
+  //   if (success) {
+  //     setState(() {
+  //       tags.add(tagId);
+  //     });
+  //     updateLocalUserData();
+  //     showSnackbar("Tag added successfully!");
+  //   } else {
+  //     showSnackbar("Failed to add tag");
+  //   }
+  // }
+
   Future<void> addTag(String tagId) async {
-    bool success = await UserTagAPI.addTag(email, tagId);
+    if (isAdding) return;
+    isAdding = true;
+
+    String cleanedTagId = tagId.trim().toLowerCase();
+
+    if (tags.any((t) => t.trim().toLowerCase() == cleanedTagId)) {
+      showSnackbar("Tag already added.");
+      isAdding = false;
+      return;
+    }
+
+    bool success = await UserTagAPI.addTag(email, cleanedTagId);
     if (success) {
       setState(() {
-        tags.add(tagId);
+        tags.add(cleanedTagId);
       });
       updateLocalUserData();
       showSnackbar("Tag added successfully!");
     } else {
       showSnackbar("Failed to add tag");
     }
+
+    isAdding = false;
   }
 
   Future<void> removeTag(String tagId) async {
@@ -103,14 +133,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("User Profile", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: Text("User Profile",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
@@ -121,7 +153,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             // ✅ User Info
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -131,11 +164,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     Text("Email: $email",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text("Roll Number: $roll",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text("Branch: $branch",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                   ],
                 ),
               ),
@@ -151,7 +187,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               spacing: 8.0,
               children: tags.map((tagId) {
                 String tagName = availableTags.firstWhere(
-                      (tag) => tag["id"] == tagId,
+                  (tag) => tag["id"] == tagId,
                   orElse: () => {"name": "Unknown"},
                 )["name"]!;
 

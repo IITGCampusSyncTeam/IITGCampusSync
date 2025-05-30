@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
+
 import '../apis/authentication/login.dart';
 
 class LoginOptionsScreen extends StatefulWidget {
@@ -11,7 +13,6 @@ class LoginOptionsScreen extends StatefulWidget {
 
 class _LoginOptionsScreenState extends State<LoginOptionsScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _fadeInWelcome;
   late Animation<double> _fadeInSubtitle;
@@ -66,30 +67,24 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
     );
 
     // Setup slide animations
-    _slideInWelcome = Tween<Offset>(
-        begin: const Offset(0.0, 0.3),
-        end: Offset.zero
-    ).animate(
+    _slideInWelcome =
+        Tween<Offset>(begin: const Offset(0.0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.3, 0.6, curve: Curves.easeOut),
       ),
     );
 
-    _slideInSubtitle = Tween<Offset>(
-        begin: const Offset(0.0, 0.3),
-        end: Offset.zero
-    ).animate(
+    _slideInSubtitle =
+        Tween<Offset>(begin: const Offset(0.0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.4, 0.7, curve: Curves.easeOut),
       ),
     );
 
-    _slideInButtons = Tween<Offset>(
-        begin: const Offset(0.0, 0.2),
-        end: Offset.zero
-    ).animate(
+    _slideInButtons =
+        Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.5, 0.8, curve: Curves.easeOut),
@@ -110,28 +105,33 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
     super.dispose();
   }
 
-  // Authentication function shared between student and organizer
   Future<void> _authenticateUser(String userType) async {
-    if (_isAuthenticating) return; // Prevent multiple authentication attempts
+    if (_isAuthenticating) return;
 
     setState(() {
       _isAuthenticating = true;
     });
 
     try {
-      // Use the same authenticate function from your old login screen
       await authenticate();
 
       if (!mounted) return;
 
-      // Navigate to ProfileScreen after successful authentication
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => ProfileScreen(),
-        ),
-      );
+      // Navigate based on userType
+      if (userType == 'student') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(),
+          ),
+        );
+      } else if (userType == 'organizer') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
+          ),
+        );
+      }
     } catch (e) {
-      // Show error message if authentication fails
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -149,6 +149,46 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
       }
     }
   }
+
+  // // Authentication function shared between student and organizer
+  // Future<void> _authenticateUser(String userType) async {
+  //   if (_isAuthenticating) return; // Prevent multiple authentication attempts
+  //
+  //   setState(() {
+  //     _isAuthenticating = true;
+  //   });
+  //
+  //   try {
+  //     // Use the same authenticate function from your old login screen
+  //     await authenticate();
+  //
+  //     if (!mounted) return;
+  //
+  //     // Navigate to ProfileScreen after successful authentication
+  //     Navigator.of(context).pushReplacement(
+  //       MaterialPageRoute(
+  //         builder: (context) => ProfileScreen(),
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     // Show error message if authentication fails
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Authentication failed: ${e.toString()}'),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //     }
+  //     print("Authentication failed: $e");
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isAuthenticating = false;
+  //       });
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +293,9 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                     children: [
                       _buildLoginButton(
                         icon: Icons.school,
-                        text: _isAuthenticating ? 'Authenticating...' : 'Login as Student',
+                        text: _isAuthenticating
+                            ? 'Authenticating...'
+                            : 'Login as Student',
                         color: Colors.deepPurple,
                         onPressed: _isAuthenticating
                             ? null
@@ -262,7 +304,9 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                       const SizedBox(height: 20),
                       _buildLoginButton(
                         icon: Icons.admin_panel_settings,
-                        text: _isAuthenticating ? 'Authenticating...' : 'Login as Organizer',
+                        text: _isAuthenticating
+                            ? 'Authenticating...'
+                            : 'Login as Organizer',
                         color: Colors.green,
                         onPressed: _isAuthenticating
                             ? null
