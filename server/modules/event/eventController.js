@@ -1,7 +1,8 @@
 import Event from './eventModel.js';
 import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
-import Club from '../club/clubModel.js'
+import Club from '../club/clubModel.js';
+import { broadcast } from '../../index.js';
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
@@ -9,134 +10,90 @@ function convertISTtoUTC(istDateTime) {
     const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
     return utcDateTime.toISOString(); // Save as UTC string
 }
-//
-//// Function to create an event
-//async function createEvent(req, res) {
-//    try {
-//        const { title, description, dateTime, club, createdBy } = req.body;
-//
-//        // Convert IST to UTC before saving
-//        const dateTimeUTC = convertISTtoUTC(dateTime);
-//        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
-//
-//        // Fetch the club and populate followers
-//        const associatedClub = await Club.findById(club).populate('followers');
-//
-//        if (!associatedClub) {
-//            return res.status(404).json({ status: "error", message: "Club not found" });
-//        }
-//
-//        console.log("Associated Club:", associatedClub.name);
-//        console.log("Followers of Club:", associatedClub.followers.length);
-//
-//        // Get FCM tokens of followers
-//        const fcmTokens = associatedClub.followers
-//            .filter(user => user.fcmToken) // Filter only users with valid FCM tokens
-//            .map(user => user.fcmToken);
-//
-//        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
-//
-//        // Save event in MongoDB
-//        const newEvent = await Event.create({
-//            title,
-//            description,
-//            dateTimeUTC,
-//            club,
-//            createdBy,
-//            participants: associatedClub.followers.map(user => user._id), // Store follower IDs
-//            notifications: [],
-//        });
-//
-//        console.log("✅ Event Created Successfully:", newEvent);
-//
-////TODO: if we r using for loop then will take lot of time, performance issue
-//        // Send notifications to club followers
-//        if (fcmTokens.length > 0) {
-//            for (const token of fcmTokens) {
-//                const message = {
-//                    notification: {
-//                        title: `New Event: ${title}`,
-//                        body: description,
-//                    },
-//                    token: token,
-//                };
-//
-//                try {
-//                    const response = await admin.messaging().send(message);
-//                    console.log("✅ Notification sent successfully:", response);
-//                } catch (error) {
-//                    console.error("❌ Error sending notification:", error);
-//                }
-//            }
-//        } else {
-//            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
-//        }
-//
-//        res.status(201).json({ status: "success", event: newEvent });
-//    } catch (error) {
-//        console.error("❌ Error creating event:", error);
-//        res.status(500).json({ status: "error", message: "Internal Server Error" });
-//    }
-//}
-//
 
 async function createEvent(req, res) {
-  try {
-    const { title, description, dateTime, club, createdBy} = req.body; // ✅ Include venue
+    try {
+        const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
 
-    const dateTimeUTC = convertISTtoUTC(dateTime);
-    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+        const dateTimeUTC = convertISTtoUTC(dateTime);
+        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
 
+        const associatedClub = await Club.findById(clubId).populate('followers');
 
-
-    const associatedClub = await Club.findById(club).populate('followers');
-    if (!associatedClub) {
-      return res.status(404).json({ status: "error", message: "Club not found" });
-    }
-
-    const fcmTokens = associatedClub.followers
-      .filter(user => user.fcmToken)
-      .map(user => user.fcmToken);
-
-    const newEvent = await Event.create({
-      title,
-      description,
-      dateTime: dateTimeUTC,
-      club,
-      createdBy,
-      participants: associatedClub.followers.map(user => user._id),
-      notifications: [],
-    });
-
-    console.log("✅ Event Created Successfully:", newEvent);
-
-    if (fcmTokens.length > 0) {
-      const messages = fcmTokens.map(token => ({
-        notification: {
-          title: `New Event: ${title}`,
-          body: description,
-        },
-        token: token,
-      }));
-
-      const results = await Promise.allSettled(
-        messages.map(message => admin.messaging().send(message))
-      );
-
-      results.forEach((result, idx) => {
-        if (result.status === "fulfilled") {
-          console.log(`✅ Notification sent to ${fcmTokens[idx]}:`, result.value);
-        } else {
-          console.error(`❌ Error sending to ${fcmTokens[idx]}:`, result.reason);
+        if (!associatedClub) {
+            return res.status(404).json({ status: "error", message: "Club not found" });
         }
-      });
-    }
 
-    res.status(201).json({ status: "success", event: newEvent });
-  } catch (error) {
-    console.error("❌ Error creating event:", error);
-    res.status(500).json({ status: "error", message: "Internal Server Error" });
-  }
+        console.log("Associated Club:", associatedClub.name);
+        console.log("Followers of Club:", associatedClub.followers.length);
+
+        const fcmTokens = associatedClub.followers
+            .filter(user => user && user.fcmToken) // Added null check for user
+            .map(user => user.fcmToken);
+
+        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
+
+        let newEvent = await Event.create({
+            title,
+            description,
+            dateTime: dateTimeUTC,
+            club: clubId,
+            createdBy,
+            participants: associatedClub.followers.map(user => user._id),
+            notifications: [],
+            tag: tagId,
+        });
+
+        console.log("✅ Event Created Successfully (pre-population for broadcast):", newEvent._id);
+
+        const populatedEventForBroadcast = await Event.findById(newEvent._id)
+            .populate('participants', 'username profilePicture')
+            .populate({ path: 'club', select: 'name avatar' })
+            .populate({ path: 'tag', select: 'name' });
+
+        if (populatedEventForBroadcast) {
+            broadcast({ type: 'EVENT_CREATED', payload: populatedEventForBroadcast });
+            console.log('📢 Broadcasted EVENT_CREATED');
+        } else {
+            console.warn('⚠️ Could not find event for broadcast after creation:', newEvent._id);
+        }
+
+        // Send FCM notifications to club followers individually
+        if (fcmTokens.length > 0) {
+            console.log(`Attempting to send ${fcmTokens.length} FCM messages individually...`);
+            let successCount = 0;
+            let failureCount = 0;
+
+            for (const token of fcmTokens) {
+                const message = {
+                    notification: {
+                        title: `New Event: ${title}`,
+                        body: description,
+                    },
+                    token: token, // The specific token for this message
+                    // data: { eventId: newEvent._id.toString(), type: 'newEvent' } // Optional data payload
+                };
+
+                try {
+                    // Use admin.messaging().send() for a single message
+                    const response = await admin.messaging().send(message);
+                    console.log(`✅ Successfully sent FCM message to token ${token.substring(0, 20)}...:`, response); // Log part of token for privacy
+                    successCount++;
+                } catch (error) {
+                    console.error(`❌ Failed to send FCM message to token ${token.substring(0, 20)}...:`, error.code, error.message);
+                    failureCount++;
+                }
+            }
+            console.log(`FCM Individual Send Summary: ${successCount} successful, ${failureCount} failed.`);
+        } else {
+            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
+        }
+
+        res.status(201).json({ status: "success", event: populatedEventForBroadcast || newEvent });
+    } catch (error) {
+        console.error("❌ Error creating event:", error);
+        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
 }
 
 

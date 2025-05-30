@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/apis/events/event_api.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/eventProvider.dart';
@@ -141,11 +142,11 @@ class _EventCreationFormScreenState extends State<EventCreationFormScreen> {
                         '67cdd9f518c21216e18a728c'; // TODO: Replace with actual club ID
 
                     try {
-                      await eventProvider.createEvent(
-                        title,
-                        description,
-                        date,
-                        club,
+                      await EventAPI().createEvent(
+                        title: title,
+                        description: description,
+                        date: date,
+                        club: club,
                       );
 
                       if (!mounted) return;
