@@ -23,8 +23,7 @@ class _EventScreenState extends State<EventScreen> {
   final dateTimeController = TextEditingController();
   final clubController = TextEditingController();
   NotificationServices notificationServices = NotificationServices();
-  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+
   EventAPI eventAPI = EventAPI();
   //notif details setup
   NotificationDetails notificationDetails() {

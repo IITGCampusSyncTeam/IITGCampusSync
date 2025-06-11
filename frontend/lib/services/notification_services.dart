@@ -53,11 +53,6 @@ class NotificationServices {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    // Request exact alarm permission (Android 12+)
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestExactAlarmsPermission();
 
     // Request permissions on iOS
     if (Platform.isIOS) {

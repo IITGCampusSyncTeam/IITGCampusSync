@@ -44,3 +44,21 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+# Ignore SDK, NDK, and build artifacts
+**/android/sdk/*
+**/android/ndk/*
+**/android/ndk/**/*.bin
+**/build/
+
+# Ignore local development environment artifacts
+**/android/**/bin/
+**/android/**/prebuilt/
+**/android/**/toolchains/
+**/android/**/ndk/
+
+# Ignore Android NDK build output
+android/app/.cxx/
+**/.cxx/
+**/CMakeFiles/
+*.cmake

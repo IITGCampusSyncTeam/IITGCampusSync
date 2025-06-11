@@ -1,4 +1,4 @@
 node_modules/
 config/iitg-campus-sync.json
 .env
-script.js
+deleteEvents.js
