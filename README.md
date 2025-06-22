@@ -3,7 +3,7 @@
 **Campus Sync** is an all-in-one platform designed to streamline campus communication, event management and coordination. From personalized event updates and club notifications to seamless merchandise purchases and smarter scheduling, the app keeps both students and organizers **in sync**.
 
 ---
-## ✨ Figma Designs
+## Main Screens of the Application
 
 > All UI mock-ups, prototypes and event-card designs were created in Figma.
 
@@ -18,14 +18,13 @@
 
 ## 📑 Table of Contents
 
-- [Features](#-features)  
-- [Tech Stack](#-tech-stack)  
-- [Setup Instructions](#-setup-instructions)  
-- [Methodology](#-methodology)  
-- [Future Goals](#-future-goals)  
-- [Figma Designs](#-figma-designs)  
-- [Why Campus Sync?](#-why-campus-sync)  
-- [Contact](#contact)  
+- [🚀 Features](#-features)  
+- [🧑‍💻 Tech Stack](#-tech-stack)  
+- [🛠️ Setup Instructions](#️-setup-instructions)  
+- [📐 Methodology](#-methodology)  
+- [🎯 Future Goals](#-future-goals)   
+- [💡 Why Campus Sync?](#-why-campus-sync)  
+- [📬 Contact](#-contact)  
 
 ---
 
@@ -162,8 +161,8 @@ flutter run \
 ---
 
 ## Contact
-This Application is maintained by CODING CLUB OF IIT GUWAHATI
+This application is maintained by Coding Club, IIT Guwahati.
 For collaboration, feedback, or suggestions:
 
-- 📧 **Email:** *codingclub@iitg.ac.in*  
+📧 Email: codingclub@iitg.ac.in 
   
