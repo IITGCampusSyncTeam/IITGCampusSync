@@ -3,6 +3,18 @@
 **Campus Sync** is an all-in-one platform designed to streamline campus communication, event management and coordination. From personalized event updates and club notifications to seamless merchandise purchases and smarter scheduling, the app keeps both students and organizers **in sync**.
 
 ---
+## ✨ Figma Designs
+
+> All UI mock-ups, prototypes and event-card designs were created in Figma.
+
+<div align="center">
+  <img src="./readme-assets/1.png" width="25%" alt="Mockup 1"/>
+  <img src="./readme-assets/2.png" width="25%" alt="Mockup 2"/>
+  <img src="./readme-assets/3.png" width="25%" alt="Mockup 3"/>
+  <img src="./readme-assets/4.png" width="25%" alt="Mockup 4"/>
+</div>
+
+---
 
 ## 📑 Table of Contents
 
@@ -134,13 +146,7 @@ flutter run \
 
 ---
 
-## ✨ Figma Designs
 
-> All UI mock-ups, prototypes and event-card designs were created in Figma.
-
-![Figma Mockups](link-to-figma-or-screenshot)
-
----
 
 ## 💡 Why Campus Sync?
 
