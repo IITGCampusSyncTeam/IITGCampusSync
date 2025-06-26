@@ -3,16 +3,25 @@
   <h1>Campus Sync</h1>
   <p><strong>An all-in-one platform designed to streamline campus communication, event management, and coordination. From personalized event updates and club notifications to seamless merchandise purchases and smarter scheduling, the app keeps both students and organizers in sync.</strong></p>
   
-  <!-- Badges -->
+  <!-- Clickable Badges with Icons -->
   <p>
-    <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
-    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
-    <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
-    <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
+    <a href="https://flutter.dev" target="_blank">
+      <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
+    </a>
+    <a href="https://nodejs.org" target="_blank">
+      <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
+    </a>
+    <a href="https://firebase.google.com" target="_blank">
+      <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase">
+    </a>
+    <a href="https://redis.io" target="_blank">
+      <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
+    </a>
   </p>
 </div>
 
 ---
+
 
 ## 📱 Main Screens of the Application
 > All UI mock-ups, prototypes, and event-card designs were created in Figma.
