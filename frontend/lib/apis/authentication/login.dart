@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
-import 'package:frontend/models/userModel.dart';
+import 'package:frontend/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoints.dart';
 import '../../main.dart';

@@ -1,5 +1,5 @@
 import 'package:frontend/models/event.dart';
-import 'package:frontend/models/userModel.dart';
+import 'package:frontend/models/user_model.dart';
 import 'package:frontend/models/club_model.dart';
 
 class Tag {

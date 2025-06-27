@@ -20,9 +20,9 @@ const merchSchema = new Schema({
 // Club schema
 const clubSchema = new Schema({
     name: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, require: true },
     description: { type: String, required: true }, 
     secretary : { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Club secretary (user)
-    heads: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Club heads (users)
     members: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
