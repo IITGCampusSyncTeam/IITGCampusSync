@@ -11,7 +11,8 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  String name = '', email = '', roll = '', branch = '';
+  String name = '', email = '', roll = '', branch = '', website = '';
+  bool isClub = false;
   List<String> tags = []; // Store selected tag IDs
   List<Map<String, String>> availableTags = []; // Store tag ID & Name
   bool isAdding = false;
@@ -36,14 +37,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userJson = prefs.getString('user_data');
+    String? clubJson = prefs.getString('club_data');
 
     if (userJson != null) {
       print("🔵 Retrieved User Data: $userJson"); // Debug print
 
       final user = jsonDecode(userJson);
+      isClub = user['isClub'] ?? false;
+
+      String websiteFromClub = '';
+      if (isClub && clubJson != null) {
+        print("🔵 Retrieved Club Data: $clubJson");
+        final clubData = jsonDecode(clubJson);
+        websiteFromClub = clubData['websiteLink'] ?? '';
+      }
 
       setState(() {
         name = user['name'] ?? '';
+        isClub = user['isClub'] ?? false;
+        website = websiteFromClub;
         email = user['email'] ?? '';
         roll = user['rollNumber']?.toString() ?? '';
         branch = user['department'] ?? '';
@@ -166,7 +178,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     Text("Email: $email",
                         style:
                             TextStyle(fontSize: 16, color: Colors.grey[700])),
-                    Text("Roll Number: $roll",
+                    Text(isClub ? "Website: $website" : "Roll Number: $roll",
                         style:
                             TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text("Branch: $branch",

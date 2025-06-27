@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
 import 'package:http/http.dart' as http;
-import 'package:frontend/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/apis/protected.dart';
 import '../constants/endpoints.dart';
-import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -19,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String email = '';
   String roll = '';
   String branch = '';
+  bool isRedirecting = false;
 
   TextEditingController hostelController = TextEditingController();
   TextEditingController roomController = TextEditingController();
@@ -36,6 +35,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (userJson != null) {
       final user = jsonDecode(userJson);
+      bool isClub = user['isClub'];
+
+      if (isClub) { // if isClub directly redirect to MainNavigationContainer()
+        setState(() {
+          isRedirecting = true;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainNavigationContainer()),
+        );
+        return;
+      }
+
       setState(() {
         name = user['name'];
         email = user['email'];
@@ -76,21 +88,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (response.statusCode == 200) {
         final updatedData = jsonDecode(response.body);
-        print("Updated User Data: $updatedData");
 
-        // Update only specific fields in SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         String? userJson = prefs.getString('user_data');
 
         if (userJson != null) {
           Map<String, dynamic> existingUser = jsonDecode(userJson);
-
-          // Only update the required fields
           existingUser['hostel'] = updatedData['hostel'];
           existingUser['roomnum'] = updatedData['roomnum'];
           existingUser['contact'] = updatedData['contact'];
 
-          // Save updated data back
           await prefs.setString('user_data', jsonEncode(existingUser));
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -114,9 +121,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    if (isRedirecting) {
+      return SizedBox.shrink(); // Don't render anything if redirecting
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black12,

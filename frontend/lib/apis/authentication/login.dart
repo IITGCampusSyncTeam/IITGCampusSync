@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'package:frontend/models/club_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -94,6 +95,29 @@ Future<void> authenticate() async {
       print("✅ Stored User Data in SharedPreferences: $storedUserJson");
 
       print("✅ User data saved successfully!");
+
+      final isClub = decodedUserJson['isClub'];
+      if(isClub) {
+        try {
+          final id = decodedUserJson['_id'];
+          final response = await http.get(
+            Uri.parse('${backend.uri}/api/clubs/$id'),
+            headers: {'Content-Type': 'application/json'},
+          );
+    
+          if (response.statusCode == 200) {
+            final Map<String, dynamic> decodedClubJson = jsonDecode(response.body);
+            final User club = User.fromJson(decodedClubJson);
+            await prefs.setString('club_data', jsonEncode(club.toJson()));
+
+          } else {
+            print('fetching club failed');
+          }
+        } catch (e) {
+          print('❌ Error in parsing club data: $e');
+        }
+      }
+
     } catch (e) {
       print('❌ Error in parsing user data: $e');
       rethrow;
