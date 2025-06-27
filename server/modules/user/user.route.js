@@ -5,7 +5,8 @@ import {
     updateUserController,
     selectTag,
     deleteUserTag,
-    getUserFollowedEvents
+    getUserFollowedEvents,
+    getUserWithEmail
 } from "./user.controller.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { validateUser } from "./user.model.js";
@@ -25,7 +26,7 @@ const validate = (schema) => {
 };
 
 router.get("/", isAuthenticated, catchAsync(getUser));
-
+router.get("/:email", getUserWithEmail);
 // Apply validation middleware
 router.post("/", validate(validateUser), catchAsync(createUser));
 router.put("/:email", isAuthenticated, catchAsync(updateUserController));

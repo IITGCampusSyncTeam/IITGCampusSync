@@ -138,7 +138,7 @@ export const mobileRedirectHandler = async (req, res, next) => {
         }
 
         console.log("Fetching user from database...");
-        const user = existingUser.toObject();
+        const user = await User.findById(existingUser._id).lean();
         console.log("User fetched:", user);
 
         if (!user.tag || user.tag.length === 0) {

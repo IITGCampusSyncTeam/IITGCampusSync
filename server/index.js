@@ -35,7 +35,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors()); // Consider more specific CORS configuration for production
+app.use(cors('*')); // Consider more specific CORS configuration for production
 
 // MongoDB connection
 const connectDB = async () => {
