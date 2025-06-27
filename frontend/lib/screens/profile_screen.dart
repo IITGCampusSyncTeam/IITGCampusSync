@@ -35,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (userJson != null) {
       final user = jsonDecode(userJson);
-      bool isClub = user['isClub'];
+      bool isClub = user['isClub'] ?? false;
 
       if (isClub) { // if isClub directly redirect to MainNavigationContainer()
         setState(() {

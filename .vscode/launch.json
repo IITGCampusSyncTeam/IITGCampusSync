@@ -10,6 +10,9 @@
             "type": "dart",
             "program": "frontend/lib/main.dart",
             "args": [
+                "--dart-define=CLIENT_ID=7e8cd638-96e9-4441-b3a5-dd3ea895a46d",
+                "--dart-define=AZURE_TENANT_ID=850aa78d-94e1-4bc6-9cf3-8c11b530701c",
+                "--dart-define=serverUrl=https://iitfcampussync.onrender.com"
             ]
         },
 

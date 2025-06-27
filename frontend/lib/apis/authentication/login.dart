@@ -96,18 +96,37 @@ Future<void> authenticate() async {
 
       print("✅ User data saved successfully!");
 
-      final isClub = decodedUserJson['isClub'];
+      try {
+        final email = decodedUserJson['email'] ?? '';
+        final response = await http.get(
+          Uri.parse('${UserEndPoints.currentUser}/$email'),
+          headers: {'Content-Type': 'application/json'},
+        );
+  
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> decodedClubJson = jsonDecode(response.body);
+          final User user = User.fromJson(decodedClubJson);
+          await prefs.setString('user_data', jsonEncode(user.toJson()));
+
+        } else {
+          print('fetching user failed');
+        }
+      } catch (e) {
+        print('❌ Error in parsing user data: $e');
+      }
+
+      final isClub = decodedUserJson['isClub'] ?? false;
       if(isClub) {
         try {
-          final id = decodedUserJson['_id'];
+          final email = decodedUserJson['email'] ?? '';
           final response = await http.get(
-            Uri.parse('${backend.uri}/api/clubs/$id'),
+            Uri.parse('${backend.uri}/api/clubs/$email'),
             headers: {'Content-Type': 'application/json'},
           );
     
           if (response.statusCode == 200) {
             final Map<String, dynamic> decodedClubJson = jsonDecode(response.body);
-            final User club = User.fromJson(decodedClubJson);
+            final Club club = Club.fromJson(decodedClubJson);
             await prefs.setString('club_data', jsonEncode(club.toJson()));
 
           } else {
