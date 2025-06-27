@@ -42,3 +42,9 @@ const clubSchema = new Schema({
 
 const Club = mongoose.model('Club', clubSchema);
 export default Club;
+
+export const findClubWithEmail = async (email) => {
+    const club = await Club.findOne({ email });
+    console.log("found club with email", club);
+    return club || false;
+}

@@ -15,6 +15,7 @@ const tenant_id = process.env.AZURE_TENANT_ID;
 import { findUserWithEmail, getUserFromToken, validateUser } from "../user/user.model.js";
 import User from "../user/user.model.js";
 import Tag from "../tag/tagModel.js"; // Import Tag model for fetching tag names
+import { findClubWithEmail } from "../club/clubModel.js"
 
 // Fetch department information using Microsoft Graph API
 const getDepartment = async (access_token) => {
@@ -97,9 +98,10 @@ export const mobileRedirectHandler = async (req, res, next) => {
         }
 
         console.log("User details retrieved:", userFromToken.data);
-
+        const clubUser = await findClubWithEmail(userFromToken.data.mail)
         const rollNumber = userFromToken.data.surname;
-        if (!rollNumber) {
+
+        if (!clubUser && !rollNumber) {
             console.error("Roll number missing in user data.");
             throw new AppError(401, "Sign in using Institute Account");
         }
@@ -109,16 +111,17 @@ export const mobileRedirectHandler = async (req, res, next) => {
 
         if (!existingUser) {
             console.log("User not found. Creating a new user...");
-            const department = await getDepartment(accessToken);
+            const department = !clubUser ? await getDepartment(accessToken) : clubUser.name;
 
             const userData = {
                 name: userFromToken.data.displayName,
                 email: userFromToken.data.mail,
-                rollNumber: rollNumber,
+                rollNumber: rollNumber ?? 0,
                 degree: userFromToken.data.jobTitle,
-                semester: calculateSemester(rollNumber),
+                semester: !clubUser ? calculateSemester(rollNumber) : 0,
                 department: department,
-                role: "normal",
+                role: !clubUser ? "normal" : "higher_authority",
+                isClub: !clubUser ? false : true,
             };
 
             console.log("Validating new user data...");
@@ -129,13 +132,13 @@ export const mobileRedirectHandler = async (req, res, next) => {
             }
 
             console.log("Saving new user to database...");
-            const newUser = new User(userData);
+            const newUser = !clubUser ? new User(userData) : new User({_id: clubUser._id, ...userData});
             existingUser = await newUser.save();
             console.log("New user created successfully:", existingUser);
         }
 
         console.log("Fetching user from database...");
-        const user = await User.findById(existingUser._id).lean();
+        const user = existingUser.toObject();
         console.log("User fetched:", user);
 
         if (!user.tag || user.tag.length === 0) {
