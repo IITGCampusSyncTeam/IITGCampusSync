@@ -10,6 +10,7 @@ const userSchema = new Schema({
     name: { type: String, required: true },
     fcmToken: {type: String, required:false}, //change it to true later on
     email: { type: String, required: true, unique: true },
+    isClub: { type: Boolean, default: false },
     rollNumber: { type: Number, required: true, unique: true },
     semester: { type: Number, required: true },
     hostel: {type:String},
@@ -95,6 +96,7 @@ export const validateUser = function (obj) {
     const joiSchema = Joi.object({
         name: Joi.string().min(4).required(),
         email: Joi.string().email().required(),
+        isClub: Joi.boolean(),
         rollNumber: Joi.number().required(),
         semester: Joi.number().required(),
         hostel: Joi.string(),

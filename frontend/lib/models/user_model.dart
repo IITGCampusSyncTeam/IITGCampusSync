@@ -3,6 +3,7 @@ class User {
   final String? fcmToken;
   final String name;
   final String email;
+  final bool isClub;
   final int rollNumber;
   final int semester;
   final String hostel;
@@ -23,6 +24,7 @@ class User {
     required this.fcmToken,
     required this.name,
     required this.email,
+    required this.isClub,
     required this.rollNumber,
     required this.semester,
     required this.hostel,
@@ -45,6 +47,7 @@ class User {
       fcmToken: json['fcmToken'] ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
+      isClub: json['isClub'] ?? false,
       rollNumber: json['rollNumber'] ?? 0,
       semester: json['semester'] ?? 0,
       hostel: json['hostel'] ?? '',
@@ -68,6 +71,7 @@ class User {
       'fcmToken': fcmToken,
       'name': name,
       'email': email,
+      'isClub': isClub,
       'rollNumber': rollNumber,
       'semester': semester,
       'hostel': hostel,

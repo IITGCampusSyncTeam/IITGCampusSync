@@ -4,10 +4,10 @@ import Tag from '../tag/tagModel.js';
 import User from '../user/user.model.js';
 // Create a new club
 export const createClub = async (req, res) => {
-    const { name, description, heads, members, images, websiteLink } = req.body;
+    const { name, description, email, members, images, websiteLink } = req.body;
     if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
     try {
-        const newClub = new Club({ name, description, heads, members, images, websiteLink });
+        const newClub = new Club({ name, description, email, members, images, websiteLink });
         await newClub.save();
         res.status(201).json(newClub);
     } catch (err) {
@@ -22,7 +22,7 @@ export const editClub = async (req, res) => {
     try {
         const club = await Club.findById(id);
         if (!club) return res.status(404).json({ message: 'Club not found' });
-        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
         Object.assign(club, updates);
         await club.save();
         res.status(200).json(club);
@@ -37,7 +37,7 @@ export const deleteClub = async (req, res) => {
     try {
         const club = await Club.findById(id);
         if (!club) return res.status(404).json({ message: 'Club not found' });
-        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
         await club.remove();
         res.status(200).json({ message: 'Club deleted' });
     } catch (err) {
@@ -67,7 +67,7 @@ export const changeAuthority = async (req, res) => {
     try {
         const club = await Club.findById(id);
         if (!club) return res.status(404).json({ message: 'Club not found' });
-        if (!req.user.isAdmin || !club.heads.includes(req.user._id.toString())) return res.status(403).send('Unauthorized');
+        if (!req.user.isAdmin) return res.status(403).send('Unauthorized');
         const member = club.members.find(member => member.userId === userId);
         if (!member) return res.status(404).json({ message: 'Member not found' });
         member.responsibility = newRole;
@@ -96,7 +96,6 @@ export const getClubDetail = async (req, res) => {
     try {
         console.log("Fetching club from database...");
         const clubDoc = await Club.findById(id)
-            .populate('heads', 'name')        // Populate heads with names
             .populate('events')               // Populate all event details
             .populate('merch');               // Populate all merch details
 
@@ -133,6 +132,47 @@ export const getClubDetail = async (req, res) => {
     }
 };
 
+export const getClubDetailWithEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        console.log("Fetching club from database...");
+        const clubDoc = await Club.findOne({email})
+            .populate('events')               // Populate all event details
+            .populate('merch');               // Populate all merch details
+
+        if (!clubDoc) {
+            console.log("Club not found.");
+            return res.status(404).json({ message: 'Club not found' });
+        }
+
+        const club = clubDoc.toObject(); // Convert Mongoose doc to plain object
+        console.log("Club fetched:", club);
+
+        // Handle tags
+        if (!club.tag || club.tag.length === 0) {
+            console.log("Club has no associated tags.");
+            club.tag = [];
+        } else {
+            console.log("Fetching tag names for club...");
+            const tagDocs = await Tag.find({ _id: { $in: club.tag } })
+                .select("_id title")
+                .lean();
+            console.log("Tags retrieved:", tagDocs);
+
+            club.tag = tagDocs.map(tag => ({
+                id: tag._id.toString(),
+                name: tag.title,
+            }));
+        }
+
+        console.log("Final club data before sending:", JSON.stringify(club, null, 2));
+        res.status(200).json(club);
+    } catch (err) {
+        console.error("Error fetching club details:", err);
+        res.status(500).json({ message: 'Error fetching club details', error: err });
+    }
+};
 
 export const addMerch = async (req, res) => {
     try {

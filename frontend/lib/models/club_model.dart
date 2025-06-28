@@ -1,5 +1,5 @@
 import 'package:frontend/models/merch_model.dart';
-import 'package:frontend/models/userModel.dart';
+import 'package:frontend/models/user_model.dart';
 
 // Helper function that handles different types of lists
 List<String> parseStringList(dynamic jsonList) {
@@ -53,8 +53,8 @@ class ClubMember {
 class Club {
   final String id;
   final String name;
+  final String email;
   final String description;
-  final List<String> heads;
   final String secretary;
   final List<ClubMember> members;
   final List<String> events;
@@ -68,8 +68,8 @@ class Club {
   Club({
     required this.id,
     required this.name,
+    required this.email,
     required this.description,
-    required this.heads,
     required this.secretary,
     required this.members,
     required this.events,
@@ -85,8 +85,8 @@ class Club {
     return Club(
       id: json['_id'] ?? '',
       name: json['name'] ?? 'Unknown Club',
+      email: json['email'] ?? 'Club Email',
       description: json['description'] ?? 'No description available',
-      heads: parseStringList(json['heads']),
       secretary: json['secretary'] is Map
           ? json['secretary']['_id'] ?? ''
           : json['secretary'] ?? '',
@@ -111,8 +111,8 @@ class Club {
     return {
       '_id': id,
       'name': name,
+      'email': email,
       'description': description,
-      'heads': heads,
       'secretary': secretary,
       'members': members.map((member) => member.toJson()).toList(),
       'events': events,

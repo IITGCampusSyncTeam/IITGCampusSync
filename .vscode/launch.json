@@ -9,8 +9,7 @@
             "request": "launch",
             "type": "dart",
             "program": "frontend/lib/main.dart",
-            "args": [
-            ]
+            "args": []
         },
 
         {
