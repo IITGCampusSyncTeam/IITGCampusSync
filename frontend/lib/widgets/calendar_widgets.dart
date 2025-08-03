@@ -169,7 +169,7 @@ Widget buildGridView(List<Event> events, userID) {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          event.club.name,
+                            event.club?.name ?? 'No Club',
                           style: TextStyle(
                             color: Colors.blue,
                           ),
@@ -424,7 +424,7 @@ Widget _buildEventCard(Event event, context, userID) {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    event.club.name,
+                    event.club?.name ?? 'No Club',
                     style: TextStyle(
                       color: Colors.blue,
                     ),
@@ -468,7 +468,7 @@ void _showEventDetails(Event event, context, userID,) {
             SizedBox(height: 8),
             Text('Date: ${event.dateTime.toString().split('.')[0]}'),
             SizedBox(height: 8),
-            Text('Club: ${event.club.name}'),
+            Text('Club: ${  event.club?.name ?? 'No Club'}'),
             SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -705,7 +705,7 @@ Widget _buildWeeklyEventCard(
                   ),
                   SizedBox(height: 4),
                   Text(
-                    event.club.name,
+                      event.club?.name ?? 'No Club',
                     style: TextStyle(
                       color: Colors.blue,
                     ),

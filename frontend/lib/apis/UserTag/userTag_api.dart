@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/apis/protected.dart';
+import 'package:frontend/constants/endpoints.dart';
+import 'package:http/http.dart' as http;
 
 class UserTagAPI {
   // Fetch available tags from the backend
@@ -57,6 +56,7 @@ class UserTagAPI {
 
   // Remove a tag from the user
   static Future<bool> removeTag(String email, String tagId) async {
+    print("Called removeTag for $email and tag $tagId");
     final token = await getAccessToken();
     if (token == 'error') {
       print("Error: Authentication required!");

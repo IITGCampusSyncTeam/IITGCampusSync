@@ -44,10 +44,13 @@ class redirecturi {
 
 class event {
   static const getAllEvents =
-      '${AuthConfig.serverUrl}/api/events/get-all-events';
+      "http://192.168.16.234:3000/api/events/get-all-events";
   static const getUpcomingEvents =
-      '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
-  static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
+      "http://192.168.16.234:3000/api/events/get-upcoming-events";
+  static const createEvent =
+      "http://192.168.16.234:3000/api/events/create-event";
+  static const createTentativeEvent =
+      "http://192.168.16.234:3000/api/events/tentative";
 }
 
 class payment {
@@ -60,17 +63,15 @@ class payment {
 }
 
 class NotifEndpoints {
-  static const saveToken =
-      "${AuthConfig.serverUrl}/api/firebase/save-token";
+  static const saveToken = "${AuthConfig.serverUrl}/api/firebase/save-token";
 }
-
 
 class UserTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
-  
+
   static String addTag(String email, String tagId) =>
       "${AuthConfig.serverUrl}/api/user/$email/addtag/$tagId";
-  
+
   static String removeTag(String email, String tagId) =>
       "${AuthConfig.serverUrl}/api/user/$email/deletetag/$tagId";
 }
@@ -94,4 +95,3 @@ class ClubMembers {
   static String removeMember(String clubId, String email) =>
       "$baseUrl/$clubId/removemember/$email";
 }
-

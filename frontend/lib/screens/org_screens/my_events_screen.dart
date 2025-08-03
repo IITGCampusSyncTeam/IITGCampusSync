@@ -1,31 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/org_screens/event_creation_form_srceen.dart';
 
-class OrgSelfEventsScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> events = [
-    {
-      'date': '17 April',
-      'title': 'Figma Workshop hehe',
-      'club': 'Coding Club',
-      'image': 'https://i.imgur.com/5Qf4WcN.png', // Placeholder
-      'datetime': '16 April, 7:00 PM',
-      'venue': 'Lecture Hall',
-      'tags': ['Design', 'Figma', 'DesforDev'],
-    },
-    {
-      'date': '18 April',
-      'title': 'Figma Workshop hehe',
-      'club': 'Coding Club',
-      'image': 'https://i.imgur.com/YZ4XJL5.png', // Placeholder
-      'datetime': '16 April, 7:00 PM',
-      'venue': 'Lecture Hall',
-      'tags': ['Design', 'Figma', 'DesforDev'],
-    },
-  ];
+class MyEventsScreen extends StatefulWidget {
+  @override
+  _MyEventsScreenState createState() => _MyEventsScreenState();
+}
+
+class _MyEventsScreenState extends State<MyEventsScreen> {
+  bool showMyEvents = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[900],
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -35,9 +22,15 @@ class OrgSelfEventsScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _toggleButton('All Events', false),
+                  GestureDetector(
+                    onTap: () => setState(() => showMyEvents = false),
+                    child: _toggleButton('All Events', !showMyEvents),
+                  ),
                   SizedBox(width: 10),
-                  _toggleButton('My Events', true),
+                  GestureDetector(
+                    onTap: () => setState(() => showMyEvents = true),
+                    child: _toggleButton('My Events', showMyEvents),
+                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -48,7 +41,7 @@ class OrgSelfEventsScreen extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search Events...',
+                        hintText: 'Search events...',
                         prefixIcon: Icon(Icons.search),
                         filled: true,
                         fillColor: Colors.white,
@@ -68,12 +61,12 @@ class OrgSelfEventsScreen extends StatelessWidget {
               ),
               SizedBox(height: 16),
 
-              // Events List
+              // Show All or My Events using same layout
               Expanded(
-                child: ListView(
-                  children: _buildEventGroups(context),
+                child: OrgEventScreen(
+                  isMyEvents: showMyEvents,
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -104,43 +97,82 @@ class OrgSelfEventsScreen extends StatelessWidget {
       child: Icon(icon, color: Colors.black),
     );
   }
+}
 
-  List<Widget> _buildEventGroups(BuildContext context) {
+class OrgEventScreen extends StatelessWidget {
+  final bool isMyEvents;
+
+  OrgEventScreen({this.isMyEvents = false});
+
+  final List<Map<String, dynamic>> allEvents = [
+    {
+      'date': '17 April',
+      'title': 'Figma Workshop hehe',
+      'club': 'Coding Club',
+      'image': 'https://i.imgur.com/5Qf4WcN.png',
+      'datetime': '16 April, 7:00 PM',
+      'venue': 'Lecture Hall',
+      'tags': ['Design', 'Figma', 'DesforDev'],
+      'isMine': false,
+    },
+    {
+      'date': '18 April',
+      'title': 'Flutter Bootcamp',
+      'club': 'Mobile Club',
+      'image': 'https://i.imgur.com/YZ4XJL5.png',
+      'datetime': '18 April, 5:00 PM',
+      'venue': 'Room 101',
+      'tags': ['Flutter', 'Mobile Dev'],
+      'isMine': true,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final events = isMyEvents
+        ? allEvents.where((e) => e['isMine'] == true).toList()
+        : allEvents;
+
     Map<String, List<Map<String, dynamic>>> groupedEvents = {};
-
     for (var event in events) {
       groupedEvents.putIfAbsent(event['date'], () => []).add(event);
     }
 
-    return groupedEvents.entries.map((entry) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(entry.key,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.white,
-              )),
-          SizedBox(height: 8),
-          ...entry.value.map((event) => _eventCard(context, event)).toList(),
-          SizedBox(height: 16),
-        ],
-      );
-    }).toList();
+    return events.isEmpty
+        ? Center(
+            child:
+                Text("No events found", style: TextStyle(color: Colors.white)))
+        : ListView(
+            children: groupedEvents.entries.map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(entry.key,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white)),
+                  SizedBox(height: 8),
+                  ...entry.value
+                      .map((event) => _eventCard(context, event))
+                      .toList(),
+                  SizedBox(height: 16),
+                ],
+              );
+            }).toList(),
+          );
   }
 
   Widget _eventCard(BuildContext context, Map<String, dynamic> event) {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[350],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Banner with edit icon
           Stack(
             children: [
               ClipRRect(
@@ -152,14 +184,24 @@ class OrgSelfEventsScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white70,
-                  child: Icon(Icons.edit, color: Colors.black),
+              if (event['isMine'])
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white70,
+                    child: IconButton(
+                      icon: Icon(Icons.edit, color: Colors.black),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EventCreationFormScreen()),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              )
             ],
           ),
           Padding(
