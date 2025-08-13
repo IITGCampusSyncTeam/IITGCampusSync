@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
 
 import '../models/event.dart';
 
@@ -236,14 +237,24 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
           padding: EdgeInsets.all(8),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
-            childAspectRatio: 1.0,
+            childAspectRatio: 0.625,
           ),
           itemCount: lastDay.day + firstDay.weekday - 1,
           itemBuilder: (context, index) {
             int dayNumber = index - firstDay.weekday + 2;
 
             if (dayNumber < 1 || dayNumber > lastDay.day) {
-              return Container(); 
+              return Container(
+                decoration: BoxDecoration(
+                  border: BorderDirectional(top: BorderSide(color: PageColors.outline.withAlpha(127), width: 1)),
+                ),
+                child: Column(
+                      children: [
+                        SizedBox(height: 2,),
+                        Text('1', style: TextStyle(color: TextColors.muted),)
+                      ],
+                    ),
+              );
             }
 
             bool hasEvents = eventsByDay.containsKey(dayNumber);
@@ -255,19 +266,28 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
                   : null,
               child: Container(
                 decoration: BoxDecoration(
-                  color: isToday ? Colors.blue.withOpacity(0.1) : null,
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  border: BorderDirectional(top: BorderSide(color: PageColors.outline, width: 1)),
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      '$dayNumber',
-                      style: TextStyle(
-                        fontWeight:
-                            isToday ? FontWeight.bold : FontWeight.normal,
-                        color: isToday ? Colors.blue : null,
-                      ),
+                    SizedBox(height: 2,),
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: isToday ? OnSurfaceColors.primaryDark : Colors.transparent),
+                      child: Center(
+                        child: Text(
+                          '$dayNumber',
+                          style: TextStyle(
+                            fontWeight: isToday ? FontWeight.w500 : FontWeight.normal,
+                            color: isToday ? TextColors.primaryLight : TextColors.primaryDark,
+                            fontSize: 12,
+                            height: 1.167
+                          ),
+                        ),
+                      )
                     ),
+                    SizedBox(height: 4,),
                     if (hasEvents)
                       Expanded(
                         child: ListView.builder(
@@ -315,10 +335,12 @@ Widget _buildCalendarHeader(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          '$monthName ${selectedDate.year}',
+          '$monthName, ${selectedDate.year}',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 18,
+            fontFamily: 'Poppins',
+            color: Color(0xFF131313)
           ),
         ),
         Row(
