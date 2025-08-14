@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
@@ -206,7 +208,7 @@ Widget buildGridView(List<Event> events, userID) {
   );
 }
 
-Widget buildCalendarView(List<Event> events, DateTime selectedDate,
+Widget buildCalendarView(context, List<Event> events, DateTime selectedDate,
     Function(DateTime) onMonthChanged) {
   final now = DateTime.now();
   final firstDay = DateTime(selectedDate.year, selectedDate.month, 1);
@@ -224,6 +226,24 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
     }
   }
 
+  //Random Events for Testing
+  if (events.isNotEmpty) {
+    for (var i = 1; i <= lastDay.day; i++) {
+      // if (event.dateTime.month == selectedDate.month &&
+      //     event.dateTime.year == selectedDate.year) {
+        // int day = event.dateTime.day;
+        // if (!eventsByDay.containsKey(day)) {
+        //   eventsByDay[day] = [];
+        // }
+        // eventsByDay[day]!.add(event);
+        for (var j = 3; j < Random().nextInt(10); j++) {
+          if (!eventsByDay.containsKey(i)) { eventsByDay[i] = []; }
+          eventsByDay[i]!.add(events[0]);
+        }
+      // }
+    }
+  }
+
   eventsByDay.forEach((day, dayEvents) {
     dayEvents.sort((a, b) => a.dateTime.compareTo(b.dateTime));
   });
@@ -234,16 +254,16 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
       _buildCalendarDays(),
       Expanded(
         child: GridView.builder(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(4),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
-            childAspectRatio: 0.625,
+            childAspectRatio: (MediaQuery.of(context).size.width / 7) / 125,
           ),
-          itemCount: lastDay.day + firstDay.weekday - 1,
+          itemCount: (6 - (lastDay.weekday - 1) % 7) + lastDay.day + firstDay.weekday - 1,
           itemBuilder: (context, index) {
             int dayNumber = index - firstDay.weekday + 2;
 
-            if (dayNumber < 1 || dayNumber > lastDay.day) {
+            if (dayNumber < 1) {
               return Container(
                 decoration: BoxDecoration(
                   border: BorderDirectional(top: BorderSide(color: PageColors.outline.withAlpha(127), width: 1)),
@@ -251,7 +271,21 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
                 child: Column(
                       children: [
                         SizedBox(height: 2,),
-                        Text('1', style: TextStyle(color: TextColors.muted),)
+                        Text("${(dayNumber - 1) % (DateTime(selectedDate.year, selectedDate.month, 0).day) + 1}", style: TextStyle(color: TextColors.muted),)
+                      ],
+                    ),
+              );
+            }
+
+            if (dayNumber > lastDay.day) {
+              return Container(
+                decoration: BoxDecoration(
+                  border: BorderDirectional(top: BorderSide(color: PageColors.outline.withAlpha(127), width: 1)),
+                ),
+                child: Column(
+                      children: [
+                        SizedBox(height: 2,),
+                        Text("${dayNumber - lastDay.day}", style: TextStyle(color: TextColors.muted),)
                       ],
                     ),
               );
@@ -259,6 +293,13 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
 
             bool hasEvents = eventsByDay.containsKey(dayNumber);
             bool isToday = now.day == dayNumber;
+
+            Color randomCalanderColor() => switch (Random().nextInt(4)) {
+              0 => CalanderColors.blue,
+              1 => CalanderColors.green,
+              2 => CalanderColors.pink,
+              _ => CalanderColors.yellow,
+            };
 
             return InkWell(
               onTap: hasEvents
@@ -287,27 +328,39 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
                         ),
                       )
                     ),
-                    SizedBox(height: 4,),
+                    SizedBox(height: 2,),
+                    ColoredBox(color: Colors.amber),
                     if (hasEvents)
-                      Expanded(
-                        child: ListView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: 2),
-                          itemCount: eventsByDay[dayNumber]!.length > 3
-                              ? 3
-                              : eventsByDay[dayNumber]!.length,
-                          itemBuilder: (context, eventIndex) {
-                            return Text(
-                              eventsByDay[dayNumber]![eventIndex].title,
-                              style: TextStyle(
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: List.generate(
+                          eventsByDay[dayNumber]!.length > 3
+                            ? 3
+                            : eventsByDay[dayNumber]!.length,
+                            (eventIndex) => Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 1),
+                              margin: EdgeInsets.symmetric(vertical: 2),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(4.0), color: randomCalanderColor()),
+                              child: Text(
+                                // eventsByDay[dayNumber]![eventIndex].title,
+                                ["Techniche", "Hello World!"].elementAt(Random().nextInt(2)),
+                                style: TextStyle(
                                   fontSize: 12,
-                                  backgroundColor: Colors.black,
-                                  color: Colors.white),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            );
-                          },
+                                  color: TextColors.primaryDark,
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w400
+                                ),
+                                maxLines: eventsByDay[dayNumber]!.length > 2 ? 1 : 2,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            )
+                          ),
                         ),
-                      ),
+                    ),
                     if (hasEvents && eventsByDay[dayNumber]!.length > 3)
                       Text(
                         '+${eventsByDay[dayNumber]!.length - 3} more',
@@ -326,7 +379,7 @@ Widget buildCalendarView(List<Event> events, DateTime selectedDate,
 
 Widget _buildCalendarHeader(
     DateTime selectedDate, Function(DateTime) onMonthChanged) {
-  final now = DateTime.now();
+  // final now = DateTime.now();
   final monthName = getMonthName(selectedDate.month);
 
   return Padding(

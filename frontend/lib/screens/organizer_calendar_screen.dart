@@ -158,6 +158,7 @@ class _OrganizerCalendarScreenState extends State<OrganizerCalendarScreen> {
         );
       case ViewType.monthly:
         return buildCalendarView(
+          context,
           provider.getEventsForMonth(
             provider.selectedDate.year, 
             provider.selectedDate.month

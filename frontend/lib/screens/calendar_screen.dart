@@ -228,8 +228,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return buildGridView(filteredEvents, _userId!);
       case ViewType.calendar:
         return buildCalendarView(
-          provider.getEventsForMonth(
-              provider.selectedDate.year, provider.selectedDate.month),
+          context,
+          filteredEvents,
           provider.selectedDate,
           (newDate) => provider.setSelectedDate(newDate),
         );
