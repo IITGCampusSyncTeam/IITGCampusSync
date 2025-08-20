@@ -47,7 +47,8 @@ class event {
       '${AuthConfig.serverUrl}/api/events/get-all-events';
   static const getUpcomingEvents =
       '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
-  static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
+  static const createEvent =
+      '${AuthConfig.serverUrl}/api/events/create-event';
   static const createTentativeEvent =
       '${AuthConfig.serverUrl}/api/events/tentative';
 }

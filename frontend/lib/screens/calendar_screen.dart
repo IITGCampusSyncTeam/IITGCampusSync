@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/eventProvider.dart';
 
+import 'package:frontend/constants/colors.dart';
+
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -54,6 +56,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: PageColors.background,
         body: Column(
           children: [
             // Toggle buttons for All events and My events
@@ -62,7 +65,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: PageColors.foreground,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -77,8 +80,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
             // Search bar
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: [
                   Expanded(
@@ -90,31 +92,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       );
                     },
                     child: Container(
-                      height: 40,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
+                        color: PageColors.foreground,
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       child: Row(
                         children: [
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Icon(Icons.search, color: Colors.grey),
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: Icon(Icons.search, color: TextColors.muted,),
                           ),
-                          Text('Search Events'),
+                          Text('Search Events ...', style: TextStyle(fontFamily: 'Sans', fontSize: 14, letterSpacing: -0.5, color: TextColors.muted),),
                         ],
                       ),
                     ),
                   )),
-                  SizedBox(width: 8),
+                  SizedBox(width: 4),
                   Container(
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8),
+                      color: PageColors.foreground,
+                      borderRadius: BorderRadius.circular(22),
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.filter_list),
+                      icon: Icon(Icons.tune, color: PageColors.icon,),
                       onPressed: () {},
                     ),
                   ),
@@ -189,14 +193,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected ? OnSurfaceColors.primaryDark : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           text,
           style: TextStyle(
-            color: isSelected ? Colors.black : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.white : TextColors.primaryDark,
+            // fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: FontWeight.w500
           ),
         ),
       ),
@@ -206,7 +211,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildCurrentView(EventProvider provider) {
     if (_userId == null) {
       return const Center(
-          child: CircularProgressIndicator()); // Wait for userID
+        child: CircularProgressIndicator() // Wait for userID
+      );
     }
 
     List<Event> filteredEvents = _showMyEventsOnly
@@ -222,10 +228,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return buildGridView(filteredEvents, _userId!);
       case ViewType.calendar:
         return buildCalendarView(
-          provider.getEventsForMonth(
-              provider.selectedDate.year, provider.selectedDate.month),
+          context,
+          filteredEvents,
           provider.selectedDate,
           (newDate) => provider.setSelectedDate(newDate),
+          _userId!
         );
     }
   }
