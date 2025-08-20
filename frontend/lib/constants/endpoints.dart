@@ -44,13 +44,12 @@ class redirecturi {
 
 class event {
   static const getAllEvents =
-      'http://192.168.29.195:3000/api/events/get-all-events';
+      '${AuthConfig.serverUrl}/api/events/get-all-events';
   static const getUpcomingEvents =
-      'http://192.168.29.195:3000/api/events/get-upcoming-events';
-  static const createEvent =
-      'http://192.168.29.195:3000/api/events/create-event';
+      '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+  static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
   static const createTentativeEvent =
-      'http://192.168.29.195:3000/api/events/tentative';
+      '${AuthConfig.serverUrl}/api/events/tentative';
 }
 
 class payment {
