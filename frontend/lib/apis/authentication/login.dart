@@ -1,10 +1,11 @@
 import 'dart:convert';
-
+import 'package:frontend/models/club_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:frontend/apis/protected.dart';
-import 'package:frontend/models/userModel.dart';
+import 'package:frontend/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoints.dart';
 import '../../main.dart';
@@ -54,7 +55,7 @@ Future<void> authenticate() async {
       print("🟢 Cleaned User JSON (Before Decoding): $decodedUserString");
 
       // Parse JSON string
-      final Map<String, dynamic> decodedUserJson = jsonDecode(decodedUserString);
+      Map<String, dynamic> decodedUserJson = jsonDecode(decodedUserString);
 
       // Debug parsed JSON
       print("🔵 Parsed User Data: $decodedUserJson");
@@ -94,6 +95,74 @@ Future<void> authenticate() async {
       print("✅ Stored User Data in SharedPreferences: $storedUserJson");
 
       print("✅ User data saved successfully!");
+
+      // try {
+      //   final email = decodedUserJson['email'] ?? '';
+      //   final response = await http.get(
+      //     Uri.parse('${UserEndPoints.currentUser}/$email'),
+      //     headers: {'Content-Type': 'application/json'},
+      //   );
+  
+      //   if (response.statusCode == 200) {
+      //     decodedUserJson = jsonDecode(response.body);
+          
+      //     // Ensure 'tag' field is properly formatted as a list
+      //     if (decodedUserJson.containsKey('tag') && decodedUserJson['tag'] is List) {
+      //       decodedUserJson['tag'] = List<Map<String, dynamic>>.from(decodedUserJson['tag']);
+      //     } else {
+      //       decodedUserJson['tag'] = [];
+      //     }
+
+      //     final User user = User.fromJson(decodedUserJson);
+      //     await prefs.setString('user_data', jsonEncode(user.toJson()));
+      //     String? storedUserJson = prefs.getString('user_data');
+      //     print("✅ Stored User Data in SharedPreferences: $storedUserJson");
+
+      //     print("✅ User data saved successfully!");
+
+      //   } else {
+      //     print('fetching user failed');
+      //   }
+      // } catch (e) {
+      //   print('❌ Error in parsing user data: $e');
+      // }
+
+      final isClub = decodedUserJson['isClub'] ?? false;
+      if(isClub) {
+        try {
+          final email = decodedUserJson['email'] ?? '';
+          final response = await http.get(
+            Uri.parse('${backend.uri}/api/clubs/c/$email'),
+            headers: {'Content-Type': 'application/json'},
+          );
+
+          print('✅ statusCode: ${response.statusCode}');
+    
+          if (response.statusCode == 200) {
+            final Map<String, dynamic> decodedClubJson = jsonDecode(response.body);
+
+            if (decodedClubJson.containsKey('tag') && decodedClubJson['tag'] is List) {
+              decodedClubJson['tag'] = List<Map<String, dynamic>>.from(decodedClubJson['tag']);
+            } else {
+              decodedClubJson['tag'] = [];
+            }
+
+            final Club club = Club.fromJson(decodedClubJson);
+            await prefs.setString('club_data', jsonEncode(club.toJson()));
+
+            String? storedClubJson = prefs.getString('club_data');
+            print("✅ Stored Club Data in SharedPreferences: $storedClubJson");
+
+            print("✅ Club data saved successfully!");
+
+          } else {
+            print('fetching club failed');
+          }
+        } catch (e) {
+          print('❌ Error in parsing club data: $e');
+        }
+      }
+
     } catch (e) {
       print('❌ Error in parsing user data: $e');
       rethrow;

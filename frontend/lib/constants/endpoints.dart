@@ -10,7 +10,7 @@ class AuthConfig {
 //change this later
 class AuthEndpoints {
   static const String getAccess =
-      'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=${AuthConfig.serverUrl}/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
+      'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=${"https://iitgcampussync.onrender.com"}/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
 }
 
 class Userendpoints {

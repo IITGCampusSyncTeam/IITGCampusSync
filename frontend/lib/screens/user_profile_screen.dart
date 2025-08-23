@@ -1,7 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/UserTag/userTag_api.dart'; // Import the new API file
+import 'package:frontend/apis/UserTag/userTag_api.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,53 +10,61 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  String name = '', email = '', roll = '', branch = '';
-  List<String> tags = []; // Store selected tag IDs
-  List<Map<String, String>> availableTags = []; // Store tag ID & Name
+  String name = '', email = '', roll = '', branch = '', website = '';
+  bool isClub = false;
+  List<String> tags = []; // List of tag IDs
+  List<Map<String, String>> availableTags = []; // All tags with id and name
   bool isAdding = false;
+
   @override
   void initState() {
     super.initState();
-    fetchUserData();
-    fetchAvailableTags();
+    fetchAvailableTags(); // Load available tags first
+    fetchUserData();      // Then fetch user info
   }
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear all user data
-
-    // Navigate back to Login Options screen
+    await prefs.clear();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginOptionsScreen()),
-      (Route<dynamic> route) => false,
+      (route) => false,
     );
   }
 
   Future<void> fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userJson = prefs.getString('user_data');
+    String? clubJson = prefs.getString('club_data');
 
     if (userJson != null) {
-      print("🔵 Retrieved User Data: $userJson"); // Debug print
-
       final user = jsonDecode(userJson);
+      isClub = user['isClub'] ?? false;
+
+      String websiteFromClub = '';
+      if (isClub && clubJson != null) {
+        final clubData = jsonDecode(clubJson);
+        websiteFromClub = clubData['websiteLink'] ?? '';
+      }
 
       setState(() {
         name = user['name'] ?? '';
+        isClub = user['isClub'] ?? false;
+        website = websiteFromClub;
         email = user['email'] ?? '';
         roll = user['rollNumber']?.toString() ?? '';
         branch = user['department'] ?? '';
+
+        // Extract tag IDs only
         tags = (user['tag'] as List<dynamic>?)
-                ?.map((tag) => tag.toString())
-                .toList() ??
-            [];
+            ?.map((tag) => tag['id'].toString())
+            .toList() ?? [];
       });
     }
   }
 
   Future<void> fetchAvailableTags() async {
-    List<Map<String, String>>? fetchedTags =
-        await UserTagAPI.fetchAvailableTags(); // ✅ Fixed function name
+    List<Map<String, String>>? fetchedTags = await UserTagAPI.fetchAvailableTags();
     if (fetchedTags != null) {
       setState(() {
         availableTags = fetchedTags;
@@ -66,22 +73,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       showSnackbar("Failed to fetch tags");
     }
   }
-
-  // Future<void> addTag(String tagId) async {
-  //   if (isAdding) return;
-  //   isAdding = true;
-  //
-  //   bool success = await UserTagAPI.addTag(email, tagId);
-  //   if (success) {
-  //     setState(() {
-  //       tags.add(tagId);
-  //     });
-  //     updateLocalUserData();
-  //     showSnackbar("Tag added successfully!");
-  //   } else {
-  //     showSnackbar("Failed to add tag");
-  //   }
-  // }
 
   Future<void> addTag(String tagId) async {
     if (isAdding) return;
@@ -127,14 +118,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     String? userJson = prefs.getString('user_data');
     if (userJson != null) {
       final user = jsonDecode(userJson);
-      user['tag'] = tags; // Ensure consistency with login format
+
+      final enrichedTags = tags.map((id) {
+        final tag = availableTags.firstWhere(
+          (tag) => tag['id'] == id,
+          orElse: () => {'id': id, 'name': 'Unknown'},
+        );
+        return {'id': tag['id'], 'name': tag['name']};
+      }).toList();
+
+      user['tag'] = enrichedTags;
       await prefs.setString('user_data', jsonEncode(user));
     }
   }
 
   void showSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -150,7 +149,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ User Info
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -161,23 +159,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Name: $name",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     Text("Email: $email",
-                        style:
-                            TextStyle(fontSize: 16, color: Colors.grey[700])),
-                    Text("Roll Number: $roll",
-                        style:
-                            TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                    Text(isClub ? "Website: $website" : "Roll Number: $roll",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text("Branch: $branch",
-                        style:
-                            TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
                   ],
                 ),
               ),
             ),
             SizedBox(height: 20),
-
             Text("Your Interests:",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
@@ -200,15 +193,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               }).toList(),
             ),
             SizedBox(height: 20),
-
             Text("Discover More Tags:",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Expanded(
               child: availableTags.isEmpty
-                  ? Center(
-                      child: Text("No tags available",
-                          style: TextStyle(color: Colors.red)))
+                  ? Center(child: Text("No tags available", style: TextStyle(color: Colors.red)))
                   : ListView.builder(
                       itemCount: availableTags.length,
                       itemBuilder: (context, index) {
@@ -235,7 +225,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       },
                     ),
             ),
-            // 🔹 Logout Button
             SizedBox(height: 16),
             Center(
               child: ElevatedButton.icon(

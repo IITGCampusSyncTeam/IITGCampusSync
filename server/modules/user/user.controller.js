@@ -7,6 +7,43 @@ export const getUser = async (req, res, next) => {
     return res.json(req.user);
 };
 
+export const getUserWithEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        console.log("Fetching user from database...");
+        const user = await User.findOne({email}).lean()
+
+        if (!user) {
+            console.log("User not found.");
+            return res.status(404).json({ message: 'Club not found' });
+        }
+        console.log("user fetched:", user);
+
+        if (!user.tag || user.tag.length === 0) {
+            console.log("User has no associated tags.");
+            user.tag = [];
+        } else {
+            console.log("Fetching tag names for user...");
+            const userTags = await Tag.find({ _id: { $in: user.tag } })
+                .select("_id title")
+                .lean();
+            console.log("Tags retrieved:", userTags);
+
+            // ✅ Ensure the `tag` field is properly formatted
+            user.tag = userTags.map(tag => ({
+                id: tag._id.toString(),
+                name: tag.title,  // ✅ Make sure "title" is included
+            }));
+        }
+
+        console.log("Final user data before sending:", JSON.stringify(user, null, 2));
+        res.status(200).json(user);
+    } catch (err) {
+        console.error("Error fetching user details:", err);
+        res.status(500).json({ message: 'Error fetching user details', error: err });
+    }
+};
 
 //not used
 export const createUser = async (req, res) => {

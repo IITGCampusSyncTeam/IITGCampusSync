@@ -20,9 +20,9 @@ const merchSchema = new Schema({
 // Club schema
 const clubSchema = new Schema({
     name: { type: String, unique: true, required: true },
+    email: { type: String, unique: true, require: true },
     description: { type: String, required: true }, 
     secretary : { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Club secretary (user)
-    heads: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Club heads (users)
     members: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -42,3 +42,9 @@ const clubSchema = new Schema({
 
 const Club = mongoose.model('Club', clubSchema);
 export default Club;
+
+export const findClubWithEmail = async (email) => {
+    const club = await Club.findOne({ email });
+    console.log("found club with email", club);
+    return club || false;
+}

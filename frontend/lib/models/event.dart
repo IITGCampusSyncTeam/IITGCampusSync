@@ -1,4 +1,4 @@
-import 'package:frontend/models/userModel.dart';
+import 'package:frontend/models/user_model.dart';
 
 import 'club_model.dart';
 
