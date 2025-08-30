@@ -3,17 +3,20 @@ import mongoose from 'mongoose';
 const eventSchema = new mongoose.Schema({
   title: String,
   description: String,
+  banner: String,
   dateTime: Date,
   venue: String,
   club: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
+  views: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  RSVP: [{ type : mongoose.Schema.Types.ObjectId, ref : 'User'}],
   participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   feedbacks: [String],
   notifications: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-      enum: ['drafted', 'tentative', 'published'],
+      enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
       default: 'drafted',
     },
 });

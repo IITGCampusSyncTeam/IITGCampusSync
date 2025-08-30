@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './constants/endpoints.dart';
 import 'firebase_options.dart';
 import 'providers/eventProvider.dart';
+import 'package:frontend/screens/org_screens/nav_bar.dart';
 
 // Define global navigator key
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -186,8 +187,9 @@ class _MyAppState extends State<MyApp> {
           useMaterial3: true,
         ),
         navigatorKey: navigatorKey,
-        // home: SplashScreen(),
-        home: SplashScreen()
+        // home: SplashScreen(),//final
+        // home: OrganizerNavigationContainer()//for testing organizer side please change
+        home: SplashScreen(),
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),

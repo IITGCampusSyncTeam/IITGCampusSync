@@ -1,109 +1,109 @@
 import Event from './eventModel.js';
 import User from '../user/user.model.js';
-import {admin} from '../firebase/firebase_controller.js';
+import { admin } from '../firebase/firebase_controller.js';
 import Club from '../club/clubModel.js';
 import { broadcast } from '../../index.js';
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
-    const dateIST = new Date(istDateTime);
-    const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
-    return utcDateTime.toISOString(); // Save as UTC string
+  const dateIST = new Date(istDateTime);
+  const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
+  return utcDateTime.toISOString(); // Save as UTC string
 }
 
 async function createEvent(req, res) {
-    try {
-        const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
+  try {
+    const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
 
-        const dateTimeUTC = convertISTtoUTC(dateTime);
-        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+    const dateTimeUTC = convertISTtoUTC(dateTime);
+    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
 
-        const associatedClub = await Club.findById(clubId).populate('followers');
+    const associatedClub = await Club.findById(clubId).populate('followers');
 
-        if (!associatedClub) {
-            return res.status(404).json({ status: "error", message: "Club not found" });
-        }
-
-        console.log("Associated Club:", associatedClub.name);
-        console.log("Followers of Club:", associatedClub.followers.length);
-
-        const fcmTokens = associatedClub.followers
-            .filter(user => user && user.fcmToken) // Added null check for user
-            .map(user => user.fcmToken);
-
-        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
-
-        let newEvent = await Event.create({
-            title,
-            description,
-            dateTime: dateTimeUTC,
-            club: clubId,
-            createdBy,
-            participants: associatedClub.followers.map(user => user._id),
-            notifications: [],
-            tag: tagId,
-        });
-
-        console.log("✅ Event Created Successfully (pre-population for broadcast):", newEvent._id);
-
-        const populatedEventForBroadcast = await Event.findById(newEvent._id)
-            .populate('participants', 'username profilePicture')
-            .populate({ path: 'club', select: 'name avatar' })
-            .populate({ path: 'tag', select: 'name' });
-
-        if (populatedEventForBroadcast) {
-            broadcast({ type: 'EVENT_CREATED', payload: populatedEventForBroadcast });
-            console.log('📢 Broadcasted EVENT_CREATED');
-        } else {
-            console.warn('⚠️ Could not find event for broadcast after creation:', newEvent._id);
-        }
-
-        // Send FCM notifications to club followers individually
-        if (fcmTokens.length > 0) {
-            console.log(`Attempting to send ${fcmTokens.length} FCM messages individually...`);
-            let successCount = 0;
-            let failureCount = 0;
-
-            for (const token of fcmTokens) {
-                const message = {
-                    notification: {
-                        title: `New Event: ${title}`,
-                        body: description,
-                    },
-                    token: token, // The specific token for this message
-                    // data: { eventId: newEvent._id.toString(), type: 'newEvent' } // Optional data payload
-                };
-
-                try {
-                    // Use admin.messaging().send() for a single message
-                    const response = await admin.messaging().send(message);
-                    console.log(`✅ Successfully sent FCM message to token ${token.substring(0, 20)}...:`, response); // Log part of token for privacy
-                    successCount++;
-                } catch (error) {
-                    console.error(`❌ Failed to send FCM message to token ${token.substring(0, 20)}...:`, error.code, error.message);
-                    failureCount++;
-                }
-            }
-            console.log(`FCM Individual Send Summary: ${successCount} successful, ${failureCount} failed.`);
-        } else {
-            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
-        }
-
-        res.status(201).json({ status: "success", event: populatedEventForBroadcast || newEvent });
-    } catch (error) {
-        console.error("❌ Error creating event:", error);
-        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    if (!associatedClub) {
+      return res.status(404).json({ status: "error", message: "Club not found" });
     }
+
+    console.log("Associated Club:", associatedClub.name);
+    console.log("Followers of Club:", associatedClub.followers.length);
+
+    const fcmTokens = associatedClub.followers
+      .filter(user => user && user.fcmToken) // Added null check for user
+      .map(user => user.fcmToken);
+
+    console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
+
+    let newEvent = await Event.create({
+      title,
+      description,
+      dateTime: dateTimeUTC,
+      club: clubId,
+      createdBy,
+      participants: associatedClub.followers.map(user => user._id),
+      notifications: [],
+      tag: tagId,
+    });
+
+    console.log("✅ Event Created Successfully (pre-population for broadcast):", newEvent._id);
+
+    const populatedEventForBroadcast = await Event.findById(newEvent._id)
+      .populate('participants', 'username profilePicture')
+      .populate({ path: 'club', select: 'name avatar' })
+      .populate({ path: 'tag', select: 'name' });
+
+    if (populatedEventForBroadcast) {
+      broadcast({ type: 'EVENT_CREATED', payload: populatedEventForBroadcast });
+      console.log('📢 Broadcasted EVENT_CREATED');
+    } else {
+      console.warn('⚠️ Could not find event for broadcast after creation:', newEvent._id);
+    }
+
+    // Send FCM notifications to club followers individually
+    if (fcmTokens.length > 0) {
+      console.log(`Attempting to send ${fcmTokens.length} FCM messages individually...`);
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const token of fcmTokens) {
+        const message = {
+          notification: {
+            title: `New Event: ${title}`,
+            body: description,
+          },
+          token: token, // The specific token for this message
+          // data: { eventId: newEvent._id.toString(), type: 'newEvent' } // Optional data payload
+        };
+
+        try {
+          // Use admin.messaging().send() for a single message
+          const response = await admin.messaging().send(message);
+          console.log(`✅ Successfully sent FCM message to token ${token.substring(0, 20)}...:`, response); // Log part of token for privacy
+          successCount++;
+        } catch (error) {
+          console.error(`❌ Failed to send FCM message to token ${token.substring(0, 20)}...:`, error.code, error.message);
+          failureCount++;
+        }
+      }
+      console.log(`FCM Individual Send Summary: ${successCount} successful, ${failureCount} failed.`);
+    } else {
+      console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
+    }
+
+    res.status(201).json({ status: "success", event: populatedEventForBroadcast || newEvent });
+  } catch (error) {
+    console.error("❌ Error creating event:", error);
+    res.status(500).json({ status: "error", message: "Internal Server Error" });
+  }
 }
 
 
 //  Function to fetch events
 const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('participants').populate({ path: 'club'}).populate({path:'tag'}); 
+    const events = await Event.find().populate('participants').populate({ path: 'club' }).populate({ path: 'tag' });
     console.log(events)
     // Populating for debugging
-//    console.log(" Retrieved Events:", events);
+    //    console.log(" Retrieved Events:", events);
     res.status(200).json(events);
   } catch (error) {
     console.error("❌ Error fetching events:", error);
@@ -119,7 +119,7 @@ const getUpcomingEvents = async (req, res) => {
     // Fetch only events whose dateTime is in the future
     const upcomingEvents = await Event.find({ dateTime: { $gt: currentDateTime } })
       .sort({ dateTime: 1 }).limit(10); // Sort events in ascending order (earliest first)
-    console.log("upcoming:",upcomingEvents);
+    console.log("upcoming:", upcomingEvents);
     res.status(200).json({ status: "success", events: upcomingEvents });
 
   } catch (error) {
@@ -128,8 +128,8 @@ const getUpcomingEvents = async (req, res) => {
   }
 };
 
- // func to get past events of the club
- const getPastEventsOfClub = async (req, res) => {
+// func to get past events of the club
+const getPastEventsOfClub = async (req, res) => {
   try {
     const { clubId } = req.params;
 
@@ -274,8 +274,40 @@ const createTentativeEvent = async (req, res) => {
 };
 
 
+const getActiveCreatorEvents = async (req, res) => {
+  try {
+    const { createdBy } = req.body;
+    const now = Date.now();
+
+    if (!createdBy) {
+      return res.status(400).json({ message: 'Missing Creator ID!!' });
+    }
+
+    // Upcoming events: published and in the future
+    const upcomingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'published',
+      dateTime: { $gt: now }
+    });
+
+    // Ongoing events: status is 'live'
+    const ongoingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'live'
+    });
+
+    return res.status(200).json({
+      ongoingEvents,
+      upcomingEvents
+    });
+  } catch (error) {
+    console.error("Error fetching creator events:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 //  Export functions properly
-export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent,createTentativeEvent};
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents };
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {
