@@ -64,6 +64,7 @@ dependencies:
   flutter_typeahead: ^5.2.0
   syncfusion_flutter_calendar: ^28.2.11
   flutter_local_notifications: ^19.1.0
+  flutter_secure_storage: ^9.1.1
 
 dev_dependencies:
   flutter_test:

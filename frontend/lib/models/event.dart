@@ -13,12 +13,19 @@ class Event {
   final List<String> participants;
   final List<String> feedbacks;
   final List<String> notifications;
-  final List<dynamic>
-      tag; // Changed to dynamic to handle either tag objects or strings
+   bool isRsvpd;
+  final List<dynamic>tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
+  final String imageUrl;
+  final String organizer;
+  final String location;
+
 
   Event({
     required this.id,
+    required this.organizer,
+    required this.location,
+    required this.imageUrl,
     required this.title,
     required this.description,
     required this.dateTime,
@@ -30,6 +37,7 @@ class Event {
     this.notifications = const [],
     this.tag = const [],
     this.status = 'drafted',
+    this.isRsvpd = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -46,6 +54,9 @@ class Event {
       'notifications': notifications,
       'tag': tag,
       'status': status,
+      'imageUrl': imageUrl,
+      'organizer':organizer,
+      'location':location,
     };
   }
 
@@ -70,6 +81,10 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
+      isRsvpd: json['isRsvpd'] ?? false,
+      organizer: json['organizer'] ?? 'Unknown Organizer',
+      location: json['location'] ?? 'Unknown Location',
+      imageUrl: json['imageUrl'] ?? '', // Add a default empty string for the image
     );
   }
 

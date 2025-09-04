@@ -3,6 +3,8 @@ import User from '../user/user.model.js';
 import {admin} from '../firebase/firebase_controller.js';
 import Club from '../club/clubModel.js';
 import { broadcast } from '../../index.js';
+import EventRegistration from '../eventRegistration/eventRegistrationModel.js';
+import catchAsync from '../../utils/catchAsync.js';
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
@@ -100,11 +102,44 @@ async function createEvent(req, res) {
 //  Function to fetch events
 const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('participants').populate({ path: 'club'}).populate({path:'tag'}); 
-    console.log(events)
-    // Populating for debugging
-//    console.log(" Retrieved Events:", events);
+
+    const events = await Event.find()
+      .populate('participants')
+      .populate({ path: 'club' })
+      .populate({ path: 'tag' })
+      .lean();
+
+    // Check if a user is logged in
+    if (req.user) {
+      const userId = req.user.id;
+
+
+      const eventIds = events.map(event => event._id);
+
+      // to find all registrations for the current user that match the fetched events
+      const userRegistrations = await EventRegistration.find({
+        user: userId,
+        event: { $in: eventIds }
+      });
+
+      // Create a Set of event IDs the user has RSVP'd to for quick checking
+      const rsvpdEventIds = new Set(
+        userRegistrations.map(reg => reg.event.toString())
+      );
+
+
+      events.forEach(event => {
+        event.isRsvpd = rsvpdEventIds.has(event._id.toString());
+      });
+    } else {
+
+      events.forEach(event => {
+        event.isRsvpd = false;
+      });
+    }
+
     res.status(200).json(events);
+
   } catch (error) {
     console.error("❌ Error fetching events:", error);
     res.status(500).json({ message: "Failed to fetch events" });

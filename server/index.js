@@ -21,6 +21,7 @@ import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'; // We'll need to modify this later
 import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
+import eventRegistrationRoutes from "./modules/eventRegistration/eventRegistrationRoutes.js";
 
 // Import your Event model (adjust path as necessary)
 // Assuming it's something like:
@@ -130,12 +131,15 @@ app.use("/api/tags", tagRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/onedrive", onedriveRoutes);
 
+
 // Calendar routes (These seem to be direct controller calls, not router modules)
 app.get('/user/:outlookId/events/:date', CalendarController.getUserEvents);
 app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime);
 
 // Event routes
 app.use("/api/events", eventRoutes); // This router will need to import `broadcast`
+
+app.use('/api/v1/registrations', eventRegistrationRoutes);
 
 // Other routes
 app.use("/api/firebase", firebaseRoutes);

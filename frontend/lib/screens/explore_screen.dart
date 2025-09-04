@@ -4,7 +4,10 @@ import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/models/event.dart'; // Import the Event model
 import 'package:frontend/screens/payment_screen.dart';
 import 'package:frontend/services/notification_services.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/eventProvider.dart';
+import '../services/notification_services.dart';
 import '../widgets/event_card.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -15,8 +18,7 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-  List<Event> events = []; // Now using the Event model
-  bool isLoading = true;
+
   EventAPI eventAPI = EventAPI();
   NotificationServices notificationServices = NotificationServices();
   int _selectedIndex = 0; // Track the selected navigation item
@@ -40,7 +42,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void initState() {
     super.initState();
-    loadEvents();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<EventProvider>(context, listen: false).fetchAllEvents();
+    });
 
     // Initialize notification services
     notificationServices.requestNotificationPermission;
@@ -52,30 +56,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
   }
 
-  void loadEvents() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      final eventList = await eventAPI.fetchEvents();
-      setState(() {
-        // Parse the events using the Event model
-        events =
-            eventList.map((eventData) => Event.fromJson(eventData)).toList();
-        // Sort events by date (newest first)
-        events.sort((a, b) => b.dateTime.compareTo(a.dateTime));
-        // Reset pagination when loading new events
-        _currentPage = 0;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      _showErrorDialog(e.toString());
-    }
-  }
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -97,36 +77,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.delayed(Duration.zero);
-            loadEvents();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTopBar(),
-                _buildFilterChips(),
-                isLoading
-                    ? const SizedBox(
-                        height: 200,
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _buildEventsList(),
-                _buildOrganisersSection(),
-              ],
+    return Consumer<EventProvider>(
+      builder: (context, eventProvider, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () => eventProvider.fetchAllEvents(),
+              // Use provider's method
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTopBar(),
+                    _buildFilterChips(),
+                    eventProvider.isLoading
+                        ? const SizedBox(/*...*/)
+                        : _buildEventsList(eventProvider.allEvents),
+                    // Pass events from provider
+                    _buildOrganisersSection(),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      // Note: Bottom navigation bar is now handled by MainNavigationContainer
+          // Note: Bottom navigation bar is now handled by MainNavigationContainer
+        );
+      },
     );
   }
+
+
+
+
 
   Widget _buildTopBar() {
     return Padding(
@@ -239,7 +223,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildEventsList() {
+  Widget _buildEventsList(List<Event> events) {
     if (events.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32.0),
@@ -272,7 +256,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             tags: event.getTagTitles(),
             imageUrl:
                 "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
-            description: event.description,
+            description: event.description, onRsvpPressed: () {  }, event: event,
           );
         }).toList(),
 

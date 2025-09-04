@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../models/event.dart';
 
 class EventCard extends StatelessWidget {
   final String banner;
@@ -9,9 +11,13 @@ class EventCard extends StatelessWidget {
   final List<String> tags;
   final String imageUrl;
   final String description;
+  final Event event;
+  final VoidCallback onRsvpPressed;
 
   const EventCard({
     super.key,
+    required this.event,
+    required this.onRsvpPressed,
     required this.banner,
     required this.title,
     required this.organizer,
@@ -172,6 +178,25 @@ class EventCard extends StatelessWidget {
                         )
                         .toList(),
                   ),
+                  const SizedBox(height: 16), // Spacing before the button
+
+                  //  RSVP BUTTON ADDED HERE
+                  ElevatedButton.icon(
+                   onPressed: onRsvpPressed, // Calls the function from the screen
+                   icon: Icon(
+                   event.isRsvpd ? Icons.check_circle : Icons.event_available,
+                   size: 18,
+                   ),
+                   label: Text(event.isRsvpd ? "RSVP'd" : "RSVP"),
+                   style: ElevatedButton.styleFrom(
+                   backgroundColor: event.isRsvpd ? Colors.green : Theme.of(context).primaryColor,
+                   foregroundColor: Colors.white,
+                   minimumSize: const Size(double.infinity, 36), // Make button wide
+                   shape: RoundedRectangleBorder(
+                   borderRadius: BorderRadius.circular(20),
+                      ),
+                     ),
+                   ),
                 ],
               ),
             ),

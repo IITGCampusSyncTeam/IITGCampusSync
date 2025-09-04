@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:frontend/constants/endpoints.dart';
+import 'package:frontend/services/storage_service.dart';
 import 'package:http/http.dart' as http;
 
 class EventAPI {
+
+  final StorageService _storageService = StorageService();
+
   Future<List> fetchEvents() async {
     final url = event.getAllEvents;
     try {
@@ -44,7 +48,8 @@ class EventAPI {
       'title': title,
       'description': description,
       'dateTime': date
-          .toIso8601String(), // You can assume this is IST; backend will convert to UTC
+          .toIso8601String(),
+      // You can assume this is IST; backend will convert to UTC
       'club': club,
     });
 
@@ -65,6 +70,32 @@ class EventAPI {
       throw Exception('Error: $e');
     }
   }
+
+  Future<bool> rsvpForEvent(String eventId) async {
+    // read the token
+    final token = await _storageService.readToken();
+
+    // Check if token exists, otherwise the user is not logged in
+    if (token == null) {
+      throw Exception('User is not authenticated.');
+    }
+
+    final response = await http.post(
+      Uri.parse('${Constants.API_BASE_URL}/registrations/events/$eventId/rsvp'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final responseBody = jsonDecode(response.body);
+      return responseBody['data']['rsvpd'];
+    } else {
+      throw Exception('Failed to RSVP for event.');
+    }
+  }
+
 
   //
   // Future<void> createEvent(String title, String description, String dateTime,
@@ -93,8 +124,8 @@ class EventAPI {
   //   }
   // }
 
-  Future<void> createTentativeEvent(
-      String title, DateTime date, String venue) async {
+  Future<void> createTentativeEvent(String title, DateTime date,
+      String venue) async {
     final url = event
         .createTentativeEvent; // Add this endpoint to your `endpoints.dart`
     final body = json.encode({
@@ -118,3 +149,7 @@ class EventAPI {
     }
   }
 }
+
+
+
+

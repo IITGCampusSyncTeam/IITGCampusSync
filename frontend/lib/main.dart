@@ -178,7 +178,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ChangeNotifierProvider(
+        create: (context) => EventProvider(),
+    child: MaterialApp(
         title: 'IITGsync',
         theme: ThemeData(
           scaffoldBackgroundColor: Colors.grey[400],
@@ -187,11 +189,12 @@ class _MyAppState extends State<MyApp> {
         ),
         navigatorKey: navigatorKey,
         // home: SplashScreen(),
-        home: SplashScreen()
+        home: MainNavigationContainer()
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),
-        );
+        ),
+    );
   }
 }
 

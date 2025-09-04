@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:frontend/apis/events/event_api.dart';
-import 'package:frontend/models/event.dart';
+import '../apis/events/event_api.dart';
+import '../models/event.dart';
 
 class EventProvider with ChangeNotifier {
   final EventAPI _eventAPI = EventAPI();
@@ -82,6 +82,32 @@ class EventProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> toggleRsvpStatus(String eventId) async {
+    // Find the event in the list
+    final eventIndex = _allEvents.indexWhere((event) => event.id == eventId);
+    if (eventIndex == -1) return; // Event not found
+
+
+    _allEvents[eventIndex].isRsvpd = !_allEvents[eventIndex].isRsvpd;
+    notifyListeners();
+
+    try {
+      // Call the API
+      final newRsvpStatus = await _eventAPI.rsvpForEvent(eventId);
+      // Verify the final state matches the server's response
+      _allEvents[eventIndex].isRsvpd = newRsvpStatus;
+    } catch (error) {
+      // If API call fails, revert the change and show an error
+      _allEvents[eventIndex].isRsvpd = !_allEvents[eventIndex].isRsvpd;
+      //  show a snackbar or toast to the user here
+      print("Error toggling RSVP: $error");
+    } finally {
+
+      notifyListeners();
+    }
+  }
+
 
   // Get events for a specific club
   List<Event> getEventsForClub(String clubId) {
