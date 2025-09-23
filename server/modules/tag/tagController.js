@@ -1,6 +1,6 @@
 import Tag from "./tagModel.js";
+import User from "../user/user.model.js";
 
-// Get all tags
 export const getAllTags = async (req, res) => {
   try {
     const tags = await Tag.find();
@@ -10,26 +10,43 @@ export const getAllTags = async (req, res) => {
   }
 };
 
-// Add a new tag
-export const addTag = async (req, res) => {
+export const addTags = async (req, res) => {
   try {
-    const { title } = req.body;
-    const tag = new Tag({ title });
-    await tag.save();
-    res.status(201).json(tag);
+    const { titles } = req.body;
+
+    if (!titles || !Array.isArray(titles) || titles.length === 0) {
+      return res.status(400).json({ error: "Please provide an array of titles." });
+    }
+
+    const tagsToCreate = titles.map(title => ({ title }));
+    const newTags = await Tag.insertMany(tagsToCreate);
+
+    res.status(201).json(newTags);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Delete a tag by ID
-export const deleteTag = async (req, res) => {
+export const deleteTags = async (req, res) => {
   try {
-    const tag = await Tag.findByIdAndDelete(req.params.id);
-    if (!tag) {
-      return res.status(404).json({ error: "Tag not found" });
+    const { tagIds } = req.body;
+
+    if (!tagIds || !Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({ error: "Please provide an array of tag IDs." });
     }
-    res.status(200).json({ message: "Tag deleted successfully" });
+
+    const deleteResult = await Tag.deleteMany({ _id: { $in: tagIds } });
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ error: "No matching tags found to delete." });
+    }
+
+    await User.updateMany(
+      {},
+      { $pull: { tag: { $in: tagIds } } }
+    );
+
+    res.status(200).json({ message: `${deleteResult.deletedCount} tags deleted successfully from the system and all user profiles.` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

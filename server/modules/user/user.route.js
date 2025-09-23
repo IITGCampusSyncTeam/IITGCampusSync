@@ -3,8 +3,8 @@ import {
     getUser,
     createUser,
     updateUserController,
-    selectTag,
-    deleteUserTag,
+    selectTags,
+    deleteUserTags,
     getUserFollowedEvents,
     getUserWithEmail
 } from "./user.controller.js";
@@ -14,7 +14,6 @@ import isAuthenticated from "../../middleware/isAuthenticated.js";
 
 const router = Router();
 
-// Validation middleware
 const validate = (schema) => {
     return (req, res, next) => {
         const { error } = schema(req.body);
@@ -27,12 +26,11 @@ const validate = (schema) => {
 
 router.get("/", isAuthenticated, catchAsync(getUser));
 router.get("/:email", getUserWithEmail);
-// Apply validation middleware
 router.post("/", validate(validateUser), catchAsync(createUser));
 router.put("/:email", isAuthenticated, catchAsync(updateUserController));
-//TODO HAVE TO CHECK THE API BELOW
-router.get("/get-user-followed-events",isAuthenticated,getUserFollowedEvents);
-// New routes for selecting and deleting user tags
-router.post("/:email/addtag/:tagId", isAuthenticated, catchAsync(selectTag)); // Add a tag
-router.delete("/:email/deletetag/:tagId", isAuthenticated, catchAsync(deleteUserTag)); // Remove a tag
+router.get("/get-user-followed-events", isAuthenticated, getUserFollowedEvents);
+
+router.post("/:email/tags/select", isAuthenticated, catchAsync(selectTags));
+router.delete("/:email/tags/delete", isAuthenticated, catchAsync(deleteUserTags));
+
 export default router;
