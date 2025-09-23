@@ -4,7 +4,7 @@ class AuthConfig {
   static const String CLIENT_ID =
       String.fromEnvironment('CLIENT_ID', defaultValue: '');
   static const String serverUrl =
-      String.fromEnvironment('serverUrl', defaultValue: '');
+      String.fromEnvironment('serverUrl', defaultValue: 'http://10.0.2.2:3000');
 }
 
 //change this later
@@ -70,10 +70,10 @@ class UserTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
   static String addTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/$email/addtag/$tagId";
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/addtag/$tagId";
 
   static String removeTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/$email/deletetag/$tagId";
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/deletetag/$tagId";
 }
 
 class ClubTag {
