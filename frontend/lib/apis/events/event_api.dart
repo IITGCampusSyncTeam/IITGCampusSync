@@ -66,7 +66,55 @@ class EventAPI {
     }
   }
 
-  //
+  // RSVP to an Event
+  Future<void> rsvpToEvent({
+    required String eventId,
+    required String userId,
+    String status = 'yes', // optional, default 'yes'
+  }) async {
+    final url = '${event.rsvpToEvent}/$eventId';
+
+    final body = json.encode({
+      'userId': userId,
+      'status': status,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Failed to RSVP: ${response.body}');
+      }
+
+      print('✅ RSVP sent successfully!');
+    } catch (e) {
+      print('❌ Error sending RSVP: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
+  // Fetch RSVP List for an Event
+  Future<List<dynamic>> fetchEventRSVPs(String eventId) async {
+    final url = '${event.rsvpToEvent}/$eventId';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['RSVP'] ?? [];
+      } else {
+        throw Exception('Failed to fetch RSVPs: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error fetching RSVPs: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
   // Future<void> createEvent(String title, String description, String dateTime,
   //     String club, String tag) async {
   //   final url = event.createEvent;

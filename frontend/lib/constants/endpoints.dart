@@ -51,6 +51,8 @@ class event {
       '${AuthConfig.serverUrl}/api/events/create-event';
   static const createTentativeEvent =
       '${AuthConfig.serverUrl}/api/events/tentative';
+  static const rsvpToEvent =
+      '${AuthConfig.serverUrl}/api/events/rsvp/';
 }
 
 class payment {
