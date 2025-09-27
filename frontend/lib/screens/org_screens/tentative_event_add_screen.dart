@@ -135,7 +135,6 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Close the sheet after adding
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -151,7 +150,6 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                         shape: RoundedRectangleBorder(
-                          // Use BorderRadius.circular directly
                           borderRadius: BorderRadius.circular(40),
                         ),
                       ),
@@ -190,7 +188,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.close),
             padding: EdgeInsets.only(left: 8, right: 8),
             iconSize: 20,
@@ -241,7 +239,6 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
-                      // Corrected alpha from 1 to 255 for visibility
                       color: Color.fromARGB(255, 113, 113, 123),
                     ),
                   ),
@@ -322,7 +319,6 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  // Using a lighter grey or theme color might be better than white
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -701,6 +697,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Tentative event created!')),
                       );
+                      Navigator.pop(context);
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error creating event: $e')),
