@@ -1,5 +1,6 @@
 import 'package:frontend/models/user_model.dart';
 
+
 import 'club_model.dart';
 
 class Event {

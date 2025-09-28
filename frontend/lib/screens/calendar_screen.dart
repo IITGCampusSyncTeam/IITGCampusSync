@@ -1,14 +1,12 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/models/event.dart';
+import 'package:frontend/screens/calendar_filter_slider.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/widgets/calendar_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../providers/eventProvider.dart';
-
 import 'package:frontend/constants/colors.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -119,7 +117,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     child: IconButton(
                       icon: Icon(Icons.tune, color: PageColors.icon,),
-                      onPressed: () {},
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context, 
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          isDismissible: true,
+                          builder: (_) => const FiltersModal(),
+                        );
+                      },
                     ),
                   ),
                 ],
