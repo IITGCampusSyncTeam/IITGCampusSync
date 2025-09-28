@@ -25,7 +25,12 @@ const eventSchema = new mongoose.Schema({
       enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
       default: 'drafted',
     },
-});
+  venueType: {
+    type: String,
+    enum: ['On-Campus', 'Off-Campus', 'Online'],
+    default: 'On-Campus',
+  },
+},);
 
 
 const EventModel = mongoose.model('Event', eventSchema);

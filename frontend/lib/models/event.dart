@@ -1,6 +1,7 @@
 import 'package:frontend/models/user_model.dart';
 
 
+
 import 'club_model.dart';
 
 class Event {
@@ -17,6 +18,7 @@ class Event {
   final List<dynamic> tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
   final List<RSVPItem> rsvp;
+  final String venueType;
 
   Event({
     required this.id,
@@ -32,6 +34,7 @@ class Event {
     this.tag = const [],
     this.status = 'drafted',
     this.rsvp = const [],
+    this.venueType = 'On-Campus',
   });
 
   Map<String, dynamic> toJson() {
@@ -49,6 +52,7 @@ class Event {
       'tag': tag,
       'status': status,
       'RSVP': rsvp.map((e) => e.toJson()).toList(),
+      'venueType': venueType,
     };
   }
 
@@ -76,6 +80,7 @@ class Event {
       rsvp: json['RSVP'] != null
         ? (json['RSVP'] as List).map((e) => RSVPItem.fromJson(e)).toList()
         : [],
+      venueType: json['venueType'] ?? 'On-Campus',
     );
   }
 

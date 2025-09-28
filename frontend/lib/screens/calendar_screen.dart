@@ -116,18 +116,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.tune, color: PageColors.icon,),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context, 
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                          ),
-                          isDismissible: true,
-                          builder: (_) => const FiltersModal(),
-                        );
+                      icon: Icon(Icons.tune, color: PageColors.icon), 
+                      onPressed: () async {
+                        await CalendarFilterSlider.show(context);
+                        if (!context.mounted) return;
+                        Provider.of<EventProvider>(context, listen: false)
+                          .applyFiltersAndNotify(CalendarFilterSlider.lastApplied);
                       },
                     ),
                   ),

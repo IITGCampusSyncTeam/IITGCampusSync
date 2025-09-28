@@ -7,6 +7,7 @@ class AuthConfig {
       String.fromEnvironment('serverUrl', defaultValue: '');
 }
 
+
 //change this later
 class AuthEndpoints {
   static const String getAccess =
