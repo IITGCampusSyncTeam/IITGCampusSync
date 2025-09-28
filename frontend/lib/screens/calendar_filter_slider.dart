@@ -47,7 +47,7 @@ class _CalendarFilterSliderState extends State<CalendarFilterSlider> {
     'This Month',
     'Next 30 Days',
     'Past 30 Days',
-    'This Semester'
+    // 'This Semester'
   ];
 
   // final List<String> _audienceQuick = [ 'Freshers', 'B. Freshers', 'All Design', 'B.Tech', 'B.Des', '3rd B.Tech' ];
@@ -495,9 +495,9 @@ class _CalendarFilterSliderState extends State<CalendarFilterSlider> {
                       ],
                     ),
                     Row(children: [
-                      _dateBox(_formatDate(_from), () => _pickDate(context, true), '19 Jul 2025'),
+                      _dateBox(_formatDate(_from), () => _pickDate(context, true), ''),
                       const SizedBox(width: 12),
-                      _dateBox(_formatDate(_to), () => _pickDate(context, false), '19 Jul 2025'),
+                      _dateBox(_formatDate(_to), () => _pickDate(context, false), ''),
                     ]),
                     const SizedBox(height: 8),
                     Align(
