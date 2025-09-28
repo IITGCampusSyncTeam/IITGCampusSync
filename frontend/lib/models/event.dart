@@ -7,6 +7,8 @@ class Event {
   final String title;
   final String description;
   final DateTime dateTime;
+  final String? banner;
+  final DateTime duration;
   final String? venue;
   final Club? club; // Using Club object
   final User? createdBy; // Using User object
@@ -20,6 +22,8 @@ class Event {
   Event({
     required this.id,
     required this.title,
+    required this.banner,
+    required this.duration,
     required this.description,
     required this.dateTime,
     this.venue,
@@ -70,6 +74,8 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
+      banner: json['banner'] ?? 'banner',
+      duration: json['duration'] ?? DateTime(0,0,0,0,0,0),
     );
   }
 

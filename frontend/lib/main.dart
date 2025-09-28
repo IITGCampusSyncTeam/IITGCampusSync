@@ -188,8 +188,8 @@ class _MyAppState extends State<MyApp> {
         ),
         navigatorKey: navigatorKey,
         // home: SplashScreen(),//final
-        // home: OrganizerNavigationContainer()//for testing organizer side please change
-        home: SplashScreen(),
+        home: OrganizerNavigationContainer()//for testing organizer side please change
+        // home: SplashScreen(),
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),
