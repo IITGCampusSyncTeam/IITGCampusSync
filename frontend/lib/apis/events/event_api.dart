@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:frontend/constants/endpoints.dart';
 import 'package:http/http.dart' as http;
 
+
 class EventAPI {
   Future<List> fetchEvents() async {
     final url = event.getAllEvents;
