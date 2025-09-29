@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/models/event.dart'; // Import the Event model
 import 'package:frontend/screens/payment_screen.dart';
+import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
 
 import '../widgets/event_card.dart';
@@ -119,6 +120,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       )
                     : _buildEventsList(),
                 _buildOrganisersSection(),
+                SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(onPressed: (){
+                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>EventShareScreen()));
+                }, child: Text('share'))
+
               ],
             ),
           ),
