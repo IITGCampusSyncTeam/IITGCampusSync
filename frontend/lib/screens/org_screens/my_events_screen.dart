@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/org_screens/event_creation_form_srceen.dart';
 import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/screens/org_screens/event_card_screen.dart';
 
 class MyEventsScreen extends StatefulWidget {
   @override
@@ -167,7 +168,16 @@ class OrgEventScreen extends StatelessWidget {
   }
 
   Widget _eventCard(BuildContext context, Map<String, dynamic> event) {
-    return Container(
+    return InkWell(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EventCardScreen(event: event),
+        ),
+      );
+    },
+    child : Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -245,7 +255,7 @@ class OrgEventScreen extends StatelessWidget {
                  Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
+                  padding: const EdgeInsets.fromLTRB(6, 16, 4, 16),
                   child: ElevatedButton(
                     onPressed: () {
                       // TODO: implement See Insights
@@ -339,6 +349,6 @@ class OrgEventScreen extends StatelessWidget {
           )
         ],
       ),
-    );
+    ));
   }
 }

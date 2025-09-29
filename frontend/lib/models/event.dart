@@ -7,6 +7,7 @@ class Event {
   final String title;
   final String description;
   final DateTime dateTime;
+  final String? banner;
   final String? venue;
   final Club? club; // Using Club object
   final User? createdBy; // Using User object
@@ -22,6 +23,7 @@ class Event {
     required this.title,
     required this.description,
     required this.dateTime,
+    this.banner,
     this.venue,
     this.club,
     this.createdBy,
@@ -39,6 +41,7 @@ class Event {
       'description': description,
       'dateTime': dateTime.toIso8601String(),
       'venue': venue,
+      'banner': banner,
       'club': club?.id,
       'createdBy': createdBy?.id,
       'participants': participants,
@@ -58,6 +61,7 @@ class Event {
           ? DateTime.parse(json['dateTime'])
           : DateTime.now(),
       venue: json['venue'] ?? '',
+      banner: json['banner'],
       club: json['club'] != null
           ? (json['club'] is Map ? Club.fromJson(json['club']) : null)
           : null,
