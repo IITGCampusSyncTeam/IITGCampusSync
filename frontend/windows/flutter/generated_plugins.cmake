@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_webview_window
+  file_selector_windows
   firebase_core
   flutter_inappwebview_windows
   flutter_timezone
