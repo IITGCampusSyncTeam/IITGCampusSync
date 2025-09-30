@@ -1,17 +1,18 @@
 import express from 'express';
-import { 
-    createClub, 
+import {
+    createClub,
     addMerch,
     deleteMerch,
-    editClub, 
-    deleteClub, 
-    addFeedback, 
-    changeAuthority, 
-    getClubs,   
+    editClub,
+    deleteClub,
+    addFeedback,
+    changeAuthority,
+    getClubs,
     getClubDetail,
     addTagToClub,
     removeTagFromClub,
     followClub,
+    unfollowClub,
     addOrEditMember,
     removeMember,
     getClubDetailWithEmail
@@ -33,7 +34,7 @@ router.get('/c/:email', getClubDetailWithEmail);
 router.post("/:clubId/addtag/:tagId", isAuthenticated, addTagToClub);
 
 router.post("/:clubId/follow", isAuthenticated, followClub);
-
+router.delete("/:clubId/unfollow", isAuthenticated, unfollowClub);
 // ✅ Remove Tag from Club
 router.delete("/:clubId/deletetag/:tagId", isAuthenticated, removeTagFromClub);
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/apis/UserTag/userTag_api.dart';
+import 'package:frontend/screens/intro_screens/interest_page.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +21,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     fetchAvailableTags(); // Load available tags first
-    fetchUserData();      // Then fetch user info
+    fetchUserData(); // Then fetch user info
   }
 
   Future<void> _logout() async {
@@ -57,14 +58,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
         // Extract tag IDs only
         tags = (user['tag'] as List<dynamic>?)
-            ?.map((tag) => tag['id'].toString())
-            .toList() ?? [];
+                ?.map((tag) => tag['id'].toString())
+                .toList() ??
+            [];
       });
     }
   }
 
   Future<void> fetchAvailableTags() async {
-    List<Map<String, String>>? fetchedTags = await UserTagAPI.fetchAvailableTags();
+    List<Map<String, String>>? fetchedTags =
+        await UserTagAPI.fetchAvailableTags();
     if (fetchedTags != null) {
       setState(() {
         availableTags = fetchedTags;
@@ -133,7 +136,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -159,13 +163,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Name: $name",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     Text("Email: $email",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text(isClub ? "Website: $website" : "Roll Number: $roll",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                     Text("Branch: $branch",
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.grey[700])),
                   ],
                 ),
               ),
@@ -196,9 +204,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             Text("Discover More Tags:",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => InterestPage()));
+                },
+                child: Text("Select Tags")),
             Expanded(
               child: availableTags.isEmpty
-                  ? Center(child: Text("No tags available", style: TextStyle(color: Colors.red)))
+                  ? Center(
+                      child: Text("No tags available",
+                          style: TextStyle(color: Colors.red)))
                   : ListView.builder(
                       itemCount: availableTags.length,
                       itemBuilder: (context, index) {

@@ -8,10 +8,11 @@ List<String> parseStringList(dynamic jsonList) {
   if (jsonList is List) {
     return jsonList
         .map((item) {
-      if (item is String) return item;
-      if (item is Map && item.containsKey('_id')) return item['_id'].toString();
-      return item.toString(); // fallback
-    })
+          if (item is String) return item;
+          if (item is Map && item.containsKey('_id'))
+            return item['_id'].toString();
+          return item.toString(); // fallback
+        })
         .toList()
         .cast<String>();
   }
@@ -36,9 +37,7 @@ class ClubMember {
           ? json['userId']['_id'] ?? ''
           : json['userId'] ?? '',
       responsibility: json['responsibility'] ?? '',
-      user: json['userId'] is Map
-          ? User.fromJson(json['userId'])
-          : null,
+      user: json['userId'] is Map ? User.fromJson(json['userId']) : null,
     );
   }
 
@@ -64,6 +63,7 @@ class Club {
   final List<Merch> merch;
   final List<String> followers;
   final List<String> files;
+  final String logo;
 
   Club({
     required this.id,
@@ -79,6 +79,7 @@ class Club {
     required this.merch,
     required this.followers,
     required this.files,
+    required this.logo,
   });
 
   factory Club.fromJson(Map<String, dynamic> json) {
@@ -91,19 +92,20 @@ class Club {
           ? json['secretary']['_id'] ?? ''
           : json['secretary'] ?? '',
       members: (json['members'] as List?)
-          ?.map((member) => ClubMember.fromJson(member))
-          .toList() ??
+              ?.map((member) => ClubMember.fromJson(member))
+              .toList() ??
           [],
       events: parseStringList(json['events']),
       images: json['images'] ?? '',
       websiteLink: json['websiteLink'] ?? '',
       tag: parseStringList(json['tag']),
       merch: (json['merch'] as List?)
-          ?.map((item) => Merch.fromJson(item))
-          .toList() ??
+              ?.map((item) => Merch.fromJson(item))
+              .toList() ??
           [],
       followers: parseStringList(json['followers']),
       files: parseStringList(json['files']),
+      logo: json['logo'],
     );
   }
 
@@ -122,6 +124,7 @@ class Club {
       'merch': merch.map((item) => item.toJson()).toList(),
       'followers': followers,
       'files': files,
+      'logo': logo,
     };
   }
 }

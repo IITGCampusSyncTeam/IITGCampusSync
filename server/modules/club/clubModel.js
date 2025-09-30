@@ -9,20 +9,20 @@ const merchSchema = new Schema({
     image: { type: String, required: true }, // URL or file path of the image
     price: { type: Number, required: true },
     sizes: [{ type: String, required: true }], // Array of available sizes
-    type: { 
-        type: String, 
-        enum: ['Normal T-Shirt', 'Oversized', 'Hoodie'], 
-        required: true 
+    type: {
+        type: String,
+        enum: ['Normal T-Shirt', 'Oversized', 'Hoodie'],
+        required: true
     },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
-},{ _id: true });;
+}, { _id: true });;
 
 // Club schema
 const clubSchema = new Schema({
     name: { type: String, unique: true, required: true },
     email: { type: String, unique: true, require: true },
-    description: { type: String, required: true }, 
-    secretary : { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Club secretary (user)
+    description: { type: String, required: true },
+    secretary: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Club secretary (user)
     members: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -32,11 +32,12 @@ const clubSchema = new Schema({
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }], // Associated events
     images: { type: String }, // Club image
     websiteLink: { type: String }, // Club website
+    logo: { type: String, default: "" },  // URL of club logo
     merch: [merchSchema], // Array of merch items
     files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }], // Associated files
-    followers:[{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
-    tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], 
+    tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
 
 });
 
