@@ -9,7 +9,7 @@ class EventProvider with ChangeNotifier {
   List<Event> _upcomingEvents = [];
   bool _isLoading = false;
   String _errorMessage = '';
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime(2025, 6, 12);
 
   // Getters
   List<Event> get allEvents => _allEvents;
