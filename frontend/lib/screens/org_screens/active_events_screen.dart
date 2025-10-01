@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
+import 'package:frontend/screens/org_screens/active_events_menu.dart';
 import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -40,9 +41,12 @@ class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
     final response = await http.get(Uri.parse(
         'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/${creatorID}'));
     if (response.statusCode == 200) {
-      setState(() {
-        Events = jsonDecode(response.body);
-      });
+      if (mounted) {
+        // Check if the widget is still in the tree
+        setState(() {
+          Events = jsonDecode(response.body);
+        });
+      }
     }
   }
 }
@@ -94,9 +98,9 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               ),
               child: Image.network(
                 Event == null
-                    ? 'https://unsplash.com/s/photos/random-person'
+                    ? 'https://via.placeholder.com/400x160.png/E4E4E7/000000?text=No+Image'
                     : Event['banner'] ??
-                        'https://unsplash.com/s/photos/random-person',
+                        'https://via.placeholder.com/400x160.png/E4E4E7/000000?text=No+Image',
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -117,7 +121,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
               alignment: Alignment.centerLeft,
               child: Text(
-                Event == null ? 'Test Title' : Event['title'] ?? "Test Title",
+                Event == null ? 'Test Event' : Event['title'] ?? "Test Event",
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
               ),
             ),
@@ -135,11 +139,11 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                   Text(
                     Event == null
-                        ? 'Test dateTime'
+                        ? 'Test DateTime'
                         : DateFormat('d MMMM, h:mm a').format(
                                     DateTime.parse(Event['dateTime'])) ==
                                 ''
-                            ? "Test dateTime"
+                            ? "Test DateTime"
                             : DateFormat('d MMMM, h:mm a')
                                 .format(DateTime.parse(Event['dateTime'])),
                     style: TextStyle(
@@ -189,89 +193,97 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                 )
               ],
             ),
-
             Divider(
               height: 2,
               color: TextColors.muted,
             ),
             Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
+                const SizedBox(height: 72),
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 161,
+                  height: 40,
                   child: ElevatedButton(
                     onPressed: () {
                       // TODO: implement See Insights
                     },
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: TextColors.primaryDark, elevation: 0),
-                    child: Container(
-                      height: 30,
-                      width: 95,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'See Insight',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
+                      backgroundColor: const Color(0xFF09090B),
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100.0),
                       ),
+                    ),
+                    child: const Text(
+                      'See Insight',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 4, 16),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 87,
+                  height: 40,
                   child: ElevatedButton(
                     onPressed: () {
                       // TODO: implement Edit
                     },
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFE4E4E7), elevation: 0),
-                    child: Container(
-                      height: 30,
-                      width: 60,
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.mode_edit_outlined,
-                            color: Colors.black,
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              'Edit',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
+                      backgroundColor: const Color(0xFFE4E4E7),
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100.0),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.mode_edit_outlined,
+                          color: Colors.black,
+                          size: 16,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Edit',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE4E4E7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        showActiveEventsMenu(context, Event);
+                      },
+                      child: const Icon(
+                        Icons.more_horiz,
+                        color: Colors.black,
                       ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  // child: InkWell(
-                  //   borderRadius: BorderRadius.circular(999),
-                  //   onTap: () {
-                  //     // TODO: Implement More
-                  //   },
-                  //   child: Container(
-                  //     padding: EdgeInsets.all(7),
-                  //     decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(999),
-                  //         color: Color(0xFFE4E4E7)),
-                  //     child: Icon(
-                  //       Icons.more_horiz,
-                  //       color: Colors.black,
-                  //     ),
-                  //   ),
-                  // ),
-                  child: RsvpInfoSlider(),
-                ),
+                const SizedBox(width: 16),
               ],
             ),
           ],

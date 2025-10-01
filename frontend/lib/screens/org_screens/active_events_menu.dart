@@ -1,29 +1,27 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
+import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
 import 'package:frontend/screens/org_screens/menu_icons.dart';
+import 'package:intl/intl.dart';
 
-class EventMenuScreen extends StatefulWidget {
-  @override
-  _EventMenuScreenState createState() => _EventMenuScreenState();
-}
-
-class _EventMenuScreenState extends State<EventMenuScreen> {
-  // Dummy event details
-  final String eventTitle = "AI & ML Workshop";
-  final String eventDescription =
-      "Join us for an exciting workshop on Artificial Intelligence and Machine Learning!";
-  final String eventDateTime = "March 20, 2025 at 10:00 AM";
-  final String eventLocation = "Tech Auditorium, IIT Guwahati";
-  final String eventLink = "https://example.com/ai-ml-workshop";
-  final String imageUrl =
-      "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg";
-
-  // ---------------- SHARE EVENT ----------------
+void showActiveEventsMenu(BuildContext context, dynamic event) {
+  // SHARE EVENT
   Future<void> _shareEvent() async {
+    //Dummy Data
+    final String eventTitle = event['title'] ?? "CampusSync Event";
+    final String eventDescription =
+        event['description'] ?? "Check out this event on CampusSync!";
+    final String eventDateTime = event['dateTime'] != null
+        ? DateFormat('d MMMM, h:mm a').format(DateTime.parse(event['dateTime']))
+        : "Date not specified";
+    final String eventLocation = event['venue'] ?? "Venue not specified";
+    final String eventLink = "https://iitg.ac.in/stud/gymkhana/";
+    final String imageUrl = event['banner'] ??
+        "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg";
+
     try {
       final tempDir = await getTemporaryDirectory();
       final filePath = "${tempDir.path}/event.jpg";
@@ -33,25 +31,29 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
         final File file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
 
-        String message = "📢 *$eventTitle*\n\n"
-            "📋 Description: $eventDescription\n"
-            "📅 Date & Time: $eventDateTime\n"
+        String message = "✨ *$eventTitle*\n\n"
+            "📝 Description: $eventDescription\n"
+            "🗓️ Date & Time: $eventDateTime\n"
             "📍 Location: $eventLocation\n"
             "🔗 More details: $eventLink\n\n"
-            "🚀 Don't miss out!";
+            "🎉 Don't miss out!";
 
         await Share.shareXFiles([XFile(file.path)], text: message);
       }
     } catch (e) {
       print("Error sharing event: $e");
+      // Fallback to sharing text only if image fails
+      String message = "✨ *$eventTitle*\n\n"
+          "📝 Description: $eventDescription\n"
+          "🗓️ Date & Time: $eventDateTime\n"
+          "📍 Location: $eventLocation\n"
+          "🔗 More details: $eventLink\n\n"
+          "🎉 Don't miss out!";
+      await Share.share(message);
     }
   }
 
-  void _showSharePopup() {
-    _shareEvent();
-  }
-
-  // ---------------- SEND REMINDERS ---------------------
+  // REMINDER POPUP
   void _showReminderPopup() {
     showModalBottomSheet(
       backgroundColor: Color(0xFFF4F4F5),
@@ -115,6 +117,7 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        // TODO: Implement reminder sending logic
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Reminder Sent")),
@@ -145,7 +148,7 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
     );
   }
 
-  // ---------------- PAUSE REGISTRATIONS ----------------
+  // PAUSE REGISTRATION POPUP
   void _showPausePopup() {
     showModalBottomSheet(
       backgroundColor: Color(0xFFF4F4F5),
@@ -190,6 +193,7 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        // TODO: Implement pause registration logic
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Registrations paused")),
@@ -237,7 +241,7 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
     );
   }
 
-  // ---------------- CANCEL EVENT ----------------
+// CANCEL EVENT POPUP
   void _showCancelPopup() {
     showModalBottomSheet(
       backgroundColor: Color(0xFFF4F4F5),
@@ -299,6 +303,7 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        // TODO: Implement event cancellation logic
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Event canceled")),
@@ -347,140 +352,126 @@ class _EventMenuScreenState extends State<EventMenuScreen> {
     );
   }
 
-  // ---------------- MENU PANEL ----------------
-  void _showMenuPanel() {
-    showModalBottomSheet(
-      backgroundColor: Color(0xFFF4F4F5),
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Wrap(
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 2,
-                margin: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Color(0xFF71717B),
-                  borderRadius: BorderRadius.circular(100),
-                ),
+  // --- The Main Menu Panel ---
+  showModalBottomSheet(
+    backgroundColor: Color(0xFFF4F4F5),
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (context) {
+      return Wrap(
+        children: [
+          Center(
+            child: Container(
+              width: 48,
+              height: 2,
+              margin: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Color(0xFF71717B),
+                borderRadius: BorderRadius.circular(100),
               ),
             ),
-            ListTile(
-              leading: const Icon(MenuIcons.share),
-              title: const Text("Share Event"),
-              trailing: Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.pop(context);
-                _showSharePopup();
-              },
-            ),
-            ListTile(
-              leading: const Icon(MenuIcons.draft),
-              title: const Text("Duplicate as Draft"),
-              onTap: () {
-                Navigator.pop(context);
-                final snackBar = SnackBar(
-                  content: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          "A duplicate of this event has been added to your Drafts.",
-                        ),
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.share),
+            title: const Text("Share Event"),
+            trailing: Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.pop(context);
+              _shareEvent();
+            },
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.draft),
+            title: const Text("Duplicate as Draft"),
+            onTap: () {
+              // TODO: Implement 'Duplicate as Draft' logic
+              Navigator.pop(context);
+              final snackBar = SnackBar(
+                content: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        "A duplicate of this event has been added to your Drafts.",
                       ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          // TODO: Add logic to open drafts screen
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        },
-                        child: const Text("Open Drafts"),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          // TODO: Add logic to undo the duplication
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        },
-                        child: const Text("Undo"),
+                      onPressed: () {
+                        // TODO: Add logic to open drafts screen
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                      child: const Text("Open Drafts"),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                    ],
-                  ),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: const Color(0xFF323232),
-                  margin: const EdgeInsets.all(12.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  duration: const Duration(seconds: 5),
-                );
+                      onPressed: () {
+                        // TODO: Add logic to undo the duplication
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      },
+                      child: const Text("Undo"),
+                    ),
+                  ],
+                ),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: const Color(0xFF323232),
+                margin: const EdgeInsets.all(12.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                duration: const Duration(seconds: 5),
+              );
 
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              },
-            ),
-            ListTile(
-              leading: const Icon(MenuIcons.rsvp),
-              title: const Text("View RSVP List"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Opening RSVP List...")),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(MenuIcons.reminder),
-              title: const Text("Send Reminders"),
-              onTap: () {
-                Navigator.pop(context);
-                _showReminderPopup();
-              },
-            ),
-            ListTile(
-              leading: const Icon(MenuIcons.pause),
-              title: const Text("Pause Registrations"),
-              onTap: () {
-                Navigator.pop(context);
-                _showPausePopup();
-              },
-            ),
-            ListTile(
-              leading: const Icon(MenuIcons.cancel, color: Color(0xFFFB2C36)),
-              tileColor: Color(0xFFFFE2E2),
-              title: const Text("Cancel Event",
-                  style: TextStyle(color: Color(0xFFFB2C36))),
-              onTap: () {
-                Navigator.pop(context);
-                _showCancelPopup();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ---------------- UI ----------------
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: _showMenuPanel,
-          child: const Text("Event Menu Testing"),
-        ),
-      ),
-    );
-  }
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            },
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.rsvp),
+            title: const Text("View RSVP List"),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Opening RSVP List...")),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.reminder),
+            title: const Text("Send Reminders"),
+            onTap: () {
+              Navigator.pop(context);
+              _showReminderPopup();
+            },
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.pause),
+            title: const Text("Pause Registrations"),
+            onTap: () {
+              Navigator.pop(context);
+              _showPausePopup();
+            },
+          ),
+          ListTile(
+            leading: const Icon(MenuIcons.cancel, color: Color(0xFFFB2C36)),
+            tileColor: Color(0xFFFFE2E2),
+            title: const Text("Cancel Event",
+                style: TextStyle(color: Color(0xFFFB2C36))),
+            onTap: () {
+              Navigator.pop(context);
+              _showCancelPopup();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
