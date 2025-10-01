@@ -303,7 +303,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                   color: (days + i == eventProvider.selectedDate.day) && (eventProvider.selectedDate.month == eventProvider.selectedDate.month) ? TextColors.primaryDark : Colors.transparent
                                                 ),
                                                 alignment: Alignment.center,
-                                                child: Text("${days + i > 0 ? days + i <= monthDays ? days + i : "" : ""}".padLeft(2), style: TextStyle(color: (days + i == eventProvider.selectedDate.day) && (eventProvider.selectedDate.month == eventProvider.selectedDate.month) ? TextColors.primaryLight : TextColors.primaryDark),)
+                                                child: Text("${days + i > 0 ? days + i <= monthDays ? days + i : "" : ""}", style: TextStyle(color: (days + i == eventProvider.selectedDate.day) && (eventProvider.selectedDate.month == eventProvider.selectedDate.month) ? TextColors.primaryLight : TextColors.primaryDark),)
                                               ),
                                             ),
                                           ),
