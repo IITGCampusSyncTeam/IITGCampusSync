@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
-import 'package:frontend/screens/splash_screen.dart';
 import 'package:frontend/services/notification_services.dart';
+import 'package:frontend/screens/splash_screen.dart';
+import 'package:frontend/screens/org_screens/active_events_menu.dart';
 import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -187,7 +188,7 @@ class _MyAppState extends State<MyApp> {
         ),
         navigatorKey: navigatorKey,
         // home: SplashScreen(),
-        home: SplashScreen()
+        home: EventMenuScreen()
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),
