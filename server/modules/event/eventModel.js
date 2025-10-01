@@ -22,9 +22,13 @@ const eventSchema = new mongoose.Schema({
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-      enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
+      enum: ['drafted', 'tentative', 'published', 'cancelled', 'live', 'finished'],
       default: 'drafted',
     },
+  registrationsPaused: {
+    type: Boolean,
+    default: false,
+  },
   venueType: {
     type: String,
     enum: ['On-Campus', 'Off-Campus', 'Online'],
@@ -35,4 +39,4 @@ const eventSchema = new mongoose.Schema({
 
 const EventModel = mongoose.model('Event', eventSchema);
 
-export default EventModel;  // Use default export
+export default EventModel;

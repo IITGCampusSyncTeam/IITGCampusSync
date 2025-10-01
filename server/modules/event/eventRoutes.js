@@ -3,7 +3,6 @@ import eventController from "./eventController.js";
 
 const router = express.Router();
 
-// Define routes for event-related operations
 router.post("/create-event", eventController.createEvent); // Route to create an event
 router.get("/get-all-events", eventController.getEvents); // Route to get all events
 router.get("/get-upcoming-events", eventController.getUpcomingEvents); // Route to get upcoming events
@@ -15,5 +14,10 @@ router.put("/edit/:eventId", eventController.editEvent); // Edit event info
 router.post('/tentative', eventController.createTentativeEvent);// add tentative event
 router.post('/rsvp/:eventId', eventController.rsvpToEvent); // RSVP to an event
 router.get('/rsvp/:eventId', eventController.getEventRSVPs); // Get RSVP list for an event
+
+router.put('/:eventId/cancel', eventController.cancelEvent);
+router.put('/:eventId/pause-registrations', eventController.pauseRegistrations);
+router.post('/:eventId/duplicate', eventController.duplicateAsDraft);
+
 
 export default router;
