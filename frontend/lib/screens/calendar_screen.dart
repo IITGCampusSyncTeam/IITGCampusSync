@@ -1,14 +1,13 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/models/event.dart';
+import 'package:frontend/screens/calendar_filter_slider.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/widgets/calendar_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../providers/eventProvider.dart';
-
 import 'package:frontend/constants/colors.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -190,12 +189,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   Container(
                     height: 24,
                     padding: EdgeInsets.only(left: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text("March", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: TextColors.primaryDark),),
-                        Icon(Icons.keyboard_arrow_down, color: TextColors.primaryDark, size: 20,)
-                      ],
+                    child: GestureDetector(
+                      onTapDown: (details) {
+                        setState(() {
+                          dateSelection = true;
+                        });
+                      },
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(["January", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][eventProvider.selectedDate.month - 1], style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: TextColors.primaryDark),),
+                          Icon(Icons.keyboard_arrow_down, color: TextColors.primaryDark, size: 20,)
+                        ],
+                      ),
                     ),
                   ),
                   Spacer(),
@@ -227,18 +233,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           alignment: Alignment.center,
                           child: Icon(Icons.search, color: Colors.black, size: 24,),
                         ),
-                        GestureDetector(
-                          onTapDown: (details) {
-                            setState(() {
-                              dateSelection = true;
-                            });
+                        IconButton(
+                          icon: Icon(Icons.tune, color: PageColors.icon), 
+                          onPressed: () async {
+                            await CalendarFilterSlider.show(context);
+                            if (!context.mounted) return;
+                            Provider.of<EventProvider>(context, listen: false)
+                              .applyFiltersAndNotify(CalendarFilterSlider.lastApplied);
                           },
-                          child: Container(
-                            height: 40,
-                            width: 40,
-                            alignment: Alignment.center,
-                            child: Icon(Icons.tune, color: Colors.black, size: 24,),
-                          ),
                         ),
                       ],
                     ),
