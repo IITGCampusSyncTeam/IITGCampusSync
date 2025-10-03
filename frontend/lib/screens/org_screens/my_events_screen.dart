@@ -109,17 +109,38 @@ class OrgEventScreen extends StatelessWidget {
   OrgEventScreen({this.isMyEvents = false});
 
   final List<Map<String, dynamic>> allEvents = [
-    {
-      'date': '17 April',
-      'title': 'Figma Workshop hehe',
-      'club': 'Coding Club',
-      'image': 'https://i.imgur.com/5Qf4WcN.png',
-      'datetime': '16 April, 7:00 PM',
-      'venue': 'Lecture Hall',
-      'tags': ['Design', 'Figma', 'DesforDev'],
-      'isMine': false,
-    },
-    {
+    // {
+    //   'date': '17 April',
+    //   'title': 'Figma Workshop hehe',
+    //   'club': 'Coding Club',
+    //   'image': 'https://i.imgur.com/5Qf4WcN.png',
+    //   'datetime': '7:00 PM',
+    //   'venue': 'Lecture Hall',
+    //   'tags': ['Design', 'Figma', 'DesforDev'],
+    //   'isMine': false,
+    // },
+    { 'date': '17 April', 
+    'title': 'Figma Workshop hehe', 
+    'club': 'Coding Club', 
+    'image': 'https://i.imgur.com/5Qf4WcN.png', 
+    'datetime': '7:00 PM', 'venue': 'Lecture Hall', 
+    'tags': ['Design', 'Figma', 'DesforDev'], 
+    'isMine': false,
+    'participants': ['Alice', 'Bob', 'Charlie'], 
+    'description': 
+    'Learn the basics of Figma and UI/UX design in this interactive workshop!', 
+    'itinerary': [ {'title': 'Introduction', 'time': '7:00 PM'}, 
+                   {'title': 'Hands-on Session', 'time': '7:30 PM'}, 
+                   {'title': 'Q&A', 'time': '8:30 PM'}, ], 
+    'speakers': [ {'name': 'John Doe', 'details': 'Senior UX Designer'}, 
+                  {'name': 'Jane Smith', 'details': 'Product Designer'}, ], 
+    'prerequisites': ['Laptop with Figma installed', 'Basic design knowledge'], 
+    'resources': [ { 'title': 'Figma Official Docs', 
+    'description': 'https://help.figma.com/', }, { 'title': 'Figma YouTube Tutorials', 'description': 'https://www.youtube.com/figma', }, ], 
+    'venueDetails': [ {'title': 'Lecture Hall', 'subtitle': 'Building A, Floor 2'}, {'title': 'Auditorium', 'subtitle': 'Building B, Floor 1'}, ], 
+    'links': [ {'icon': Icons.link, 'url': 'https://www.figma.com/'}, {'icon': Icons.link, 'url': 'https://www.desfor.dev/'}, ], 
+    'pocs': [ {'name': 'Alice Johnson', 'details': 'Student Coordinator'}, {'name': 'Bob Williams', 'details': 'Faculty Mentor'}, ], }
+   , {
       'date': '18 April',
       'title': 'Flutter Bootcamp',
       'club': 'Mobile Club',
@@ -168,16 +189,7 @@ class OrgEventScreen extends StatelessWidget {
   }
 
   Widget _eventCard(BuildContext context, Map<String, dynamic> event) {
-    return InkWell(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EventCardScreen(event: event),
-        ),
-      );
-    },
-    child : Container(
+    return  Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -258,7 +270,12 @@ class OrgEventScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(6, 16, 4, 16),
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: implement See Insights
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                         builder: (context) => EventCardScreen(event: event),
+                        ),
+                       );
                     },
                     style: ElevatedButton.styleFrom(
                         backgroundColor: TextColors.primaryDark, elevation: 0),
@@ -349,6 +366,6 @@ class OrgEventScreen extends StatelessWidget {
           )
         ],
       ),
-    ));
+    );
   }
 }

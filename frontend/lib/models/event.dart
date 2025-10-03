@@ -17,6 +17,14 @@ class Event {
   final List<dynamic>
       tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
+  final String? date; 
+  final List<Map<String, dynamic>> itinerary;
+  final List<String> prerequisites; 
+  final List<Map<String, dynamic>> speakers; 
+  final List<Map<String, dynamic>> resources;
+  final List<Map<String, dynamic>> venueDetails; 
+  final List<Map<String, dynamic>> links;
+  final List<Map> pocs;
 
   Event({
     required this.id,
@@ -32,6 +40,14 @@ class Event {
     this.notifications = const [],
     this.tag = const [],
     this.status = 'drafted',
+    this.prerequisites = const [],
+    this.itinerary = const [],
+    this.date,
+    this.speakers = const [],
+    this.resources = const [],
+    this.links = const [],
+    this.pocs = const [],
+    this.venueDetails = const []
   });
 
   Map<String, dynamic> toJson() {
@@ -49,6 +65,15 @@ class Event {
       'notifications': notifications,
       'tag': tag,
       'status': status,
+      'itinerary': itinerary,
+      'date': date,
+      'speakers': speakers,
+      'resources': resources,
+      'venueDetails': venueDetails,
+      'links': links,
+      'pocs' : pocs,
+      'prerequisites' : prerequisites,
+
     };
   }
 
@@ -74,6 +99,20 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
+      itinerary: List<Map<String, dynamic>>.from(json['itinerary'] ?? []), 
+      prerequisites: List<String>.from(json['prerequisites'] ?? []), 
+      speakers: List<Map<String, dynamic>>.from(json['speakers'] ?? []), 
+      resources: List<Map<String, dynamic>>.from(json['resources'] ?? []), 
+      venueDetails: List<Map<String, dynamic>>.from(json['venueDetails'] ?? []), 
+      links: List<Map<String, dynamic>>.from(json['links'] ?? []), 
+      pocs: json['pocs'] != null
+    ? (json['pocs'] as List)
+        .where((e) => e is Map)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+    : [],
+      date: json['date'], 
+
     );
   }
 
