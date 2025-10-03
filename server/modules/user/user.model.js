@@ -23,6 +23,18 @@ const userSchema = new Schema({
         type: String,
         select: false, // prevents it from being sent in queries unless explicitly selected
     },
+    googleRefreshToken: {
+        type: String,
+        select: false
+    },
+    googleAccessToken: {
+        type: String,
+        select: false
+    },
+    googleTokenExpiry: {
+        type: Date,
+        select: false 
+    },
     profilePicture: {
         type: String,
         validate: {
