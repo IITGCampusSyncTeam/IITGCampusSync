@@ -319,9 +319,9 @@ if (event['resources'] != null)
     ],
   ),
            ], ),
-
-              const SizedBox(height: 8),
-      Divider(color: Colors.grey.shade300, thickness: 1),
+                  const SizedBox(height: 8),
+              if (event['itinerary'] != null)
+               Divider(color: Colors.grey.shade300, thickness: 1),
 
             // Venue Details
             if (event['venueDetails'] != null)
@@ -335,7 +335,9 @@ if (event['resources'] != null)
                   );
                 }).toList(),
               ),
-            const SizedBox(height: 8),
+
+              const SizedBox(height: 8),
+              if (event['venueDetails'] != null)
       Divider(color: Colors.grey.shade300, thickness: 1),
 
             // Resources & Links
@@ -383,6 +385,7 @@ if (event['resources'] != null)
                 ],
               ),
             const SizedBox(height: 8),
+             if (event['links'] != null)
       Divider(color: Colors.grey.shade300, thickness: 1),
 
             // POCs

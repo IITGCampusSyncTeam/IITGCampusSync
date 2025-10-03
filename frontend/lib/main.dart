@@ -8,8 +8,7 @@ import 'package:frontend/screens/explore_screen.dart';
 import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
-import 'package:frontend/screens/org_screens/my_events_screen.dart';
-import 'package:frontend/screens/splash_screen.dart';
+import 'package:frontend/screens/org_screens/nav_bar.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
@@ -189,8 +188,11 @@ class _MyAppState extends State<MyApp> {
           useMaterial3: true,
         ),
         navigatorKey: navigatorKey,
-        // home: SplashScreen(),
-        home: MyEventsScreen()
+        // home: SplashScreen(),//final
+       // home:
+          //  OrganizerNavigationContainer() //for testing organizer side please change
+         home: HomeScreen(),
+        // home: MainNavigationContainer(),
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),

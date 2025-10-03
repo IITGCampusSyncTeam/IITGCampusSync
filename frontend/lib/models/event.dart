@@ -1,5 +1,4 @@
 import 'package:frontend/models/user_model.dart';
-
 import 'club_model.dart';
 
 class Event {
@@ -8,14 +7,14 @@ class Event {
   final String description;
   final DateTime dateTime;
   final String? banner;
+  final DateTime duration;
   final String? venue;
   final Club? club; // Using Club object
   final User? createdBy; // Using User object
   final List<String> participants;
   final List<String> feedbacks;
   final List<String> notifications;
-  final List<dynamic>
-      tag; // Changed to dynamic to handle either tag objects or strings
+  final List<dynamic> tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
   final String? date; 
   final List<Map<String, dynamic>> itinerary;
@@ -25,10 +24,13 @@ class Event {
   final List<Map<String, dynamic>> venueDetails; 
   final List<Map<String, dynamic>> links;
   final List<Map> pocs;
+  final List<RSVPItem> rsvp;
+  final String venueType;
 
   Event({
     required this.id,
     required this.title,
+    required this.duration,
     required this.description,
     required this.dateTime,
     this.banner,
@@ -47,7 +49,9 @@ class Event {
     this.resources = const [],
     this.links = const [],
     this.pocs = const [],
-    this.venueDetails = const []
+    this.venueDetails = const [],
+    this.rsvp = const [],
+    this.venueType = 'On-Campus',
   });
 
   Map<String, dynamic> toJson() {
@@ -74,6 +78,8 @@ class Event {
       'pocs' : pocs,
       'prerequisites' : prerequisites,
 
+      'RSVP': rsvp.map((e) => e.toJson()).toList(),
+      'venueType': venueType,
     };
   }
 
@@ -86,7 +92,7 @@ class Event {
           ? DateTime.parse(json['dateTime'])
           : DateTime.now(),
       venue: json['venue'] ?? '',
-      banner: json['banner'],
+     
       club: json['club'] != null
           ? (json['club'] is Map ? Club.fromJson(json['club']) : null)
           : null,
@@ -113,6 +119,15 @@ class Event {
     : [],
       date: json['date'], 
 
+
+      banner: json['banner'] ?? 'banner',
+      duration: json['duration'] ?? DateTime(0,0,0,0,0,0),
+
+      rsvp: json['RSVP'] != null
+        ? (json['RSVP'] as List).map((e) => RSVPItem.fromJson(e)).toList()
+        : [],
+      venueType: json['venueType'] ?? 'On-Campus',
+
     );
   }
 
@@ -135,5 +150,31 @@ class Event {
     }
 
     return tagTitles.isEmpty ? ['Campus Event'] : tagTitles;
+  }
+}
+
+class RSVPItem {
+  final String userId;
+  final String status;
+  final DateTime timestamp;
+
+  RSVPItem({required this.userId, required this.status, required this.timestamp});
+
+  factory RSVPItem.fromJson(Map<String, dynamic> json) {
+    return RSVPItem(
+      userId: json['user']['_id'] ?? json['userId'] ?? '',
+      status: json['status'] ?? 'yes',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'status': status,
+      'timestamp': timestamp.toIso8601String(),
+    };
   }
 }
