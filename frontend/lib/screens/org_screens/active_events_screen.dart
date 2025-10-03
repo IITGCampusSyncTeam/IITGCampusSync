@@ -1,12 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
 import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ActiveEventsScreen extends StatefulWidget {
   const ActiveEventsScreen({super.key});
@@ -66,7 +67,8 @@ class _ActiveEventsCard extends StatefulWidget {
   final event;
 
   @override
-  State<_ActiveEventsCard> createState() => _ActiveEventsCardState(event: event);
+  State<_ActiveEventsCard> createState() =>
+      _ActiveEventsCardState(event: event);
 }
 
 class _ActiveEventsCardState extends State<_ActiveEventsCard> {
@@ -304,8 +306,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                             size: 18,
                           ),
                           Padding(
-                            padding:
-                                const EdgeInsets.fromLTRB(8.0,0,0,0),
+                            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                             child: Text(
                               'Edit',
                               style: TextStyle(
@@ -321,23 +322,26 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(999),
-                    onTap: () {
-                      // TODO: Implement More
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: Color(0xFFE4E4E7),
-                      ),
-                      child: Icon(
-                        Icons.more_horiz,
-                        color: Colors.black,
+                  child: Column(children: [
+                    InkWell(
+                      borderRadius: BorderRadius.circular(999),
+                      onTap: () {
+                        // TODO: Implement More
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          color: Color(0xFFE4E4E7),
+                        ),
+                        child: Icon(
+                          Icons.more_horiz,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
-                  ),
+                    RsvpInfoSlider(),
+                  ]),
                   // child: InkWell(
                   //   borderRadius: BorderRadius.circular(999),
                   //   onTap: () {
@@ -354,7 +358,6 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   //     ),
                   //   ),
                   // ),
-                  child: RsvpInfoSlider(),
                 ),
               ],
             ),
