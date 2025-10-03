@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:frontend/constants/endpoints.dart';
+import 'package:frontend/models/tag_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 
 class EventAPI {
   Future<List> fetchEvents() async {
@@ -66,7 +68,55 @@ class EventAPI {
     }
   }
 
-  //
+  // RSVP to an Event
+  Future<void> rsvpToEvent({
+    required String eventId,
+    required String userId,
+    String status = 'yes', // optional, default 'yes'
+  }) async {
+    final url = '${event.rsvpToEvent}/$eventId';
+
+    final body = json.encode({
+      'userId': userId,
+      'status': status,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Failed to RSVP: ${response.body}');
+      }
+
+      print('✅ RSVP sent successfully!');
+    } catch (e) {
+      print('❌ Error sending RSVP: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
+  // Fetch RSVP List for an Event
+  Future<List<dynamic>> fetchEventRSVPs(String eventId) async {
+    final url = '${event.rsvpToEvent}/$eventId';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['RSVP'] ?? [];
+      } else {
+        throw Exception('Failed to fetch RSVPs: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error fetching RSVPs: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
   // Future<void> createEvent(String title, String description, String dateTime,
   //     String club, String tag) async {
   //   final url = event.createEvent;
@@ -94,13 +144,33 @@ class EventAPI {
   // }
 
   Future<void> createTentativeEvent(
-      String title, DateTime date, String venue) async {
-    final url = event
-        .createTentativeEvent; // Add this endpoint to your `endpoints.dart`
+      {required String title,
+      required DateTime date,
+      required String venue,
+      required TimeOfDay time,
+      required bool isSeries,
+      required String openTo,
+      required isOffline,
+      required List<Tag> tag,
+      required String seriesName}) async {
+    final url =
+        event.createTentativeEvent; // Add this endpoint to your endpoints.dart
+    final DateTime dateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
     final body = json.encode({
       'title': title,
-      'date': date.toIso8601String(),
+      'datetime': dateTime.toIso8601String(),
       'venue': venue,
+      'isSeries': isSeries,
+      'openTo': openTo,
+      'isOffline': isOffline,
+      'tag': tag.map((t) => t.id).toList(),
+      'seriesName': seriesName
     });
 
     try {
