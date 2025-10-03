@@ -31,6 +31,8 @@ class _EventsScreenState extends State<EventsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
           child: Text(
