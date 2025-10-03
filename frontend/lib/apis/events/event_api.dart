@@ -5,6 +5,7 @@ import 'package:frontend/models/tag_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
+
 class EventAPI {
   Future<List> fetchEvents() async {
     final url = event.getAllEvents;

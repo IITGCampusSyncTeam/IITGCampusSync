@@ -7,6 +7,7 @@ class AuthConfig {
       String.fromEnvironment('serverUrl', defaultValue: 'http://10.0.2.2:3000');
 }
 
+
 //change this later
 class AuthEndpoints {
   static const String getAccess =
@@ -51,6 +52,8 @@ class event {
   static const createTentativeEvent =
       '${AuthConfig.serverUrl}/api/events/tentative';
   static const rsvpToEvent = '${AuthConfig.serverUrl}/api/events/rsvp/';
+//   static const rsvpToEvent =
+//       '${AuthConfig.serverUrl}/api/events/rsvp/';
 }
 
 class payment {
