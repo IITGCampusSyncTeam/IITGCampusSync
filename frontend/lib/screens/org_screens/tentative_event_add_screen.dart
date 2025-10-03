@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/apis/tags/tags.dart';
+import 'package:frontend/models/tag_model.dart';
+import 'package:frontend/screens/splash_screen.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 
 import '../../apis/events/event_api.dart';
+//import 'package:flutter/material.dart';
 
 class TentativeEventAddScreen extends StatefulWidget {
   @override
@@ -15,9 +21,11 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
   String? _selectedVenue;
   bool _isSeries = false;
   bool _isOfflineSelected = true;
-  List<String> allTags = ['Tech', 'Sports', 'Cultural'];
-  List<String> selectedTags = [];
+  List<Tag>? futureTags;
+  List<Tag> selectedTags = [];
   String? _seriesName = "Team Recruitment";
+  String? _openTo = 'All';
+  bool loading = true;
 
   void _showBottomSheet() {
     showModalBottomSheet(
@@ -42,15 +50,21 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.arrow_back),
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      size: 12,
+                      weight: 500,
+                      color: Color.fromARGB(255, 39, 39, 42),
+                    ),
                   ),
-                  SizedBox(width: 10),
+                  //SizedBox(width: 10),
                   Text(
                     'Add a Event Series',
                     style: TextStyle(
-                      color: Color.fromARGB(255, 39, 39, 42),
-                      fontWeight: FontWeight.w500,
-                    ),
+                        color: Color.fromARGB(255, 39, 39, 42),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        letterSpacing: 0),
                   ),
                 ],
               ),
@@ -58,16 +72,25 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               DropdownButtonFormField<String>(
                 value: _seriesName,
                 decoration: InputDecoration(
+                  hintText: 'Name',
+                  hintStyle: TextStyle(
+                    color: Color.fromARGB(255, 113, 113, 123),
+                    fontSize: 12,
+                  ),
+                  labelStyle: TextStyle(
+                    color: Color.fromARGB(255, 113, 113, 123),
+                    fontSize: 12,
+                  ),
                   fillColor: Color.fromARGB(255, 255, 237, 212),
                   filled: true,
-                  label: Text(
-                    'Name',
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 113, 113, 123),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  // label: Text(
+                  //   'Name',
+                  //   style: TextStyle(
+                  //     color: Color.fromARGB(255, 113, 113, 123),
+                  //     fontSize: 15,
+                  //     fontWeight: FontWeight.w400,
+                  //   ),
+                  // ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -90,20 +113,18 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                 },
               ),
               SizedBox(height: 10),
-              Text(
-                'You can add other events to this series as and when you can',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Color.fromARGB(255, 39, 39, 42),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              Text(
-                "You can edit/add to a series details from 'Events' tab as well",
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: Color.fromARGB(255, 39, 39, 42),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Text(
+                  "You can add other events to this series as and when you plan. "
+                  "You can edit/add to a series details from 'Events' tab as well.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Color.fromARGB(255, 39, 39, 42),
+                    letterSpacing: 0,
+                    height: 16 / 12,
+                  ),
                 ),
               ),
               SizedBox(height: 20),
@@ -167,11 +188,37 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchTags();
+  }
+
+  void fetchTags() async {
+    try {
+      final res = await TagAPI().getAllTags();
+      setState(() {
+        futureTags = res;
+        loading = false;
+      });
+    } catch (e) {
+      print('Error: $e');
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
           icon: Icon(Icons.arrow_back_ios),
           color: Colors.grey,
         ),
@@ -210,8 +257,8 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey,
-                        child: Icon(Icons.person, color: Colors.white),
+                        color: Colors.white,
+                        child: Icon(Icons.person, color: Colors.grey),
                       );
                     },
                   ),
@@ -220,16 +267,17 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               SizedBox(height: 16),
               Text(
                 "What's Coming Up?",
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 24),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
               ),
               SizedBox(height: 8),
               Text(
-                'Fill in key info-date, time, venue-to keep your timeline clear.',
+                'Fill in key info-date, time, venue-to keep your timeline\n'
+                'clear.',
                 style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    letterSpacing: 0),
               ),
               SizedBox(height: 24),
               Row(
@@ -238,7 +286,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                     'Event Title',
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Color.fromARGB(255, 113, 113, 123),
                     ),
                   ),
@@ -254,6 +302,11 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               SizedBox(height: 8),
               TextField(
                 controller: _eventNameController,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color.fromARGB(255, 113, 113, 123),
+                  fontWeight: FontWeight.w400,
+                ),
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
@@ -262,7 +315,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                   hintText: 'Event Name',
                   hintStyle: TextStyle(
                     fontWeight: FontWeight.w400,
-                    fontSize: 14,
+                    fontSize: 12,
                     color: Color.fromARGB(255, 113, 113, 123),
                   ),
                   border: OutlineInputBorder(
@@ -280,7 +333,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                     'Open to',
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Color.fromARGB(255, 113, 113, 123),
                     ),
                   ),
@@ -295,14 +348,33 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               ),
               SizedBox(height: 8),
               DropdownButtonFormField<String>(
+                style: TextStyle(
+                  color: Color.fromARGB(255, 113, 113, 123),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 12,
+                ),
                 items: ['All', 'First year UG', 'Final year UG', 'MTech']
                     .map(
                       (value) =>
                           DropdownMenuItem(value: value, child: Text(value)),
                     )
                     .toList(),
-                onChanged: (value) {},
+                onChanged: (value) {
+                  setState(() {
+                    _openTo = value!;
+                  });
+                },
                 decoration: InputDecoration(
+                  hintText: 'All',
+                  hintStyle: TextStyle(
+                    color: Color.fromARGB(255, 113, 113, 123),
+                    fontSize: 12,
+                  ),
+                  // hintText: 'All',
+                  labelStyle: TextStyle(
+                    color: Color.fromARGB(255, 113, 113, 123),
+                    fontSize: 12,
+                  ),
                   filled: true,
                   fillColor: Color.fromRGBO(228, 228, 231, 1),
                   contentPadding: EdgeInsets.symmetric(
@@ -317,65 +389,90 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               ),
               SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  border: Border.all(
+                    color: Color.fromARGB(255, 228, 228, 231),
+                    width: 1,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Part of a Series?',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color.fromARGB(255, 113, 113, 123),
-                            fontWeight: FontWeight.w500,
+                    SizedBox(
+                      height: 24,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Part of a Series?',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color.fromARGB(255, 113, 113, 123),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        Switch(
-                          value: _isSeries,
-                          onChanged: (value) {
-                            setState(() {
-                              _isSeries = value;
-                            });
-                          },
-                        ),
-                      ],
+                          FlutterSwitch(
+                            value: _isSeries,
+                            onToggle: (value) {
+                              setState(() {
+                                _isSeries = value;
+                              });
+                            },
+                            activeColor: Color.fromARGB(255, 39, 39, 42),
+                            activeToggleColor: Colors.white,
+                            // activeTrackColor: Color.fromARGB(255, 39, 39, 42),
+                            inactiveToggleColor: Color.fromARGB(
+                              255,
+                              250,
+                              250,
+                              250,
+                            ),
+                            inactiveColor: Color.fromARGB(255, 228, 228, 231),
+                            width: 44,
+                            height: 24,
+                            toggleSize: 20,
+                            borderRadius: 16,
+                            padding: 0.5,
+                          ),
+                        ],
+                      ),
                     ),
-                    if (_isSeries)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 255, 237, 212),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _seriesName ?? "Team Recruitment",
-                                style: TextStyle(
+                    if (_isSeries) ...[
+                      SizedBox(height: 10),
+                      // Padding(
+                      //   padding: const EdgeInsets.only(top: 8.0),
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 255, 237, 212),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.fromLTRB(16, 12, 16, 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              _seriesName ?? "Team Recruitment",
+                              style: TextStyle(
                                   color: Color.fromARGB(255, 113, 113, 123),
-                                  fontSize: 16,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: _showBottomSheet,
-                                icon: Icon(Icons.edit, size: 20),
-                                tooltip: 'Edit',
-                              ),
-                            ],
-                          ),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                            IconButton(
+                              onPressed: _showBottomSheet,
+                              constraints: BoxConstraints(),
+                              padding: EdgeInsets.zero,
+                              icon: Icon(Icons.edit_outlined, size: 24.975),
+                              color: Color.fromARGB(255, 39, 39, 42),
+                              tooltip: 'Edit',
+                            ),
+                          ],
                         ),
                       ),
+                      //),
+                    ]
                   ],
                 ),
               ),
@@ -393,7 +490,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                             style: TextStyle(
                               color: Color.fromARGB(255, 113, 113, 123),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 12,
                             ),
                             children: [
                               TextSpan(
@@ -411,9 +508,13 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                             _selectedDate == null
                                 ? 'Pick Event Date'
                                 : "${_selectedDate!.toLocal()}".split(' ')[0],
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: Color.fromARGB(255, 113, 113, 123)),
                           ),
-                          trailing: Icon(Icons.calendar_today, size: 20),
+                          trailing:
+                              Icon(Icons.edit_calendar_outlined, size: 20),
                           tileColor: Color.fromARGB(255, 228, 228, 231),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16,
@@ -450,7 +551,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                             style: TextStyle(
                               color: Color.fromARGB(255, 113, 113, 123),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 12,
                             ),
                             children: [
                               TextSpan(
@@ -479,7 +580,11 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                             _selectedTime == null
                                 ? 'Pick Time'
                                 : _selectedTime!.format(context),
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color.fromARGB(255, 113, 113, 123),
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                           trailing: Icon(Icons.access_time, size: 20),
                           shape: RoundedRectangleBorder(
@@ -507,16 +612,17 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                 'Venue',
                 style: TextStyle(
                   color: Color.fromARGB(255, 113, 113, 123),
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(
+                  Flexible(
                     child: DropdownButtonFormField<String>(
                       decoration: InputDecoration(
+                        isDense: true,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
@@ -528,6 +634,11 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
+                      ),
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 113, 113, 123),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
                       value: _selectedVenue,
                       items: [
@@ -544,7 +655,10 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                       ].map((String venue) {
                         return DropdownMenuItem<String>(
                           value: venue,
-                          child: Text(venue),
+                          child: Text(
+                            venue,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -554,8 +668,9 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                       },
                     ),
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: 2.55),
                   Container(
+                    height: 48.7,
                     decoration: BoxDecoration(
                       color: Color.fromARGB(255, 228, 228, 231),
                       borderRadius: BorderRadius.circular(8),
@@ -625,7 +740,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                   style: TextStyle(
                     color: Color.fromARGB(255, 113, 113, 123),
                     fontWeight: FontWeight.w500,
-                    fontSize: 16,
+                    fontSize: 12,
                   ),
                   children: [
                     TextSpan(
@@ -637,6 +752,7 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
               ),
               SizedBox(height: 8),
               Container(
+                height: 48,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: Color.fromARGB(255, 228, 228, 231),
@@ -646,17 +762,61 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Add',
+                      selectedTags.isEmpty
+                          ? 'Add'
+                          : selectedTags.map((tag) => tag.title).join(', '),
                       style: TextStyle(
                         color: Color.fromARGB(255, 113, 113, 123),
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
-                    Icon(
-                      Icons.add,
-                      color: Color.fromARGB(255, 39, 39, 42),
-                      size: 20,
-                    ),
+                    IconButton(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) {
+                              return MultiSelectDialog<Tag>(
+                                items: futureTags!
+                                    .map((tag) =>
+                                        MultiSelectItem<Tag>(tag, tag.title))
+                                    .toList(),
+                                initialValue: selectedTags,
+                                title: const Text('Select Tags'),
+                                confirmText: const Text(
+                                  "OK",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                cancelText: const Text(
+                                  "Cancel",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                itemsTextStyle: TextStyle(
+                                    color: Color.fromARGB(255, 113, 113, 123),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400),
+                                listType: MultiSelectListType.CHIP,
+                                onConfirm: (values) {
+                                  setState(() {
+                                    selectedTags = values;
+                                  });
+                                },
+                              );
+                            },
+                          );
+                        },
+                        icon: Icon(
+                          Icons.add,
+                          color: Color.fromARGB(255, 39, 39, 42),
+                          size: 20,
+                        )),
                   ],
                 ),
               ),
@@ -687,17 +847,28 @@ class _TentativeEventAddScreenState extends State<TentativeEventAddScreen> {
                   final eventName = _eventNameController.text;
                   if (eventName.isNotEmpty &&
                       _selectedDate != null &&
+                      _selectedTime != null &&
+                      selectedTags.isNotEmpty &&
+                      _openTo != null &&
                       _selectedVenue != null) {
                     try {
                       await EventAPI().createTentativeEvent(
-                        eventName,
-                        _selectedDate!,
-                        _selectedVenue!,
-                      );
+                          title: eventName,
+                          date: _selectedDate!,
+                          venue: _selectedVenue!,
+                          time: _selectedTime!,
+                          isSeries: _isSeries,
+                          openTo: _openTo!,
+                          isOffline: _isOfflineSelected,
+                          tag: selectedTags,
+                          seriesName: _seriesName!);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Tentative event created!')),
                       );
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SplashScreen()));
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error creating event: $e')),
