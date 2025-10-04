@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PastEventsScreen extends StatefulWidget {
   const PastEventsScreen({super.key});
@@ -205,7 +207,9 @@ class _PastEventsCard extends StatelessWidget {
                         size: 14,
                         color: Color(0xFFFF6900),
                       ),
-                      SizedBox(width: 3.33,),
+                      SizedBox(
+                        width: 3.33,
+                      ),
                       Text(
                         '${event == null ? '0' : event['rating'] ?? '0'}',
                         style: TextStyle(
@@ -253,22 +257,43 @@ class _PastEventsCard extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(999),
-                    onTap: () {
-                      // TODO: Implement More
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(7),
-                      decoration: BoxDecoration(
+                  child: Column(
+                    children: [
+                      InkWell(
                         borderRadius: BorderRadius.circular(999),
-                        color: Color(0xFFE4E4E7),
+                        onTap: () {
+                          // TODO: Implement More
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            color: Color(0xFFE4E4E7),
+                          ),
+                          child: Icon(
+                            Icons.more_horiz,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.more_horiz,
-                        color: Colors.black,
-                      ),
-                    ),
+                      // child: InkWell(
+                      //   borderRadius: BorderRadius.circular(999),
+                      //   onTap: () {
+                      //     // TODO: Implement More
+                      //   },
+                      //   child: Container(
+                      //     padding: EdgeInsets.all(7),
+                      //     decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(999),
+                      //         color: Color(0xFFE4E4E7)),
+                      //     child: Icon(
+                      //       Icons.more_horiz,
+                      //       color: Colors.black,
+                      //     ),
+                      //   ),
+                      // ),
+                      RsvpInfoSlider(),
+                    ],
                   ),
                 ),
               ],

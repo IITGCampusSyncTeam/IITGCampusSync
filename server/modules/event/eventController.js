@@ -306,8 +306,70 @@ const getActiveCreatorEvents = async (req, res) => {
   }
 };
 
+// function to add students to rsvp list of an event
+export const rsvpToEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { userId, status } = req.body; // status can be: "yes", "no", "maybe"
+
+    if (!eventId || !userId || !status) {
+      return res.status(400).json({ status: "error", message: "Missing eventId, userId or status" });
+    }
+
+    const validStatuses = ["yes", "no", "maybe"];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({ status: "error", message: "Invalid RSVP status" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ status: "error", message: "Event not found" });
+    }
+
+    // check if the user already RSVPed
+    const existing = event.RSVP.find(r => r.user.toString() === userId);
+
+    if (existing) {
+      existing.status = status.toLowerCase();
+      existing.timestamp = new Date();
+    } else {
+      event.RSVP.push({
+        user: userId,
+        status: status.toLowerCase(),
+        timestamp: new Date()
+      });
+    }
+
+    await event.save();
+
+    res.status(200).json({ status: "success", message: "RSVP recorded", RSVP: event.RSVP });
+  } catch (error) {
+    console.error("❌ Error RSVPing to event:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
+// Admin fetches RSVP list of an event
+const getEventRSVPs = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!eventId) return res.status(400).json({ status: "error", message: "Missing eventId" });
+
+    const event = await Event.findById(eventId)
+      .populate('RSVP.user', 'username email profilePicture');
+
+    if (!event) return res.status(404).json({ status: "error", message: "Event not found" });
+
+    res.status(200).json({ status: "success", eventId, RSVP: event.RSVP });
+  } catch (error) {
+    console.error("❌ Error fetching RSVPs:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
 //  Export functions properly
-export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents };
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {

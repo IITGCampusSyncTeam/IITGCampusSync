@@ -1,5 +1,7 @@
 import 'package:frontend/models/user_model.dart';
 
+
+
 import 'club_model.dart';
 
 class Event {
@@ -15,9 +17,10 @@ class Event {
   final List<String> participants;
   final List<String> feedbacks;
   final List<String> notifications;
-  final List<dynamic>
-      tag; // Changed to dynamic to handle either tag objects or strings
+  final List<dynamic> tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
+  final List<RSVPItem> rsvp;
+  final String venueType;
 
   Event({
     required this.id,
@@ -34,6 +37,8 @@ class Event {
     this.notifications = const [],
     this.tag = const [],
     this.status = 'drafted',
+    this.rsvp = const [],
+    this.venueType = 'On-Campus',
   });
 
   Map<String, dynamic> toJson() {
@@ -50,6 +55,8 @@ class Event {
       'notifications': notifications,
       'tag': tag,
       'status': status,
+      'RSVP': rsvp.map((e) => e.toJson()).toList(),
+      'venueType': venueType,
     };
   }
 
@@ -74,8 +81,15 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
+
       banner: json['banner'] ?? 'banner',
       duration: json['duration'] ?? DateTime(0,0,0,0,0,0),
+
+      rsvp: json['RSVP'] != null
+        ? (json['RSVP'] as List).map((e) => RSVPItem.fromJson(e)).toList()
+        : [],
+      venueType: json['venueType'] ?? 'On-Campus',
+
     );
   }
 
@@ -98,5 +112,31 @@ class Event {
     }
 
     return tagTitles.isEmpty ? ['Campus Event'] : tagTitles;
+  }
+}
+
+class RSVPItem {
+  final String userId;
+  final String status;
+  final DateTime timestamp;
+
+  RSVPItem({required this.userId, required this.status, required this.timestamp});
+
+  factory RSVPItem.fromJson(Map<String, dynamic> json) {
+    return RSVPItem(
+      userId: json['user']['_id'] ?? json['userId'] ?? '',
+      status: json['status'] ?? 'yes',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'status': status,
+      'timestamp': timestamp.toIso8601String(),
+    };
   }
 }

@@ -13,5 +13,7 @@ router.get("/active-events-by-creator/:creatorId", eventController.getActiveCrea
 router.put("/status/:eventId", eventController.updateEventStatus); // Update event status
 router.put("/edit/:eventId", eventController.editEvent); // Edit event info
 router.post('/tentative', eventController.createTentativeEvent);// add tentative event
+router.post('/rsvp/:eventId', eventController.rsvpToEvent); // RSVP to an event
+router.get('/rsvp/:eventId', eventController.getEventRSVPs); // Get RSVP list for an event
 
 export default router;
