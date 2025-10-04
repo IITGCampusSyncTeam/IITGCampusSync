@@ -5,7 +5,9 @@ const eventSchema = new mongoose.Schema({
   description: String,
   banner: String,
   dateTime: Date,
+  duration: Date,
   venue: String,
+  rating: Number,
   club: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
   views: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -16,7 +18,7 @@ const eventSchema = new mongoose.Schema({
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-      enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
+      enum: ['drafted', 'tentative', 'published', 'finished'],
       default: 'drafted',
     },
 });

@@ -276,7 +276,7 @@ const createTentativeEvent = async (req, res) => {
 
 const getActiveCreatorEvents = async (req, res) => {
   try {
-    const { createdBy } = req.body;
+    const { createdBy } = req.params;
     const now = Date.now();
 
     if (!createdBy) {
