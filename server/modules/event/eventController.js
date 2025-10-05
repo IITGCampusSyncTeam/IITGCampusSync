@@ -13,7 +13,7 @@ function convertISTtoUTC(istDateTime) {
     return utcDateTime.toISOString(); // Save as UTC string
 }
 
-async function createEvent(req, res) {
+export async function createEvent(req, res) {
     try {
         const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
 
@@ -100,7 +100,7 @@ async function createEvent(req, res) {
 
 
 //  Function to fetch events
-const getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
 
     const events = await Event.find()
@@ -147,7 +147,7 @@ const getEvents = async (req, res) => {
 };
 
 // Function to get upcoming events
-const getUpcomingEvents = async (req, res) => {
+export const getUpcomingEvents = async (req, res) => {
   try {
     const currentDateTime = new Date();
 
@@ -164,7 +164,7 @@ const getUpcomingEvents = async (req, res) => {
 };
 
  // func to get past events of the club
- const getPastEventsOfClub = async (req, res) => {
+export const getPastEventsOfClub = async (req, res) => {
   try {
     const { clubId } = req.params;
 
@@ -172,7 +172,7 @@ const getUpcomingEvents = async (req, res) => {
       return res.status(400).json({ error: 'Missing clubId in request params' });
     }
 
-    const pastEvents = await EventModel.find({
+    const pastEvents = await Event.find({
       club: clubId,
       dateTime: { $lt: new Date() },
     }).sort({ dateTime: -1 }); // sort by newest to oldest
@@ -186,7 +186,7 @@ const getUpcomingEvents = async (req, res) => {
 
 
 //func for fetching events of followed clubs
-const getFollowedClubEvents = async (req, res) => {
+export const getFollowedClubEvents = async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -231,7 +231,7 @@ const getFollowedClubEvents = async (req, res) => {
 
 
 // Function to update event status
-const updateEventStatus = async (req, res) => {
+export const updateEventStatus = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { status } = req.body;
@@ -241,7 +241,7 @@ const updateEventStatus = async (req, res) => {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    const updatedEvent = await EventModel.findByIdAndUpdate(
+    const updatedEvent = await Event.findByIdAndUpdate(
       eventId,
       { status },
       { new: true }
@@ -258,7 +258,7 @@ const updateEventStatus = async (req, res) => {
   }
 };
 
-const editEvent = async (req, res) => {
+export const editEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const updateData = req.body;
@@ -267,7 +267,7 @@ const editEvent = async (req, res) => {
       return res.status(400).json({ error: "Missing eventId" });
     }
 
-    const updatedEvent = await EventModel.findByIdAndUpdate(
+    const updatedEvent = await Event.findByIdAndUpdate(
       eventId,
       updateData,
       { new: true } // return the updated document
@@ -285,7 +285,7 @@ const editEvent = async (req, res) => {
 };
 
 // Function to create a tentative event
-const createTentativeEvent = async (req, res) => {
+export const createTentativeEvent = async (req, res) => {
   try {
     const { title, date, venue } = req.body;
 
@@ -308,9 +308,32 @@ const createTentativeEvent = async (req, res) => {
   }
 };
 
+// GET UPCOMING EVENTS A USER HAS RSVP'D FOR
+export const getRsvpdUpcomingEvents = async (req, res, next) => {
+  const userId = req.user.id;
+  const events = await Event.find({
+    dateTime: { $gte: new Date() }, // Events in the future
+    rsvp: userId, // Where the user's ID is in the 'rsvp' array
+  }).sort({ dateTime: 1 }).lean();
+
+  events.forEach(event => event.isRsvpd = true); // User has RSVP'd for all these
+  res.status(200).json(events);
+};
+
+// GET PAST EVENTS A USER HAS RSVP'D FOR
+export const getAttendedEvents = async (req, res, next) => {
+  const userId = req.user.id;
+  const events = await Event.find({
+    dateTime: { $lt: new Date() }, // Events in the past
+    rsvp: userId, // Where the user's ID is in the 'rsvp' array
+  }).sort({ dateTime: -1 }).lean();
+
+  res.status(200).json(events);
+};
+
 
 //  Export functions properly
-export default { createEvent, getEvents , getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent,createTentativeEvent};
+
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {

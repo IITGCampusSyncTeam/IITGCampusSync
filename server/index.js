@@ -18,7 +18,7 @@ import onedriveRoutes from "./modules/onedrive/onedriveRoutes.js";
 import tagRoutes from "./modules/tag/tagRoute.js";
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
-import eventRoutes from './modules/event/eventRoutes.js'; // We'll need to modify this later
+import eventRoutes from './modules/event/eventRoutes.js';
 import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
 import eventRegistrationRoutes from "./modules/eventRegistration/eventRegistrationRoutes.js";
@@ -139,7 +139,7 @@ app.post('/user/:outlookId/reminder', CalendarController.setPersonalReminderTime
 // Event routes
 app.use("/api/events", eventRoutes); // This router will need to import `broadcast`
 
-app.use('/api/v1/registrations', eventRegistrationRoutes);
+app.use('/api/registrations', eventRegistrationRoutes);
 
 // Other routes
 app.use("/api/firebase", firebaseRoutes);

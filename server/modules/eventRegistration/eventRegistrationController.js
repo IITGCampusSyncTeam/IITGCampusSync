@@ -54,4 +54,3 @@ export const getRegistrationsForEvent = catchAsync(async (req, res, next) => {
     });
 });
 
-export default{toggleRsvp, getRegistrationsForEvent};
