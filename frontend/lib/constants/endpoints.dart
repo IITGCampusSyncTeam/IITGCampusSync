@@ -42,15 +42,17 @@ class redirecturi {
   static const Redirecturi = 'iitgsync://success';
 }
 
+
+//old baseURL = 'http://192.168.29.195:3000/api';
+const String baseUrl = 'https://iitgcampussync.onrender.com/api';
+
 class event {
-  static const getAllEvents =
-      'http://192.168.29.195:3000/api/events/get-all-events';
-  static const getUpcomingEvents =
-      'http://192.168.29.195:3000/api/events/get-upcoming-events';
-  static const createEvent =
-      'http://192.168.29.195:3000/api/events/create-event';
-  static const createTentativeEvent =
-      'http://192.168.29.195:3000/api/events/tentative';
+  static const getAllEvents = '$baseUrl/events/get-all-events';
+  static const getUpcomingEvents = '$baseUrl/events/get-upcoming-events';
+  static const createEvent = '$baseUrl/events/create-event';
+  static const createTentativeEvent = '$baseUrl/events/tentative';
+  static const String rsvpdUpcomingEvents = '$baseUrl/events/rsvpd/upcoming';
+  static const String attendedEvents = '$baseUrl/events/rsvpd/attended';
 }
 
 class payment {
@@ -99,5 +101,5 @@ class ClubMembers {
 
 class Constants {
   // Replace this actual backend server URL
-  static const String API_BASE_URL = 'http://10.0.2.2:5000/api/v1';
+  static const String API_BASE_URL = 'https://iitgcampussync.onrender.com/api';
 }

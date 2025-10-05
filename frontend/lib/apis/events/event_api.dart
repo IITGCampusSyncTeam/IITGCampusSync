@@ -27,7 +27,8 @@ class EventAPI {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final Map<String, dynamic> decodedBody = jsonDecode(response.body);
+        return decodedBody['events'];
       } else {
         throw Exception('Failed to load events');
       }
@@ -76,9 +77,9 @@ class EventAPI {
     final token = await _storageService.readToken();
 
     // Check if token exists, otherwise the user is not logged in
-    if (token == null) {
-      throw Exception('User is not authenticated.');
-    }
+    //  if (token == null) {
+    //   throw Exception('User is not authenticated.');
+    // }
 
     final response = await http.post(
       Uri.parse('${Constants.API_BASE_URL}/registrations/events/$eventId/rsvp'),
@@ -92,6 +93,7 @@ class EventAPI {
       final responseBody = jsonDecode(response.body);
       return responseBody['data']['rsvpd'];
     } else {
+      print("Failed to RSVP. Status: ${response.statusCode}, Body: ${response.body}");
       throw Exception('Failed to RSVP for event.');
     }
   }
@@ -127,7 +129,7 @@ class EventAPI {
   Future<void> createTentativeEvent(String title, DateTime date,
       String venue) async {
     final url = event
-        .createTentativeEvent; // Add this endpoint to your `endpoints.dart`
+        .createTentativeEvent;
     final body = json.encode({
       'title': title,
       'date': date.toIso8601String(),
@@ -148,7 +150,52 @@ class EventAPI {
       throw Exception('Error: $e');
     }
   }
+
+  // Fetches upcoming events the user has RSVP'd for
+  Future<List> fetchRsvpdUpcomingEvents() async {
+    final url = event.rsvpdUpcomingEvents;
+
+    final token = await _storageService.readToken();
+    if (token == null) throw Exception('User not authenticated.');
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load RSVP\'d upcoming events.');
+    }
+  }
+
+  // Fetches past events the user has RSVP'd for (attended)
+  Future<List> fetchAttendedEvents() async {
+    final url = event.attendedEvents;
+    final token = await _storageService.readToken();
+    if (token == null) throw Exception('User not authenticated.');
+
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load attended events.');
+    }
+  }
 }
+
 
 
 

@@ -7,6 +7,8 @@ class EventProvider with ChangeNotifier {
 
   List<Event> _allEvents = [];
   List<Event> _upcomingEvents = [];
+  List<Event> _rsvpdUpcomingEvents = [];
+  List<Event> _attendedEvents = [];
   bool _isLoading = false;
   String _errorMessage = '';
   DateTime _selectedDate = DateTime.now();
@@ -14,10 +16,28 @@ class EventProvider with ChangeNotifier {
   // Getters
   List<Event> get allEvents => _allEvents;
   List<Event> get upcomingEvents => _upcomingEvents;
+  List<Event> get rsvpdUpcomingEvents => _rsvpdUpcomingEvents;
+  List<Event> get attendedEvents => _attendedEvents;
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   DateTime get selectedDate => _selectedDate;
 
+
+  Future<void> fetchAllData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    // This runs all fetches in parallel for better performance
+    await Future.wait([
+      fetchAllEvents(),
+      fetchUpcomingEvents(),
+      fetchRsvpdUpcomingEvents(),
+      fetchAttendedEvents(),
+    ]);
+
+    _isLoading = false;
+    notifyListeners();
+  }
   // Set selected date (for calendar navigation)
   void setSelectedDate(DateTime date) {
     _selectedDate = date;
@@ -50,6 +70,7 @@ class EventProvider with ChangeNotifier {
     try {
       final eventsData = await _eventAPI.fetchUpcomingEvents();
       _upcomingEvents = eventsData.map((data) => Event.fromJson(data)).toList();
+      print("Fetched All Upcoming Events: ${_upcomingEvents.length}");
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -83,28 +104,57 @@ class EventProvider with ChangeNotifier {
     }
   }
 
+  Future<void> fetchRsvpdUpcomingEvents() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // NOTE: You must add a 'fetchRsvpdUpcomingEvents' method to your EventApi class
+      final eventsData = await _eventAPI.fetchRsvpdUpcomingEvents();
+      _rsvpdUpcomingEvents = eventsData.map((data) => Event.fromJson(data)).toList();
+      _errorMessage = '';
+    } catch (e) {
+      _errorMessage = e.toString();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchAttendedEvents() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final eventsData = await _eventAPI.fetchAttendedEvents();
+      _attendedEvents = eventsData.map((data) => Event.fromJson(data)).toList();
+      _errorMessage = '';
+    } catch (e) {
+      _errorMessage = e.toString();
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+
   Future<void> toggleRsvpStatus(String eventId) async {
-    // Find the event in the list
-    final eventIndex = _allEvents.indexWhere((event) => event.id == eventId);
-    if (eventIndex == -1) return; // Event not found
+
+    final eventIndex = _upcomingEvents.indexWhere((event) => event.id == eventId);
+    if (eventIndex == -1) return; // Exit if the event isn't found
 
 
-    _allEvents[eventIndex].isRsvpd = !_allEvents[eventIndex].isRsvpd;
+    _upcomingEvents[eventIndex].isRsvpd = !_upcomingEvents[eventIndex].isRsvpd;
     notifyListeners();
 
     try {
-      // Call the API
-      final newRsvpStatus = await _eventAPI.rsvpForEvent(eventId);
-      // Verify the final state matches the server's response
-      _allEvents[eventIndex].isRsvpd = newRsvpStatus;
-    } catch (error) {
-      // If API call fails, revert the change and show an error
-      _allEvents[eventIndex].isRsvpd = !_allEvents[eventIndex].isRsvpd;
-      //  show a snackbar or toast to the user here
-      print("Error toggling RSVP: $error");
-    } finally {
+      await _eventAPI.rsvpForEvent(eventId);
 
+      // 4. On success, refresh ALL relevant lists from the server.
+      // This keeps both the Explore screen and My Events screen in sync.
+      await fetchUpcomingEvents();
+      await fetchRsvpdUpcomingEvents();
+    } catch (error) {
+      // 5. If the API call fails, revert the optimistic change.
+      _upcomingEvents[eventIndex].isRsvpd = !_upcomingEvents[eventIndex].isRsvpd;
       notifyListeners();
+      print("Error toggling RSVP: $error");
     }
   }
 

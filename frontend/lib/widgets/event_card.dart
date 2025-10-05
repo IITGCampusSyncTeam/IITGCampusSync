@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/event.dart';
+
+enum CardStyle { full, compact }
 
 class EventCard extends StatelessWidget {
   final String banner;
@@ -12,11 +15,13 @@ class EventCard extends StatelessWidget {
   final String imageUrl;
   final String description;
   final Event event;
+  final CardStyle style;
   final VoidCallback onRsvpPressed;
 
   const EventCard({
     super.key,
     required this.event,
+    required this.style,
     required this.onRsvpPressed,
     required this.banner,
     required this.title,
@@ -30,6 +35,14 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    if (style == CardStyle.full) {
+      return _buildFullCard(context); // Original layout for the Explore screen
+    } else {
+      return _buildCompactCard(context); // The new layout for the My Events screen
+    }
+  }
+  Widget _buildFullCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Container(
@@ -205,4 +218,69 @@ class EventCard extends StatelessWidget {
       ),
     );
   }
+  //New UI
+  Widget _buildCompactCard(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      shadowColor: Colors.black.withOpacity(0.1),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Image.network(
+              imageUrl, // Using the 'imageUrl' property
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 150,
+                  color: Colors.purple.withOpacity(0.2),
+                  child: Center(child: Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white))),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), // Using 'title'
+                const SizedBox(height: 4),
+                Text(organizer, style: TextStyle(color: Colors.grey[600], fontSize: 13)), // Using 'organizer'
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(dateTime, style: TextStyle(color: Colors.grey[700])), // Using 'dateTime'
+                    Text(location, style: TextStyle(color: Colors.grey[700])), // Using 'location'
+                  ],
+                ),
+                // "Reminders" button still needs to check the real date from the 'event' object
+                if (event.dateTime.isAfter(DateTime.now())) ...[
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.edit_calendar_outlined, size: 20),
+                      label: const Text("Reminders"),
+                      style: TextButton.styleFrom(foregroundColor: Colors.black),
+                    ),
+                  ),
+                ]
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
 }
+
+
+

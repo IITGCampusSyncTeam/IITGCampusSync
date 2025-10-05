@@ -197,7 +197,7 @@ class _EventScreenState extends State<EventScreen> {
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    // ✅ Call createEvent from the provider
+                    //  Call createEvent from the provider
                     eventProvider.createEvent(
                       titleController.text,
                       descriptionController.text,
@@ -219,18 +219,19 @@ class _EventScreenState extends State<EventScreen> {
                 SizedBox(height: 24),
                 // Event List
                 Expanded(
-                  // ✅ Check the provider's loading state
+                  // Check the provider's loading state
                   child: eventProvider.isLoading
                       ? Center(child: CircularProgressIndicator())
                       : eventProvider.allEvents.isNotEmpty
                       ? ListView.builder(
-                    // ✅ Get item count and data from the provider
+                    //  Get item count and data from the provider
                     itemCount: eventProvider.allEvents.length,
                     itemBuilder: (context, index) {
                       final event = eventProvider.allEvents[index];
 
-                      // ✅ Use your new EventCard and pass the provider's logic
+                      //  Use new EventCard and pass the provider's logic
                       return EventCard(
+                        style: CardStyle.full,
                         event: event,
                         onRsvpPressed: () {
                           eventProvider.toggleRsvpStatus(event.id);

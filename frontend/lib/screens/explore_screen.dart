@@ -21,6 +21,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   EventAPI eventAPI = EventAPI();
   NotificationServices notificationServices = NotificationServices();
+  final Set<String> _selectedFilters = {'Upcoming'};
   int _selectedIndex = 0; // Track the selected navigation item
 
   // Pagination controls
@@ -43,7 +44,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<EventProvider>(context, listen: false).fetchAllEvents();
+      Provider.of<EventProvider>(context, listen: false).fetchUpcomingEvents();
     });
 
     // Initialize notification services
@@ -75,36 +76,64 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
+  void _onFilterTap(String filter) {
+    setState(() {
+      if (_selectedFilters.contains(filter)) {
+        _selectedFilters.remove(filter);
+      } else {
+        _selectedFilters.add(filter);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<EventProvider>(
-      builder: (context, eventProvider, child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => eventProvider.fetchAllEvents(),
-              // Use provider's method
-              child: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Consumer<EventProvider>(
+          builder: (context, eventProvider, child) {
+            return RefreshIndicator(
+              onRefresh: () => eventProvider.fetchUpcomingEvents(),
+              child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTopBar(),
-                    _buildFilterChips(),
-                    eventProvider.isLoading
-                        ? const SizedBox(/*...*/)
-                        : _buildEventsList(eventProvider.allEvents),
-                    // Pass events from provider
-                    _buildOrganisersSection(),
-                  ],
-                ),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTopBar(),
+                        const SizedBox(height: 16),
+                        _buildSearchBar(),
+                        const SizedBox(height: 16),
+                        _buildFilterChips(),
+                        const SizedBox(height: 8),
+                        _buildOrganisersSection(),
+                      ],
+                    ),
+                  ),
+
+                  // Event List Section
+                  if (eventProvider.isLoading)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (eventProvider.allEvents.isEmpty)
+                    const SliverFillRemaining(
+                      child: Center(child: Text("No events found.")),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: _buildEventsList(eventProvider.upcomingEvents),
+                    ),
+
+
+                ],
               ),
-            ),
-          ),
-          // Note: Bottom navigation bar is now handled by MainNavigationContainer
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -185,15 +214,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSearchBar(),
-        const SizedBox(height: 16),
+
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _buildFilterChip("All Events", true),
-              const SizedBox(width: 8),
               _buildFilterChip("Upcoming", false),
               const SizedBox(width: 8),
               _buildFilterChip("Following", false),
@@ -247,6 +273,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         // Events for current page
         ...currentEvents.map((event) {
           return EventCard(
+            style: CardStyle.full,
             banner: event.title.toUpperCase(),
             title: event.title,
             organizer: event.club?.name ?? 'Unknown Organizer',
@@ -256,7 +283,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             tags: event.getTagTitles(),
             imageUrl:
                 "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
-            description: event.description, onRsvpPressed: () {  }, event: event,
+            description: event.description,
+            onRsvpPressed: () {
+              Provider.of<EventProvider>(context, listen: false)
+                  .toggleRsvpStatus(event.id);
+            }, event: event,
           );
         }).toList(),
 
