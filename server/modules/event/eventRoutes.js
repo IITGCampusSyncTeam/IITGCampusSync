@@ -1,6 +1,5 @@
 import express from "express";
 import isAuthenticated from "../../middleware/isAuthenticated.js";
-import express from "express";
 import isAuthenticated from "../../middleware/isAuthenticated.js";
 
 // ✅ Import ALL the functions you need in one single, named import
