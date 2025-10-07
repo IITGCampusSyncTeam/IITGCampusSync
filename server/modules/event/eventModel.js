@@ -30,6 +30,7 @@ const eventSchema = new mongoose.Schema({
     enum: ['On-Campus', 'Off-Campus', 'Online'],
     default: 'On-Campus',
   },
+  series:{type:String,default:'NA'},
 },);
 
 

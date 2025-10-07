@@ -7,7 +7,7 @@ class OnSurfaceColors {
 }
 
 class PageColors {
-  static const Color background = Color(0xFFF0F0F0);
+  static const Color background = Color(0xFFFAFAFA);
   static const Color foreground = Color(0xFFFFFFFF);
   static const Color icon = Color(0xFF282828);
   static const Color outline = Color(0xFFC4C9D0);
