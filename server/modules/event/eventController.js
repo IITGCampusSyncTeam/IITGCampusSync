@@ -213,16 +213,20 @@ const editEvent = async (req, res) => {
 
 const createTentativeEvent = async (req, res) => {
   try {
-    const { title, date, venue } = req.body;
-    if (!title || !date || !venue) {
+    const { title, datetime, venue,isSeries,openTo,isOffline,tag,seriesName } = req.body;
+
+    if (!title || !datetime || !venue||!openTo||!tag) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     const newEvent = await Event.create({
       title,
-      description: "Tentative Event",
-      dateTime: new Date(date),
+      description: "Tentative Event", // optional default
+      dateTime: new Date(datetime), // assuming frontend sends ISO string
       venue,
-      status: "tentative"
+      tag:tag,
+      venueType:isOffline? 'On-Campus':'Online',
+      status: "tentative",
+      series:isSeries ? seriesName:'NA'
     });
     return res.status(201).json({ message: "Tentative event created", event: newEvent });
   } catch (error) {
@@ -325,17 +329,37 @@ const getEventRSVPs = async (req, res) => {
   }
 };
 
+//  Export functions properly
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
 
-export default { 
-  createEvent, 
-  getEvents, 
-  getUpcomingEvents, 
-  getPastEventsOfClub, 
-  getFollowedClubEvents, 
-  updateEventStatus, 
-  editEvent, 
-  createTentativeEvent,
-  getActiveCreatorEvents,
-  rsvpToEvent,
-  getEventRSVPs
-};
+//func for fetching events of followed clubs
+//export const getFollowedClubEvents = async (req, res) => {
+//  try {
+//    const { userId } = req.params;
+//
+//    if (!userId) {
+//      return res.status(400).json({ error: 'Missing userId' });
+//    }
+//
+//    // Find clubs followed by the user
+//    const followedClubs = await Club.find({ followers: userId }).populate('events');
+//
+//    if (!followedClubs.length) {
+//      return res.status(404).json({ error: 'User is not following any clubs' });
+//    }
+//
+//    // Collect events from all followed clubs
+//    let allEvents = [];
+//    followedClubs.forEach(club => {
+//      allEvents = allEvents.concat(club.events);
+//    });
+//
+//    // Optional: Sort events by date
+//    allEvents.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+//
+//    res.status(200).json(allEvents);
+//  } catch (error) {
+//    console.error('Error fetching events from followed clubs:', error);
+//    res.status(500).json({ error: 'Internal server error' });
+//  }
+//};

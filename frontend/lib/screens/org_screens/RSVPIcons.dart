@@ -1,102 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 
-class RSVPIcons extends StatelessWidget {
+class RSVPIcons extends StatefulWidget {
+  final List<String> RSVP;
 
-  final RSVP;
-  RSVPIcons({super.key, required this.RSVP});
+  const RSVPIcons({super.key, required this.RSVP});
 
-  late final count = 7; // number of visible avatars//set to 7 for testing change to RSVP.length
+  @override
+  State<RSVPIcons> createState() => _RSVPIconsState();
+}
+
+class _RSVPIconsState extends State<RSVPIcons> {
+  late final int count;
+  late final List<String>? userImages;
+
+  @override
+  void initState() {
+    super.initState();
+    count = widget.RSVP.length;
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    //TODO : implement fetchUserData()
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Handle the case where the RSVP list is empty.
+    if (count == 0) {
+      return const SizedBox.shrink(); // Or any other placeholder widget
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Using MainAxisAlignment.start to align items to the left.
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // Overlapping avatars
-          count <= 5
-              ? SizedBox(
-                  width: count * 24.0, // enough width for overlapping
-                  height: 35,
-                  child: Stack(
-                    children: List.generate(count, (index) {
-                      return Positioned(
-                        left: index * 24.0, // overlap amount
-                        child: Container(
-                          width: 34,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(999),
-                              color: Colors.white),
-                          child: CircleAvatar(
-                            radius: 15,
-                            backgroundImage: NetworkImage(
-                              'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                )
-              : SizedBox(
-                  width: 5.0 * 24.0 + 100.0, // enough width for overlapping
-                  height: 35,
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 3, 0, 0),
-                        child: Stack(
-                          children: List.generate(5, (index) {
-                            return Positioned(
-                              left: index * 18.0, // overlap amount
-                              child: Container(
-                                width: 28,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(999),
-                                    color: Colors.white),
-                                child: CircleAvatar(
-                                  radius: 12,
-                                  backgroundImage: NetworkImage(
-                                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
+          if (count <= 5)
+            SizedBox(
+              width: count * 18.0 + 10, // enough width for overlapping
+              height: 28, // Increased height to prevent clipping
+              child: Stack(
+                children: List.generate(count, (index) {
+                  return Positioned(
+                    left: index * 18.0, // overlap amount
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          // More direct than borderRadius
+                          color: Colors.white,
+                          border: Border.all(color: Colors.white, width: 2)),
+                      child: CircleAvatar(
+                        radius: 12,
+                        // Access the list via widget.RSVP
+                        backgroundImage: NetworkImage(userImages == null
+                            ? ""
+                            : userImages![index]),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            )
+          else
+            SizedBox(
+              // Adjusted width for 5 avatars + the "+N" badge
+              width: (5 * 18.0) + 10 + 65,
+              height: 28, // Increased height to prevent clipping
+              child: Stack(
+                children: [
+                  // Generate the first 5 avatars
+                  ...List.generate(5, (index) {
+                    return Positioned(
+                      left: index * 18.0, // overlap amount
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            border: Border.all(color: Colors.white, width: 2)),
+                        child: CircleAvatar(
+                          radius: 12,
+                          // Access the list via widget.RSVP
+                          backgroundImage: NetworkImage(userImages == null
+                              ? ""
+                              : userImages![index]),
                         ),
                       ),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 90,
+                    );
+                  }),
+                  // Position the "+N RSVPs" badge
+                  Positioned(
+                    left: 5 * 18.0, // Position after the 5th avatar
+                    child: Container(
+                      height: 28,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFFE4E4E7),
+                          borderRadius: BorderRadius.circular(40),
+                          border: Border.all(color: Colors.white, width: 2)),
+                      child: Center(
+                        child: Text(
+                          '+${count - 5}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: TextColors.muted,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4.5),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFFE4E4E7),
-                                  borderRadius: BorderRadius.circular(40),
-                                  border: Border.all(
-                                      color: Colors.white, width: 2)),
-                              child: Text(
-                                '+${count - 5} RSVPs',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: TextColors.muted,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
+              ),
+            ),
         ],
       ),
     );

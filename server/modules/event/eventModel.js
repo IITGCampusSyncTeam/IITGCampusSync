@@ -33,9 +33,10 @@ const eventSchema = new mongoose.Schema({
     enum: ['On-Campus', 'Off-Campus', 'Online'],
     default: 'On-Campus',
   },
+  series:{type:String,default:'NA'},
 },);
 
 
 const EventModel = mongoose.model('Event', eventSchema);
 
-export default EventModel;
+export default EventModel;  // Use default export
