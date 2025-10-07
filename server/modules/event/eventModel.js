@@ -22,8 +22,7 @@ const eventSchema = new mongoose.Schema({
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-      enum: ['drafted', 'tentative', 'published', 'cancelled', 'live', 'finished'],
-      default: 'drafted',
+      enum: ['tentative', 'published', 'cancelled', 'live', 'finished'],
     },
   registrationsPaused: {
     type: Boolean,

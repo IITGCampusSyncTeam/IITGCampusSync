@@ -15,9 +15,4 @@ router.post('/tentative', eventController.createTentativeEvent);// add tentative
 router.post('/rsvp/:eventId', eventController.rsvpToEvent); // RSVP to an event
 router.get('/rsvp/:eventId', eventController.getEventRSVPs); // Get RSVP list for an event
 
-router.put('/:eventId/cancel', eventController.cancelEvent);
-router.put('/:eventId/pause-registrations', eventController.pauseRegistrations);
-router.post('/:eventId/duplicate', eventController.duplicateAsDraft);
-
-
 export default router;

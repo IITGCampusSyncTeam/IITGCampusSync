@@ -231,30 +231,6 @@ const createTentativeEvent = async (req, res) => {
   }
 };
 
-/**
- * @description Cancel an event by updating its status to 'cancelled'
- * @route PUT /api/events/:eventId/cancel
- */
-const cancelEvent = async (req, res) => {
-    try {
-        const { eventId } = req.params;
-        const updatedEvent = await Event.findByIdAndUpdate(
-            eventId,
-            { status: 'cancelled' },
-            { new: true }
-        );
-        if (!updatedEvent) {
-            return res.status(404).json({ message: 'Event not found' });
-        }
-        
-        // You could also add logic here to notify participants of the cancellation.
-        res.status(200).json({ message: 'Event has been cancelled successfully.', event: updatedEvent });
-    } catch (error) {
-        console.error("Error cancelling event:", error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
 const getActiveCreatorEvents = async (req, res) => {
   try {
     const { createdBy } = req.body;
@@ -350,70 +326,6 @@ const getEventRSVPs = async (req, res) => {
 };
 
 
-/**
- * @description Toggles the registration status for an event
- * @route PUT /api/events/:eventId/pause-registrations
-*/
-const pauseRegistrations = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const event = await Event.findById(eventId);
-    
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
-    
-    // Toggle the boolean field
-    event.registrationsPaused = !event.registrationsPaused;
-    await event.save();
-    
-    const message = event.registrationsPaused 
-    ? 'Registrations have been paused.' 
-    : 'Registrations have been resumed.';
-    
-    res.status(200).json({ message, event });
-  } catch (error) {
-    console.error("Error pausing registrations:", error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-/**
- * @description Duplicates an existing event as a new draft
- * @route POST /api/events/:eventId/duplicate
-*/
-const duplicateAsDraft = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const originalEvent = await Event.findById(eventId).lean(); // .lean() gives a plain JS object
-    
-    if (!originalEvent) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
-    
-    const newEventData = { ...originalEvent };
-    delete newEventData._id; // Remove the original ID to let MongoDB generate a new one
-    delete newEventData.__v; // Remove version key
-    
-    newEventData.title = `(Copy) ${originalEvent.title}`;
-    newEventData.status = 'drafted';
-    newEventData.participants = []; // Reset participants
-    newEventData.feedbacks = []; // Reset feedbacks
-    newEventData.notifications = []; // Reset notifications
-    newEventData.registrationsPaused = false; // Reset paused status
-    newEventData.createdAt = new Date(); // Set a new creation date
-    newEventData.updatedAt = new Date(); // Set a new updated date
-    
-    const duplicatedEvent = new Event(newEventData);
-    await duplicatedEvent.save();
-    
-    res.status(201).json({ message: 'Event duplicated as a draft.', event: duplicatedEvent });
-  } catch (error) {
-    console.error("Error duplicating event:", error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
 export default { 
   createEvent, 
   getEvents, 
@@ -423,9 +335,6 @@ export default {
   updateEventStatus, 
   editEvent, 
   createTentativeEvent,
-  cancelEvent,
-  pauseRegistrations,
-  duplicateAsDraft,
   getActiveCreatorEvents,
   rsvpToEvent,
   getEventRSVPs

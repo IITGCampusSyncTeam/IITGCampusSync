@@ -31,25 +31,19 @@ void showActiveEventsMenu(BuildContext context, dynamic event) {
         final File file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
 
-        String message = "✨ *$eventTitle*\n\n"
-            "📝 Description: $eventDescription\n"
-            "🗓️ Date & Time: $eventDateTime\n"
+        String message = "📢 *$eventTitle*\n\n"
+            "📋 Description: $eventDescription\n"
+            "📅 Date & Time: $eventDateTime\n"
             "📍 Location: $eventLocation\n"
             "🔗 More details: $eventLink\n\n"
-            "🎉 Don't miss out!";
+            "🚀 Don't miss out!";
 
         await Share.shareXFiles([XFile(file.path)], text: message);
+      } else {
+        print("Failed to download image");
       }
     } catch (e) {
-      print("Error sharing event: $e");
-      // Fallback to sharing text only if image fails
-      String message = "✨ *$eventTitle*\n\n"
-          "📝 Description: $eventDescription\n"
-          "🗓️ Date & Time: $eventDateTime\n"
-          "📍 Location: $eventLocation\n"
-          "🔗 More details: $eventLink\n\n"
-          "🎉 Don't miss out!";
-      await Share.share(message);
+      print("Error: $e");
     }
   }
 
