@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
+import 'package:frontend/screens/org_screens/active_events_menu.dart';
 import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -41,9 +42,12 @@ class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
     final response = await http.get(Uri.parse(
         'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/$creatorID'));
     if (response.statusCode == 200) {
-      setState(() {
-        events = jsonDecode(response.body);
-      });
+      if (mounted) {
+        // Check if the widget is still in the tree before calling setState
+        setState(() {
+          events = jsonDecode(response.body);
+        });
+      }
     }
   }
 }
@@ -51,7 +55,7 @@ class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
 class _ActiveEventTile extends StatelessWidget {
   const _ActiveEventTile({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +68,7 @@ class _ActiveEventTile extends StatelessWidget {
 class _ActiveEventsCard extends StatefulWidget {
   const _ActiveEventsCard({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   State<_ActiveEventsCard> createState() =>
@@ -74,7 +78,7 @@ class _ActiveEventsCard extends StatefulWidget {
 class _ActiveEventsCardState extends State<_ActiveEventsCard> {
   _ActiveEventsCardState({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +87,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(
+            borderRadius: const BorderRadius.all(
               Radius.circular(16),
             ),
             border: Border.all(color: TextColors.muted)),
@@ -99,9 +103,9 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                   child: Image.network(
                     event == null
-                        ? 'https://unsplash.com/s/photos/random-person'
+                        ? 'https://via.placeholder.com/400x120.png/E4E4E7/000000?text=No+Image'
                         : event['banner'] ??
-                            'https://unsplash.com/s/photos/random-person',
+                            'https://via.placeholder.com/400x120.png/E4E4E7/000000?text=No+Image',
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -118,84 +122,71 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                     },
                   ),
                 ),
-                if (event != null)
-                  if (event['dateTime'] >= DateTime.now())
-                    Positioned(
-                      right: 16,
-                      top: 16,
-                      child: Stack(
+                if (event != null &&
+                    DateTime.parse(event['dateTime']).isAfter(DateTime.now()))
+                  Positioned(
+                    right: 16,
+                    top: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 4),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(1000)),
+                      child: Row(
                         children: [
                           Container(
-                            height: 24,
-                            width: 48,
+                            height: 6,
+                            width: 6,
                             decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Colors.red,
                                 borderRadius: BorderRadius.circular(1000)),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 4),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: 6,
-                                  width: 6,
-                                  decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius:
-                                          BorderRadius.circular(1000)),
-                                ),
-                                SizedBox(
-                                  width: 4,
-                                ),
-                                Text(
-                                  'Live',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 12),
-                                )
-                              ],
-                            ),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          const Text(
+                            'Live',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400, fontSize: 12),
                           )
                         ],
                       ),
                     ),
+                  ),
               ],
             ),
             Column(
               children: [
                 Container(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   alignment: Alignment.centerLeft,
                   child: Text(
                     event == null
                         ? 'Test Title'
                         : event['title'] ?? "Test Title",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 20),
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.watch_later_outlined,
                         size: 18,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 2,
                       ),
                       Text(
                         event == null
                             ? 'Test dateTime'
-                            : DateFormat('d MMMM, h:mm a').format(
-                                        DateTime.parse(event['dateTime'])) ==
-                                    ''
-                                ? "Test dateTime"
-                                : DateFormat('d MMMM, h:mm a')
-                                    .format(DateTime.parse(event['dateTime'])),
-                        style: TextStyle(
+                            : DateFormat('d MMMM, h:mm a')
+                                .format(DateTime.parse(event['dateTime'])),
+                        style: const TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
                         ),
@@ -204,7 +195,8 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 17.5, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 17.5, vertical: 4),
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
@@ -213,14 +205,14 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                         height: 16.33,
                         width: 13.67,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 4,
                       ),
                       Text(
                         event == null
                             ? 'Test Venue'
                             : event['venue'] ?? "Test Venue",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
                         ),
@@ -235,13 +227,13 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               children: [
                 RSVPIcons(
                   // RSVP: event == null ? [] : event['RSVP'] ?? [],
-                  RSVP: [''],
+                  RSVP: const [''], // Using placeholder data
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     '${event == null ? '0' : event['views'] ?? '0'} Views',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                     ),
@@ -257,27 +249,25 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
-                  child: Center(
-                    child: InkWell(
-                      onTap: () {
-                        // TODO: implement See Insights
-                      },
-                      borderRadius: BorderRadius.circular(999),
-                      child: Container(
-                        height: 40,
-                        width: (screenWidth - 112) * 161 / 248,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'See Insight',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                        ),
+                  child: InkWell(
+                    onTap: () {
+                      // TODO: implement See Insights
+                    },
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      height: 40,
+                      width: (screenWidth - 112) * 161 / 248,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'See Insight',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -294,10 +284,10 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                       width: (screenWidth - 112) * 87 / 248,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Color(0xFFE4E4E7),
+                        color: const Color(0xFFE4E4E7),
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
@@ -306,7 +296,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                             size: 18,
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                            padding: EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                             child: Text(
                               'Edit',
                               style: TextStyle(
@@ -326,39 +316,23 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                     InkWell(
                       borderRadius: BorderRadius.circular(999),
                       onTap: () {
-                        // TODO: Implement More
+                        showActiveEventsMenu(context, event);
                       },
                       child: Container(
-                        padding: EdgeInsets.all(7),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(999),
-                          color: Color(0xFFE4E4E7),
+                          color: const Color(0xFFE4E4E7),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.more_horiz,
                           color: Colors.black,
                         ),
                       ),
                     ),
-                    RsvpInfoSlider(),
                   ]),
-                  // child: InkWell(
-                  //   borderRadius: BorderRadius.circular(999),
-                  //   onTap: () {
-                  //     // TODO: Implement More
-                  //   },
-                  //   child: Container(
-                  //     padding: EdgeInsets.all(7),
-                  //     decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(999),
-                  //         color: Color(0xFFE4E4E7)),
-                  //     child: Icon(
-                  //       Icons.more_horiz,
-                  //       color: Colors.black,
-                  //     ),
-                  //   ),
-                  // ),
                 ),
+                const SizedBox(width: 16),
               ],
             ),
           ],

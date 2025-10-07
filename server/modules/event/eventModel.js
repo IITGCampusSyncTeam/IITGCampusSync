@@ -22,9 +22,12 @@ const eventSchema = new mongoose.Schema({
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-      enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
-      default: 'drafted',
+      enum: ['tentative', 'published', 'cancelled', 'live', 'finished'],
     },
+  registrationsPaused: {
+    type: Boolean,
+    default: false,
+  },
   venueType: {
     type: String,
     enum: ['On-Campus', 'Off-Campus', 'Online'],
