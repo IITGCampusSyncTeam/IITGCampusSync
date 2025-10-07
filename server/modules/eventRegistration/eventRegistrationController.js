@@ -1,5 +1,6 @@
 import EventRegistration from './eventRegistrationModel.js';
 import AppError from '../../utils/appError.js';
+import Event from '../event/eventModel.js';
 import catchAsync from '../../utils/catchAsync.js';
 
 // This controller will handle both registering and un-registering (toggling)

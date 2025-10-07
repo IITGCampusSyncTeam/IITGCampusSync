@@ -1,7 +1,7 @@
 import express from 'express';
-import isAuthenticated from '../../middleware/isAuthenticated.js'; // Your auth middleware
-
+import isAuthenticated from '../../middleware/isAuthenticated.js';
 import { toggleRsvp, getRegistrationsForEvent } from './eventRegistrationController.js';
+
 const router = express.Router();
 
 
