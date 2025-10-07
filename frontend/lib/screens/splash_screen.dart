@@ -17,6 +17,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -29,7 +30,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // Start animation and check authentication after delay
     _animationController.forward();
-    Timer(const Duration(milliseconds: 1500), () {
+    // Timer(const Duration(milliseconds: 1500), () {
+    //   _checkAuthAndNavigate();
+    // });
+  }
+
+  void _onContinuePressed() {
+    if (_isNavigating) return;
+    setState(() {
+      _isNavigating = true;
+    });
+
+    // Reverse the animation to fade out the splash screen
+    _animationController.reverse().then((_) {
+      // After fade-out is complete, check auth and navigate
       _checkAuthAndNavigate();
     });
   }
@@ -78,58 +92,96 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: Center(
+      backgroundColor: const Color(0xFFFFFFFF),
+      body: Align(
+        alignment: AlignmentGeometry.topLeft,
+        // padding: const EdgeInsets.symmetric(horizontal: 10),
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo wrapped in Hero widget with a unique tag
-              Hero(
-                tag: 'app_logo',
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade800,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.calendar_month_rounded,
-                      size: 70,
-                      color: Colors.white,
+              // Padding(
+              //   // padding: const EdgeInsets.symmetric(horizontal: 40.0),
+              //   padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                // child: Hero(
+                //   tag: 'app_logo',
+                  Align(
+                    alignment: AlignmentGeometry.topRight,
+                    child: Container(
+                      width: 350,
+                      height: 530,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: const DecorationImage(
+                          image: AssetImage('assets/images/bg_image.png'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                // ),
+              // ),
+              SizedBox(height: 24),
               // App Name with Hero widget
-              Hero(
-                tag: 'app_title',
-                child: Material(
-                  color: Colors.transparent,
-                  child: const Text(
-                    'Campus Calendar',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                      color: Colors.white,
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    Hero(
+                      tag: 'app_title',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: const Text(
+                          'Discover. Sync. Connect.',
+                          style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.2,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    // Tagline
+                    Text(
+                      'Explore what’s happening on campus and bring people together in one place.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF27272A),
+                      ),
+                    ),
+                    SizedBox(height: 34),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _onContinuePressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: const Text(
+                      'Continue',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              // Tagline
-              const Text(
-                'Your Campus Events, Personalized',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
+              // END ADDED
             ],
           ),
         ),

@@ -66,6 +66,8 @@ dependencies:
   syncfusion_flutter_calendar: ^28.2.11
   flutter_local_notifications: ^19.1.0
   intl: ^0.20.2
+  cloud_firestore: ^5.4.3
+  firebase_auth: ^5.3.1
 
 dev_dependencies:
   flutter_test:
@@ -92,6 +94,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/icons/
+    - assets/images/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
