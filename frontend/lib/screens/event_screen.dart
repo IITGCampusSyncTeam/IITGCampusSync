@@ -235,16 +235,7 @@ class _EventScreenState extends State<EventScreen> {
                         event: event,
                         onRsvpPressed: () {
                           eventProvider.toggleRsvpStatus(event.id);
-                        }, banner: event.title, // Or event.banner if you have that field
-                          title: event.title,
-                          organizer: event.organizer,
-                          // Format the DateTime object into a simple String
-                          dateTime: "${event.dateTime.toLocal().day}/${event.dateTime.toLocal().month}/${event.dateTime.toLocal().year}",
-                          location: event.location,
-                          // Ensure the tags are a List<String>
-                          tags: List<String>.from(event.tag),
-                          imageUrl: event.imageUrl,
-                          description: event.description,
+                        },
                       );
                     },
                   )

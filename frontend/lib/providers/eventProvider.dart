@@ -62,20 +62,67 @@ class EventProvider with ChangeNotifier {
   }
 
   // Fetch upcoming events
+  // Future<void> fetchUpcomingEvents() async {
+  //   _isLoading = true;
+  //   _errorMessage = '';
+  //   notifyListeners();
+  //
+  //   try {
+  //     final eventsData = await _eventAPI.fetchUpcomingEvents();
+  //     _upcomingEvents = eventsData.map((data) => Event.fromJson(data)).toList();
+  //     print("Fetched All Upcoming Events: ${_upcomingEvents.length}");
+  //   } catch (e) {
+  //     _errorMessage = e.toString();
+  //   } finally {
+  //     _isLoading = false;
+  //     notifyListeners();
+  //   }
+  // }
+
   Future<void> fetchUpcomingEvents() async {
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
 
+    print("--- STARTING FETCH UPCOMING EVENTS ---");
+
     try {
-      final eventsData = await _eventAPI.fetchUpcomingEvents();
-      _upcomingEvents = eventsData.map((data) => Event.fromJson(data)).toList();
-      print("Fetched All Upcoming Events: ${_upcomingEvents.length}");
+      // This calls your EventAPI to get the raw list of data
+      final List<dynamic> eventsData = await _eventAPI.fetchUpcomingEvents();
+
+      print("1. DATA RECEIVED IN PROVIDER: Found ${eventsData.length} raw event items.");
+
+      if (eventsData.isEmpty) {
+        print("2. CONCLUSION: The API returned an empty list.");
+        _upcomingEvents = []; // Set to empty list
+      } else {
+        print("2. PARSING DATA NOW...");
+
+        List<Event> parsedEvents = [];
+        for (var data in eventsData) {
+          try {
+            // Try to convert each piece of raw data into a structured Event object
+            parsedEvents.add(Event.fromJson(data));
+          } catch (e) {
+            // If this fails, it will print the exact data and error
+            print("-----------------------------------------");
+            print("❌ FAILED TO PARSE ONE EVENT. ERROR: $e");
+            print("   Problematic Event Data: $data");
+            print("-----------------------------------------");
+          }
+        }
+
+        _upcomingEvents = parsedEvents;
+        print("3. CONCLUSION: Successfully parsed ${_upcomingEvents.length} events.");
+      }
+
     } catch (e) {
       _errorMessage = e.toString();
+      print("❌ CATASTROPHIC ERROR in provider: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
+      print("--- FETCH UPCOMING EVENTS FINISHED ---");
     }
   }
 

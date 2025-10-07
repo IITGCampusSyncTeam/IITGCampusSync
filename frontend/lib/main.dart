@@ -178,9 +178,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-        create: (context) => EventProvider(),
-    child: MaterialApp(
+
+    return MaterialApp(
         title: 'IITGsync',
         theme: ThemeData(
           scaffoldBackgroundColor: Colors.grey[400],
@@ -193,8 +192,7 @@ class _MyAppState extends State<MyApp> {
         // home: const MyHomePage(title: 'IITGsync'),
 
         //home:ClubsScreen(),
-        ),
-    );
+        );
   }
 }
 

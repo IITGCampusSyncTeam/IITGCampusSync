@@ -5,6 +5,7 @@ import 'package:frontend/models/event.dart'; // Import the Event model
 import 'package:frontend/screens/payment_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import '../providers/eventProvider.dart';
 import '../services/notification_services.dart';
@@ -118,16 +119,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  else if (eventProvider.allEvents.isEmpty)
+                  else if (eventProvider.upcomingEvents.isEmpty)
                     const SliverFillRemaining(
                       child: Center(child: Text("No events found.")),
                     )
                   else
-                    SliverToBoxAdapter(
-                      child: _buildEventsList(eventProvider.upcomingEvents),
+                    SliverToBoxAdapter( // Using SliverToBoxAdapter to keep your pagination Column
+                      child: _buildEventsList(eventProvider.upcomingEvents, eventProvider),
                     ),
-
-
                 ],
               ),
             );
@@ -136,7 +135,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
     );
   }
-
 
 
 
@@ -249,7 +247,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  Widget _buildEventsList(List<Event> events) {
+  Widget _buildEventsList(List<Event> events,EventProvider eventProvider) {
     if (events.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32.0),
@@ -274,16 +272,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ...currentEvents.map((event) {
           return EventCard(
             style: CardStyle.full,
-            banner: event.title.toUpperCase(),
-            title: event.title,
-            organizer: event.club?.name ?? 'Unknown Organizer',
-            dateTime: event.dateTime.toString(), // Format this as needed
-            location:
-                "TBD", // You might need to add location to your Event model
-            tags: event.getTagTitles(),
-            imageUrl:
-                "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
-            description: event.description,
             onRsvpPressed: () {
               Provider.of<EventProvider>(context, listen: false)
                   .toggleRsvpStatus(event.id);

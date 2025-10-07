@@ -103,16 +103,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
               provider.toggleRsvpStatus(event.id);
             }
           },
-          banner: event.title.toUpperCase(),
-          title: event.title,
-          organizer: event.club?.name ?? 'Unknown Organizer',
-          dateTime: event.dateTime.toString(), // Format this as needed
-          location:
-          "TBD", // You might need to add location to your Event model
-          tags: event.getTagTitles(),
-          imageUrl:
-          "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
-          description: event.description,
         );
       },
     );
