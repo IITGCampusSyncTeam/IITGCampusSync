@@ -22,12 +22,7 @@ const eventSchema = new mongoose.Schema({
   tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
   status: {
       type: String,
-<<<<<<< Updated upstream
-      enum: ['drafted', 'tentative', 'published', 'live', 'finished'],
-      default: 'drafted',
-=======
-      enum: ['tentative', 'published', 'cancelled', 'live', 'finished'],
->>>>>>> Stashed changes
+      enum: ['tentative', 'published', 'live', 'finished'],
     },
   venueType: {
     type: String,

@@ -16,11 +16,4 @@ router.post('/tentative', eventController.createTentativeEvent);// add tentative
 router.post('/rsvp/:eventId', eventController.rsvpToEvent); // RSVP to an event
 router.get('/rsvp/:eventId', eventController.getEventRSVPs); // Get RSVP list for an event
 
-<<<<<<< Updated upstream
-=======
-router.put('/:eventId/cancel', eventController.cancelEvent); // Cancel an event
-router.put('/:eventId/pause-registrations', eventController.pauseRegistrations); // Pause registrations
-
-
->>>>>>> Stashed changes
 export default router;
