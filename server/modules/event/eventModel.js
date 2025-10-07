@@ -16,7 +16,9 @@ const eventSchema = new mongoose.Schema({
       enum: ['drafted', 'tentative', 'published'],
       default: 'drafted',
     },
-});
+    rsvp: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+}, { timestamps: true });
 
 
 const EventModel = mongoose.model('Event', eventSchema);
