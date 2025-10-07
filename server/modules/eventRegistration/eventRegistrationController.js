@@ -20,13 +20,15 @@ const event = await Event.findById(eventId);
   if (isRsvpd) {
     // 3a. If user is in the array, remove them (un-RSVP)
     await Event.findByIdAndUpdate(eventId, { $pull: { rsvp: userId } });
+
     console.log(`User ${userId} UN-REGISTERED from event ${eventId}`);
     res.status(200).json({ status: 'success', message: 'Successfully unregistered' });
   } else {
     // 3b. If user is not in the array, add them (RSVP)
     await Event.findByIdAndUpdate(eventId, { $addToSet: { rsvp: userId } }); // $addToSet prevents duplicates
+
     console.log(`User ${userId} REGISTERED for event ${eventId}`);
-    res.status(200).json({ status: 'success', message: 'Successfully registered' });
+    res.status(200).json({ status: 'success', message: 'Successfully registered',data: { rsvpd: true } });
   }
 });
 

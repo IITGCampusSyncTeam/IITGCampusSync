@@ -95,7 +95,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         child: Consumer<EventProvider>(
           builder: (context, eventProvider, child) {
             return RefreshIndicator(
-              onRefresh: () => eventProvider.fetchUpcomingEvents(),
+              onRefresh: () => eventProvider.fetchAllData(),
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
@@ -124,11 +124,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       child: Center(child: Text("No events found.")),
                     )
                   else
-                    SliverToBoxAdapter( // Using SliverToBoxAdapter to keep your pagination Column
-                      child: _buildEventsList(eventProvider.upcomingEvents, eventProvider),
-                    ),
-                ],
-              ),
+            SliverList.builder(
+            itemCount: eventProvider.upcomingEvents.length,
+            itemBuilder: (context, index) {
+            final event = eventProvider.upcomingEvents[index];
+            return EventCard(
+            event: event,
+            style: CardStyle.full,
+            onRsvpPressed: () => eventProvider.toggleRsvpStatus(event.id),
+            );
+            },
+            ),
+            ],
+            ),
             );
           },
         ),

@@ -196,7 +196,10 @@ class EventProvider with ChangeNotifier {
       // 4. On success, refresh ALL relevant lists from the server.
       // This keeps both the Explore screen and My Events screen in sync.
       await fetchUpcomingEvents();
+
       await fetchRsvpdUpcomingEvents();
+
+
     } catch (error) {
       // 5. If the API call fails, revert the optimistic change.
       _upcomingEvents[eventIndex].isRsvpd = !_upcomingEvents[eventIndex].isRsvpd;

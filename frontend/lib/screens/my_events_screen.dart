@@ -90,21 +90,25 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
     if (events.isEmpty) {
       return const Center(child: Text("No events in this category."));
     }
-    return ListView.builder(
-      padding: const EdgeInsets.all(8),
-      itemCount: events.length,
-      itemBuilder: (context, index) {
-        final event = events[index];
-        return EventCard(
-          event: event,
-          style: CardStyle.compact, // Use the compact style for this screen
-          onRsvpPressed: () {
-            if (event.dateTime.isAfter(DateTime.now())) {
-              provider.toggleRsvpStatus(event.id);
-            }
-          },
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: () => provider.fetchAllData(),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(8.0),
+        itemCount: events.length,
+        itemBuilder: (context, index) {
+          final event = events[index];
+          return EventCard(
+            event: event,
+            style: CardStyle.compact, // Use the compact card style for this screen
+            onRsvpPressed: () {
+              // Only allow toggling RSVP for events that are still upcoming
+              if (event.dateTime.isAfter(DateTime.now())) {
+                provider.toggleRsvpStatus(event.id);
+              }
+            },
+          );
+        },
+      ),
     );
   }
 }
