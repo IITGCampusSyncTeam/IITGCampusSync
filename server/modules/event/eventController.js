@@ -276,6 +276,33 @@ const createTentativeEvent = async (req, res) => {
   }
 };
 
+<<<<<<< Updated upstream
+=======
+/**
+ * @description Cancel an event by updating its status to 'cancelled'
+ * @route PUT /api/events/:eventId/cancel
+ */
+const cancelEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            { status: 'cancelled' },
+            { new: true }
+        );
+        if (!updatedEvent) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+        
+        // add logic here to notify participants of the cancellation.
+        
+        res.status(200).json({ message: 'Event has been cancelled successfully.', event: updatedEvent });
+    } catch (error) {
+        console.error("Error cancelling event:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+>>>>>>> Stashed changes
 
 const getActiveCreatorEvents = async (req, res) => {
   try {
@@ -374,6 +401,7 @@ const getEventRSVPs = async (req, res) => {
 //  Export functions properly
 export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
 
+<<<<<<< Updated upstream
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {
 //  try {
@@ -405,3 +433,49 @@ export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub,
 //    res.status(500).json({ error: 'Internal server error' });
 //  }
 //};
+=======
+/**
+ * @description Toggles the registration status for an event
+ * @route PUT /api/events/:eventId/pause-registrations
+*/
+const pauseRegistrations = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const event = await Event.findById(eventId);
+    
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+    
+    // Toggle the boolean field
+    event.registrationsPaused = !event.registrationsPaused;
+    await event.save();
+    
+    const message = event.registrationsPaused 
+    ? 'Registrations have been paused.' 
+    : 'Registrations have been resumed.';
+    
+    res.status(200).json({ message, event });
+  } catch (error) {
+    console.error("Error pausing registrations:", error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export default { 
+  createEvent, 
+  getEvents, 
+  getUpcomingEvents, 
+  getPastEventsOfClub, 
+  getFollowedClubEvents, 
+  updateEventStatus, 
+  editEvent, 
+  createTentativeEvent,
+  cancelEvent,
+  pauseRegistrations,
+  duplicateAsDraft,
+  getActiveCreatorEvents,
+  rsvpToEvent,
+  getEventRSVPs
+};
+>>>>>>> Stashed changes
