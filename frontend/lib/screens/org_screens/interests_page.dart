@@ -3,6 +3,9 @@ import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/models/interests.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class InterestsPage extends StatefulWidget {
   const InterestsPage({Key? key}) : super(key: key);
@@ -32,18 +35,50 @@ class _InterestsPageState extends State<InterestsPage> {
   // }
 
   void _continue() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid; // assuming login done
+    final uid = FirebaseAuth.instance.currentUser?.uid; // optional if using auth
     if (uid == null) return;
 
-    // Save the selected tags for this club
-    await FirebaseFirestore.instance.collection('clubs').doc(uid).set({
-      'interests': _selectedInterests.toList(),
-    }, SetOptions(merge: true));
+    try {
+      final response = await http.get(Uri.parse('http://<YOUR_SERVER_URL>/api/tags'));
+      if (response.statusCode != 200) throw Exception('Failed to fetch tags');
+      final List<dynamic> allTags = jsonDecode(response.body);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+      final selectedTagIds = allTags
+          .where((t) => _selectedInterests.contains(t['title'])) // match by title
+          .map((t) => t['_id'])
+          .toList();
+
+      final clubEmail = '<CLUB_EMAIL_FROM_AUTH>';
+      final token = '<JWT_TOKEN>';
+      final assignResponse = await http.post(
+        Uri.parse('http://<YOUR_SERVER_URL>/api/clubs/assign-tags'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // optional, remove if not using JWT
+        },
+        body: jsonEncode({
+          'email': clubEmail,
+          'tagIds': selectedTagIds,
+        }),
+      );
+
+      if (assignResponse.statusCode == 200) {
+        // ✅ Navigate to Home screen after successful assignment
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        throw Exception('Failed to assign tags');
+      }
+    } catch (e) {
+      print('Error assigning tags: $e');
+      // Fallback: still navigate to Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
   }
 
   @override

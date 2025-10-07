@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
-import 'package:frontend/screens/org_screens/club_details.dart';
+import 'package:frontend/screens/org_screens/interests_page.dart';
 import 'package:frontend/screens/org_screens/org_login.dart';
 import 'package:frontend/screens/profile_screen.dart';
 import 'package:frontend/screens/splash_screen.dart';
@@ -193,7 +193,7 @@ class _MyAppState extends State<MyApp> {
       // home: SplashScreen(),//final
       // home: OrganizerNavigationContainer()//for testing organizer side please change
       home: SplashScreen(),
-      // home: SignInPage(),
+      // home: InterestsPage(),
       // home: MainNavigationContainer(),
       // home: const MyHomePage(title: 'IITGsync'),
 

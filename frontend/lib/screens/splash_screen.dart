@@ -91,6 +91,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
@@ -98,9 +100,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         // padding: const EdgeInsets.symmetric(horizontal: 10),
         child: FadeTransition(
           opacity: _fadeAnimation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          child: SafeArea( // optional but recommended
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
               // Padding(
               //   // padding: const EdgeInsets.symmetric(horizontal: 40.0),
               //   padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -184,6 +188,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               // END ADDED
             ],
           ),
+      ),
+    ),
         ),
       ),
     );
