@@ -21,6 +21,8 @@ import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'; // We'll need to modify this later
 //import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
+import calendarRouter from './modules/calendar/calendar.routes.js'; 
+
 
 // Import your Event model (adjust path as necessary)
 // Assuming it's something like:
@@ -36,6 +38,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors('*')); // Consider more specific CORS configuration for production
+app.use("/api/calendar", calendarRouter)
 
 // MongoDB connection
 const connectDB = async () => {

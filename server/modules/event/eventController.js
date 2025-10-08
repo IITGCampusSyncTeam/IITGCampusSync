@@ -252,18 +252,21 @@ const editEvent = async (req, res) => {
 // Function to create a tentative event
 const createTentativeEvent = async (req, res) => {
   try {
-    const { title, date, venue } = req.body;
+    const { title, datetime, venue,isSeries,openTo,isOffline,tag,seriesName } = req.body;
 
-    if (!title || !date || !venue) {
+    if (!title || !datetime || !venue||!openTo||!tag) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const newEvent = await Event.create({
       title,
       description: "Tentative Event", // optional default
-      dateTime: new Date(date), // assuming frontend sends ISO string
+      dateTime: new Date(datetime), // assuming frontend sends ISO string
       venue,
-      status: "tentative"
+      tag:tag,
+      venueType:isOffline? 'On-Campus':'Online',
+      status: "tentative",
+      series:isSeries ? seriesName:'NA'
     });
 
     return res.status(201).json({ message: "Tentative event created", event: newEvent });
