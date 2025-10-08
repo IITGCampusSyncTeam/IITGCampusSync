@@ -12,7 +12,7 @@ class RSVPIcons extends StatefulWidget {
 
 class _RSVPIconsState extends State<RSVPIcons> {
   late final int count;
-  late final List<String>? userImages;
+  List<String>? userImages;
 
   @override
   void initState() {

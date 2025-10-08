@@ -21,9 +21,63 @@ class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
 
   @override
   void initState() {
-    initialize();
+    // initialize(); // You can comment this out to use test data
+    loadTestData(); // Use this to load hardcoded events
     super.initState();
   }
+
+  // New function to load test data
+  void loadTestData() {
+    setState(() {
+      events = [
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e1",
+          "title": "Flutter Workshop: Building Beautiful UIs",
+          "description": "Join us for an exciting workshop on Flutter and learn to build beautiful and responsive user interfaces.",
+          "dateTime": DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+          "venue": "Room 404, Core 1",
+          "organizerName": "Coding Club",
+          "organizerEmail": "codingclub@iitg.ac.in",
+          "banner": "https://images.unsplash.com/photo-1547394765-185e1e68f34e?q=80&w=2070&auto=format&fit=crop",
+          "RSVP": [
+            "user1",
+            "user2",
+            "user3",
+            "user4"
+          ],
+          "views": 152,
+        },
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e2",
+          "title": "Annual Tech Expo 2025",
+          "description": "The biggest tech expo of the year, showcasing projects from all departments.",
+          "dateTime": DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(), // An event that is currently "Live"
+          "venue": "New SAC",
+          "organizerName": "Technical Board",
+          "organizerEmail": "techboard@iitg.ac.in",
+          "banner": "https://images.unsplash.com/photo-1496065187959-7f07b8353c55?q=80&w=2070&auto=format&fit=crop",
+          "RSVP": [
+            "userA",
+            "userB"
+          ],
+          "views": 340,
+        },
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e3",
+          "title": "Guest Lecture on Quantum Computing",
+          "description": "A deep dive into the world of quantum computing by a renowned expert in the field.",
+          "dateTime": DateTime.now().add(const Duration(days: 10)).toIso8601String(),
+          "venue": "Lecture Hall 2",
+          "organizerName": "Physics Department",
+          "organizerEmail": "physics@iitg.ac.in",
+          "banner": null, // Example with no banner
+          "RSVP": [],
+          "views": 88,
+        }
+      ];
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,9 +153,9 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                   child: Image.network(
                     event == null
-                        ? 'https://unsplash.com/s/photos/random-person'
+                        ? 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop'
                         : event['banner'] ??
-                            'https://unsplash.com/s/photos/random-person',
+                        'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -119,15 +173,16 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                 ),
                 if (event != null)
-                  if (event['dateTime'] >= DateTime.now())
+                  if (DateTime.parse(event['dateTime']).isBefore(DateTime.now()))
                     Positioned(
                       right: 16,
                       top: 16,
                       child: Stack(
+                        alignment: Alignment.center,
                         children: [
                           Container(
                             height: 24,
-                            width: 48,
+                            width: 52,
                             decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(1000)),
@@ -143,7 +198,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                                   decoration: BoxDecoration(
                                       color: Colors.red,
                                       borderRadius:
-                                          BorderRadius.circular(1000)),
+                                      BorderRadius.circular(1000)),
                                 ),
                                 SizedBox(
                                   width: 4,
@@ -190,11 +245,11 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                         event == null
                             ? 'Test dateTime'
                             : DateFormat('d MMMM, h:mm a').format(
-                                        DateTime.parse(event['dateTime'])) ==
-                                    ''
-                                ? "Test dateTime"
-                                : DateFormat('d MMMM, h:mm a')
-                                    .format(DateTime.parse(event['dateTime'])),
+                            DateTime.parse(event['dateTime'])) ==
+                            ''
+                            ? "Test dateTime"
+                            : DateFormat('d MMMM, h:mm a')
+                            .format(DateTime.parse(event['dateTime'])),
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
@@ -234,8 +289,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 RSVPIcons(
-                  // RSVP: event == null ? [] : event['RSVP'] ?? [],
-                  RSVP: [''],
+                  RSVP: event == null ? [] : List<String>.from(event['RSVP'] ?? []),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -322,42 +376,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: Column(children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(999),
-                      onTap: () {
-                        // TODO: Implement More
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999),
-                          color: Color(0xFFE4E4E7),
-                        ),
-                        child: Icon(
-                          Icons.more_horiz,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    RsvpInfoSlider(),
-                  ]),
-                  // child: InkWell(
-                  //   borderRadius: BorderRadius.circular(999),
-                  //   onTap: () {
-                  //     // TODO: Implement More
-                  //   },
-                  //   child: Container(
-                  //     padding: EdgeInsets.all(7),
-                  //     decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(999),
-                  //         color: Color(0xFFE4E4E7)),
-                  //     child: Icon(
-                  //       Icons.more_horiz,
-                  //       color: Colors.black,
-                  //     ),
-                  //   ),
-                  // ),
+                  child: RsvpInfoSlider(),
                 ),
               ],
             ),
