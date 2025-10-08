@@ -37,6 +37,19 @@ const event = await Event.findById(eventId);
   }
 });
 
+        const updatedEvent = await Event.findByIdAndUpdate(eventId, updateOperation, { new: true });
+
+
+        console.log(` Event AFTER update. New RSVP array: [${updatedEvent.rsvp.join(', ')}]`);
+
+        res.status(200).json(responseMessage);
+
+      } catch (error) {
+        console.error("--- ❌ CATASTROPHIC ERROR IN RSVP CONTROLLER ---", error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+      }
+    });
+
 // This controller now finds the event and populates the 'rsvp' array
 export const getRegistrationsForEvent = catchAsync(async (req, res, next) => {
     const event = await Event.findById(req.params.eventId).populate('rsvp');
