@@ -5,17 +5,22 @@ import catchAsync from '../../utils/catchAsync.js';
 
 // This controller will handle both registering and un-registering (toggling)
 export const toggleRsvp = catchAsync(async (req, res, next) => {
+console.log("--- RSVP ENDPOINT TRIGGERED ---");
   const { eventId } = req.params;
   const userId = req.user.id; // Comes from your isAuthenticated middleware
 
 
 const event = await Event.findById(eventId);
   if (!event) {
+  console.error(`❌ Event not found with ID: ${eventId}`);
     return res.status(404).json({ status: 'error', message: 'Event not found' });
   }
 
+  console.log(`1. Found event. Current RSVP array: [${event.rsvp.join(', ')}]`);
+
   // 2. Check if the user's ID is already in the 'rsvp' array
   const isRsvpd = event.rsvp.map(id => id.toString()).includes(userId);
+  console.log(`2. Is user already RSVP'd? ${isRsvpd}`);
 
   if (isRsvpd) {
     // 3a. If user is in the array, remove them (un-RSVP)
