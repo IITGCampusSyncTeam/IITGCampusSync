@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/org_screens/event_creation_form_srceen.dart';
-import 'package:frontend/screens/sharing.dart';
-import 'package:frontend/constants/colors.dart';
-import 'package:frontend/screens/org_screens/event_card_screen.dart';
 
 class MyEventsScreen extends StatefulWidget {
   @override
@@ -11,7 +8,6 @@ class MyEventsScreen extends StatefulWidget {
 
 class _MyEventsScreenState extends State<MyEventsScreen> {
   bool showMyEvents = false;
-  
 
   @override
   Widget build(BuildContext context) {
@@ -109,38 +105,17 @@ class OrgEventScreen extends StatelessWidget {
   OrgEventScreen({this.isMyEvents = false});
 
   final List<Map<String, dynamic>> allEvents = [
-    // {
-    //   'date': '17 April',
-    //   'title': 'Figma Workshop hehe',
-    //   'club': 'Coding Club',
-    //   'image': 'https://i.imgur.com/5Qf4WcN.png',
-    //   'datetime': '7:00 PM',
-    //   'venue': 'Lecture Hall',
-    //   'tags': ['Design', 'Figma', 'DesforDev'],
-    //   'isMine': false,
-    // },
-    { 'date': '17 April', 
-    'title': 'Figma Workshop hehe', 
-    'club': 'Coding Club', 
-    'image': 'https://i.imgur.com/5Qf4WcN.png', 
-    'datetime': '7:00 PM', 'venue': 'Lecture Hall', 
-    'tags': ['Design', 'Figma', 'DesforDev'], 
-    'isMine': false,
-    'participants': ['Alice', 'Bob', 'Charlie'], 
-    'description': 
-    'Learn the basics of Figma and UI/UX design in this interactive workshop!', 
-    'itinerary': [ {'title': 'Introduction', 'time': '7:00 PM'}, 
-                   {'title': 'Hands-on Session', 'time': '7:30 PM'}, 
-                   {'title': 'Q&A', 'time': '8:30 PM'}, ], 
-    'speakers': [ {'name': 'John Doe', 'details': 'Senior UX Designer'}, 
-                  {'name': 'Jane Smith', 'details': 'Product Designer'}, ], 
-    'prerequisites': ['Laptop with Figma installed', 'Basic design knowledge'], 
-    'resources': [ { 'title': 'Figma Official Docs', 
-    'description': 'https://help.figma.com/', }, { 'title': 'Figma YouTube Tutorials', 'description': 'https://www.youtube.com/figma', }, ], 
-    'venueDetails': [ {'title': 'Lecture Hall', 'subtitle': 'Building A, Floor 2'}, {'title': 'Auditorium', 'subtitle': 'Building B, Floor 1'}, ], 
-    'links': [ {'icon': Icons.link, 'url': 'https://www.figma.com/'}, {'icon': Icons.link, 'url': 'https://www.desfor.dev/'}, ], 
-    'pocs': [ {'name': 'Alice Johnson', 'details': 'Student Coordinator'}, {'name': 'Bob Williams', 'details': 'Faculty Mentor'}, ], }
-   , {
+    {
+      'date': '17 April',
+      'title': 'Figma Workshop hehe',
+      'club': 'Coding Club',
+      'image': 'https://i.imgur.com/5Qf4WcN.png',
+      'datetime': '16 April, 7:00 PM',
+      'venue': 'Lecture Hall',
+      'tags': ['Design', 'Figma', 'DesforDev'],
+      'isMine': false,
+    },
+    {
       'date': '18 April',
       'title': 'Flutter Bootcamp',
       'club': 'Mobile Club',
@@ -189,7 +164,7 @@ class OrgEventScreen extends StatelessWidget {
   }
 
   Widget _eventCard(BuildContext context, Map<String, dynamic> event) {
-    return  Container(
+    return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -259,108 +234,7 @@ class OrgEventScreen extends StatelessWidget {
                             backgroundColor: Colors.grey[200],
                           ))
                       .toList(),
-                ),
-                Divider(
-              height: 2,
-              color: TextColors.muted,
-            ),
-                 Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 16, 4, 16),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                         builder: (context) => EventCardScreen(event: event),
-                        ),
-                       );
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: TextColors.primaryDark, elevation: 0),
-                    child: Container(
-                      height: 30,
-                      width: 95,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'See Insight',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 4, 16),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: implement Edit
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFE4E4E7), elevation: 0),
-                    child: Container(
-                      height: 30,
-                      width: 60,
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.mode_edit_outlined,
-                            color: Colors.black,
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              'Edit',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(999),
-                    onTap: () {
-                      showModalBottomSheet(
-                        backgroundColor: Colors.white,
-                        context: context,
-                        builder: (BuildContext context){
-                          return  EventShareScreen(
-                          eventTitle: event['title'] ?? "Untitled Event",
-                          eventDescription: event['description'] ?? "No description",
-                          eventDateTime: event['dateTime'] ?? "Unknown date",
-                          eventLocation: event['venue'] ?? "Unknown venue",
-                          eventLink: "https://example.com/event/${event['_id'] ?? 'default'}",
-                          imageUrl: event['banner'] ?? "https://via.placeholder.com/300",
-                         );
-                        }
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999),
-                          color: Color(0xFFE4E4E7)),
-                      child: Icon(
-                        Icons.more_horiz,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                )
               ],
             ),
           )
