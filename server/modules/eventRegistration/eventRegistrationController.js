@@ -15,57 +15,53 @@ const event = await Event.findById(eventId);
   console.error(`❌ Event not found with ID: ${eventId}`);
     return res.status(404).json({ status: 'error', message: 'Event not found' });
   }
+  const currentRsvp = Array.isArray(event.rsvp) ? event.rsvp : [];
 
-  console.log(`1. Found event. Current RSVP array: [${event.rsvp.join(', ')}]`);
+  console.log(`1. Found event. Current RSVP array: [${currentRsvp.join(', ')}]`);
 
   // 2. Check if the user's ID is already in the 'rsvp' array
-  const isRsvpd = event.rsvp.map(id => id.toString()).includes(userId);
+  const isRsvpd = currentRsvp.map(id => id.toString()).includes(userId);
   console.log(`2. Is user already RSVP'd? ${isRsvpd}`);
 
-  if (isRsvpd) {
-    // 3a. If user is in the array, remove them (un-RSVP)
-    await Event.findByIdAndUpdate(eventId, { $pull: { rsvp: userId } });
+  const updateOperation = isRsvpd
+      ? { $pull: { rsvp: userId } }            // remove
+      : { $addToSet: { rsvp: userId } };      // add without duplicates
 
-    console.log(`User ${userId} UN-REGISTERED from event ${eventId}`);
-    res.status(200).json({ status: 'success', message: 'Successfully unregistered',data: { rsvpd: false } });
-  } else {
-    // 3b. If user is not in the array, add them (RSVP)
-    await Event.findByIdAndUpdate(eventId, { $addToSet: { rsvp: userId } }); // $addToSet prevents duplicates
+    const responseMessage = isRsvpd
+      ? { status: 'success', message: 'Successfully unregistered', data: { rsvpd: false } }
+      : { status: 'success', message: 'Successfully registered',   data: { rsvpd: true } };
 
-    console.log(`User ${userId} REGISTERED for event ${eventId}`);
-    res.status(200).json({ status: 'success', message: 'Successfully registered',data: { rsvpd: true } });
-  }
-});
+    // 4) apply update and return updated document
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, updateOperation, { new: true });
 
-        const updatedEvent = await Event.findByIdAndUpdate(eventId, updateOperation, { new: true });
+    if (!updatedEvent) {
+      // extremely unlikely since we found it earlier, but safe to check
+      console.error(`❌ Event disappeared during update: ${eventId}`);
+      return res.status(404).json({ status: 'error', message: 'Event not found after update' });
+    }
+
+    console.log(`Event AFTER update. New RSVP array: [${(updatedEvent.rsvp || []).join(', ')}]`);
+
+    return res.status(200).json(responseMessage);
+  });
 
 
-        console.log(` Event AFTER update. New RSVP array: [${updatedEvent.rsvp.join(', ')}]`);
-
-        res.status(200).json(responseMessage);
-
-      } catch (error) {
-        console.error("--- ❌ CATASTROPHIC ERROR IN RSVP CONTROLLER ---", error);
-        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-      }
-    });
-
-// This controller now finds the event and populates the 'rsvp' array
-export const getRegistrationsForEvent = catchAsync(async (req, res, next) => {
-    const event = await Event.findById(req.params.eventId).populate('rsvp');
+  export const getRegistrationsForEvent = catchAsync(async (req, res, next) => {
+    // populate rsvp to return user documents (optionally select fields)
+    const event = await Event.findById(req.params.eventId).populate('rsvp', 'name email'); // adjust selected fields as needed
 
     if (!event) {
       return res.status(404).json({ status: 'error', message: 'Event not found' });
     }
 
     res.status(200).json({
-        status: 'success',
-        results: event.rsvp.length,
-        data: {
-            registrations: event.rsvp // The populated list of users
-        }
+      status: 'success',
+      results: Array.isArray(event.rsvp) ? event.rsvp.length : 0,
+      data: {
+        registrations: event.rsvp
+      }
     });
-});
+  });
 //  // Check if a registration already exists
 //  const existingRegistration = await EventRegistration.findOne({
 //    event: eventId,
