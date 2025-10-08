@@ -77,8 +77,15 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
           return TabBarView(
             controller: _tabController,
             children: [
-              _buildEventList(eventProvider.rsvpdUpcomingEvents, eventProvider),
-              _buildEventList(eventProvider.attendedEvents, eventProvider),
+              RefreshIndicator(
+              onRefresh: () => eventProvider.fetchAllData(),
+          child: _buildEventList(eventProvider.rsvpdUpcomingEvents, eventProvider),
+          ),
+
+          RefreshIndicator(
+          onRefresh: () => eventProvider.fetchAllData(),
+          child: _buildEventList(eventProvider.attendedEvents, eventProvider),
+          ),
             ],
           );
         },
@@ -90,9 +97,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
     if (events.isEmpty) {
       return const Center(child: Text("No events in this category."));
     }
-    return RefreshIndicator(
-      onRefresh: () => provider.fetchAllData(),
-      child: ListView.builder(
+    return  ListView.builder(
         padding: const EdgeInsets.all(8.0),
         itemCount: events.length,
         itemBuilder: (context, index) {
@@ -108,7 +113,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
             },
           );
         },
-      ),
-    );
+      );
   }
 }

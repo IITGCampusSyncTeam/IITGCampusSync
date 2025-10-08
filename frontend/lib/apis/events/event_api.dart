@@ -13,7 +13,8 @@ class EventAPI {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> decodedBody = jsonDecode(response.body);
+        return decodedBody['events'] ?? [];
       } else {
         throw Exception('Failed to load events');
       }
@@ -167,7 +168,8 @@ class EventAPI {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final Map<String, dynamic> decodedBody = jsonDecode(response.body);
+      return decodedBody['events'] ?? [];
     } else {
       throw Exception('Failed to load RSVP\'d upcoming events.');
     }
@@ -189,7 +191,8 @@ class EventAPI {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final Map<String, dynamic> decodedBody = jsonDecode(response.body);
+      return decodedBody['events'] ?? [];
     } else {
       throw Exception('Failed to load attended events.');
     }

@@ -192,6 +192,7 @@ class EventProvider with ChangeNotifier {
 
     try {
       await _eventAPI.rsvpForEvent(eventId);
+      print("✅ RSVP successful on server. Refreshing data for both screens...");
 
       // 4. On success, refresh ALL relevant lists from the server.
       // This keeps both the Explore screen and My Events screen in sync.
