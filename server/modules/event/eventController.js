@@ -277,31 +277,22 @@ const createTentativeEvent = async (req, res) => {
 };
 
 
-const getActiveCreatorEvents = async (req, res) => {
+const getCreatorEvents = async (req, res) => {
   try {
-    const { createdBy } = req.body;
-    const now = Date.now();
+    const { createdBy } = req.params;
 
     if (!createdBy) {
       return res.status(400).json({ message: 'Missing Creator ID!!' });
     }
 
     // Upcoming events: published and in the future
-    const upcomingEvents = await Event.find({
+    const Events = await Event.find({
       createdBy: createdBy,
-      status: 'published',
-      dateTime: { $gt: now }
     });
 
-    // Ongoing events: status is 'live'
-    const ongoingEvents = await Event.find({
-      createdBy: createdBy,
-      status: 'live'
-    });
 
     return res.status(200).json({
-      ongoingEvents,
-      upcomingEvents
+      Events
     });
   } catch (error) {
     console.error("Error fetching creator events:", error);
@@ -372,7 +363,7 @@ const getEventRSVPs = async (req, res) => {
 };
 
 //  Export functions properly
-export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getCreatorEvents, rsvpToEvent, getEventRSVPs };
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {

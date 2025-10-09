@@ -3,6 +3,9 @@ import 'package:frontend/constants/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/screens/org_screens/active_events_screen.dart';
 import 'package:frontend/screens/org_screens/past_events_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -13,11 +16,88 @@ class EventsScreen extends StatefulWidget {
 
 class _EventsScreenState extends State<EventsScreen> {
   bool _onactive = true; // true for Active, false for Past
-  late final _screens = [
-    ActiveEventsScreen(),
-    PastEventsScreen(),
-  ];
+  dynamic events;
 
+  @override
+  void initState() {
+    initialize(); // You can comment this out to use test data
+    // loadTestData(); // Use this to load hardcoded events
+    // getAllEvents(); // use this for testing
+    super.initState();
+  }
+
+  void initialize() async {
+    final pref = await SharedPreferences.getInstance();
+    final creatorID = pref.getString('userID');
+    final response = await http.get(Uri.parse(
+        'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/$creatorID'));
+    if (response.statusCode == 200) {
+      setState(() {
+        events = jsonDecode(response.body);
+      });
+    }
+  }
+  // New function to load test data
+  void loadTestData() {
+    setState(() {
+      events = [
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e1",
+          "title": "Flutter Workshop: Building Beautiful UIs",
+          "description": "Join us for an exciting workshop on Flutter and learn to build beautiful and responsive user interfaces.",
+          "dateTime": "2025-06-12T13:00:00.000Z",
+          "venue": "Room 404, Core 1",
+          "organizerName": "Coding Club",
+          "organizerEmail": "codingclub@iitg.ac.in",
+          "banner": "https://images.unsplash.com/photo-1547394765-185e1e68f34e?q=80&w=2070&auto=format&fit=crop",
+          "RSVP": [
+            "user1",
+            "user2",
+            "user3",
+            "user4"
+          ],
+          "views": 152,
+        },
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e2",
+          "title": "Annual Tech Expo 2025",
+          "description": "The biggest tech expo of the year, showcasing projects from all departments.",
+          "dateTime": DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(), // An event that is currently "Live"
+          "venue": "New SAC",
+          "organizerName": "Technical Board",
+          "organizerEmail": "techboard@iitg.ac.in",
+          "banner": "https://images.unsplash.com/photo-1496065187959-7f07b8353c55?q=80&w=2070&auto=format&fit=crop",
+          "RSVP": [
+            "userA",
+            "userB"
+          ],
+          "views": 340,
+        },
+        {
+          "_id": "651b2d4b4a3f5a1bb811c4e3",
+          "title": "Guest Lecture on Quantum Computing",
+          "description": "A deep dive into the world of quantum computing by a renowned expert in the field.",
+          "dateTime": DateTime.now().add(const Duration(days: 10)).toIso8601String(),
+          "venue": "Lecture Hall 2",
+          "organizerName": "Physics Department",
+          "organizerEmail": "physics@iitg.ac.in",
+          "banner": null, // Example with no banner
+          "RSVP": [],
+          "views": 88,
+        }
+      ];
+    });
+  }
+
+  void getAllEvents() async {
+    final response = await http.get(Uri.parse(
+        'https://iitgcampussync.onrender.com/api/events/get-all-events'));
+    if (response.statusCode == 200) {
+      setState(() {
+        events = jsonDecode(response.body);
+      });
+    }
+  }
   // Callback function to be passed to pageSelector
   void _handlePageSelection(bool isActiveSelected) {
     setState(() {
@@ -53,7 +133,7 @@ class _EventsScreenState extends State<EventsScreen> {
             onSelectionChanged: _handlePageSelection,
           ),
           Expanded(
-            child: _screens[_onactive ? 0 : 1],
+            child: _onactive ? ActiveEventsScreen(events: events,) : PastEventsScreen(events: events,),
           ),
         ],
       ),

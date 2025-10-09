@@ -9,7 +9,7 @@ router.get("/get-all-events", eventController.getEvents); // Route to get all ev
 router.get("/get-upcoming-events", eventController.getUpcomingEvents); // Route to get upcoming events
 router.get("/past/:clubId", eventController.getPastEventsOfClub); // Past events for a club
 router.get("/followed/:userId", eventController.getFollowedClubEvents); // Events from followed clubs
-router.get("/upcoming-events-by-creator", eventController.getActiveCreatorEvents); // Route to get all active events by a particular creator
+router.get("/active-events-by-creator/:createdBy", eventController.getCreatorEvents); // Route to get all active events by a particular creator
 router.put("/status/:eventId", eventController.updateEventStatus); // Update event status
 router.put("/edit/:eventId", eventController.editEvent); // Edit event info
 router.post('/tentative', eventController.createTentativeEvent);// add tentative event

@@ -2,7 +2,7 @@ import axios from 'axios';
 import Club from '../club/clubModel.js';
 import EventModel from '../event/eventModel.js';
 import User from '../user/user.model.js';
-import { sendNotification } from '../notif/notification_controller.js';
+//import { sendNotification } from '../notif/notification_controller.js';
 
 export const getContestList = async (req, res) => {
     try {

@@ -137,7 +137,7 @@ class _RsvpInfoSliderState extends State<RsvpInfoSlider> {
       },
       icon: const Icon(Icons.more_horiz,),
       style: IconButton.styleFrom(
-        backgroundColor: Colors.grey[200],
+        backgroundColor: Color(0xFFE4E4E7),
         padding: EdgeInsets.all(8.0),
       ),
     );
