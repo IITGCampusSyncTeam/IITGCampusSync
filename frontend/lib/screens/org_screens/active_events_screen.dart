@@ -1,111 +1,45 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
 import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ActiveEventsScreen extends StatefulWidget {
-  const ActiveEventsScreen({super.key});
+  final dynamic events;
+
+  const ActiveEventsScreen({super.key, required this.events});
 
   @override
   State<ActiveEventsScreen> createState() => _ActiveEventsScreenState();
 }
 
 class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
-  dynamic events;
-
-  @override
-  void initState() {
-    // initialize(); // You can comment this out to use test data
-    loadTestData(); // Use this to load hardcoded events
-    super.initState();
-  }
-
-  // New function to load test data
-  void loadTestData() {
-    setState(() {
-      events = [
-        {
-          "_id": "651b2d4b4a3f5a1bb811c4e1",
-          "title": "Flutter Workshop: Building Beautiful UIs",
-          "description": "Join us for an exciting workshop on Flutter and learn to build beautiful and responsive user interfaces.",
-          "dateTime": DateTime.now().add(const Duration(days: 2)).toIso8601String(),
-          "venue": "Room 404, Core 1",
-          "organizerName": "Coding Club",
-          "organizerEmail": "codingclub@iitg.ac.in",
-          "banner": "https://images.unsplash.com/photo-1547394765-185e1e68f34e?q=80&w=2070&auto=format&fit=crop",
-          "RSVP": [
-            "user1",
-            "user2",
-            "user3",
-            "user4"
-          ],
-          "views": 152,
-        },
-        {
-          "_id": "651b2d4b4a3f5a1bb811c4e2",
-          "title": "Annual Tech Expo 2025",
-          "description": "The biggest tech expo of the year, showcasing projects from all departments.",
-          "dateTime": DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(), // An event that is currently "Live"
-          "venue": "New SAC",
-          "organizerName": "Technical Board",
-          "organizerEmail": "techboard@iitg.ac.in",
-          "banner": "https://images.unsplash.com/photo-1496065187959-7f07b8353c55?q=80&w=2070&auto=format&fit=crop",
-          "RSVP": [
-            "userA",
-            "userB"
-          ],
-          "views": 340,
-        },
-        {
-          "_id": "651b2d4b4a3f5a1bb811c4e3",
-          "title": "Guest Lecture on Quantum Computing",
-          "description": "A deep dive into the world of quantum computing by a renowned expert in the field.",
-          "dateTime": DateTime.now().add(const Duration(days: 10)).toIso8601String(),
-          "venue": "Lecture Hall 2",
-          "organizerName": "Physics Department",
-          "organizerEmail": "physics@iitg.ac.in",
-          "banner": null, // Example with no banner
-          "RSVP": [],
-          "views": 88,
-        }
-      ];
-    });
-  }
-
-
   @override
   Widget build(BuildContext context) {
+    if (widget.events == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (widget.events.isEmpty) {
+      return const Center(
+        child: Text('No events available'),
+      );
+    }
     return ListView.builder(
-      itemCount: events == null ? 2 : events.length,
+      itemCount: widget.events.length,
       itemBuilder: (context, index) => _ActiveEventTile(
-        event: events == null ? null : events[index],
+        event: widget.events[index],
       ),
     );
-  }
-
-  void initialize() async {
-    final pref = await SharedPreferences.getInstance();
-    final creatorID = pref.getString('userID');
-    final response = await http.get(Uri.parse(
-        'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/$creatorID'));
-    if (response.statusCode == 200) {
-      setState(() {
-        events = jsonDecode(response.body);
-      });
-    }
   }
 }
 
 class _ActiveEventTile extends StatelessWidget {
   const _ActiveEventTile({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +52,7 @@ class _ActiveEventTile extends StatelessWidget {
 class _ActiveEventsCard extends StatefulWidget {
   const _ActiveEventsCard({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   State<_ActiveEventsCard> createState() =>
@@ -128,11 +62,22 @@ class _ActiveEventsCard extends StatefulWidget {
 class _ActiveEventsCardState extends State<_ActiveEventsCard> {
   _ActiveEventsCardState({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final end = DateTime.parse(event['dateTime']).add(
+      Duration(
+        hours: DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').hour,
+        minutes:
+            DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').minute,
+        seconds:
+            DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').second,
+      ),
+    );
+
+    if (DateTime.now().isAfter(end)) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
@@ -155,7 +100,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                     event == null
                         ? 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop'
                         : event['banner'] ??
-                        'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
+                            'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -173,7 +118,8 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                 ),
                 if (event != null)
-                  if (DateTime.parse(event['dateTime']).isBefore(DateTime.now()))
+                  if (DateTime.parse(event['dateTime'])
+                      .isBefore(DateTime.now()))
                     Positioned(
                       right: 16,
                       top: 16,
@@ -198,7 +144,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                                   decoration: BoxDecoration(
                                       color: Colors.red,
                                       borderRadius:
-                                      BorderRadius.circular(1000)),
+                                          BorderRadius.circular(1000)),
                                 ),
                                 SizedBox(
                                   width: 4,
@@ -245,11 +191,11 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                         event == null
                             ? 'Test dateTime'
                             : DateFormat('d MMMM, h:mm a').format(
-                            DateTime.parse(event['dateTime'])) ==
-                            ''
-                            ? "Test dateTime"
-                            : DateFormat('d MMMM, h:mm a')
-                            .format(DateTime.parse(event['dateTime'])),
+                                        DateTime.parse(event['dateTime'])) ==
+                                    ''
+                                ? "Test dateTime"
+                                : DateFormat('d MMMM, h:mm a')
+                                    .format(DateTime.parse(event['dateTime'])),
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
@@ -289,12 +235,12 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 RSVPIcons(
-                  RSVP: event == null ? [] : List<String>.from(event['RSVP'] ?? []),
+                  RSVP: event['RSVP'],
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
                   child: Text(
-                    '${event == null ? '0' : event['views'] ?? '0'} Views',
+                    '${event == null ? '0' : event['views'] == null ? '0' : event['views'] == '' ? '0' : event['views'].length} Views',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

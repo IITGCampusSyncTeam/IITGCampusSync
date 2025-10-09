@@ -140,3 +140,16 @@ export const deleteUserTags = async (req, res) => {
         res.status(500).json({ message: "Error removing tags from user", error: error.message });
     }
 };
+
+export const getUserProfile = async (req, res) => {
+    try {
+        const { email } = req.params;
+        const user = await User.findOne({ email }).lean();
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(user.profilePicture);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching user profile", error: error.message });
+    }
+};

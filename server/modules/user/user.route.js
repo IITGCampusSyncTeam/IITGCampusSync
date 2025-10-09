@@ -6,7 +6,8 @@ import {
     selectTags,
     deleteUserTags,
     getUserFollowedEvents,
-    getUserWithEmail
+    getUserWithEmail,
+    getUserProfile
 } from "./user.controller.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { validateUser } from "./user.model.js";
@@ -29,7 +30,7 @@ router.get("/:email", getUserWithEmail);
 router.post("/", validate(validateUser), catchAsync(createUser));
 router.put("/:email", isAuthenticated, catchAsync(updateUserController));
 router.get("/get-user-followed-events", isAuthenticated, getUserFollowedEvents);
-
+router.get("/get-profile/:email", getUserProfile);
 router.post("/:email/tags/select", isAuthenticated, catchAsync(selectTags));
 router.delete("/:email/tags/delete", isAuthenticated, catchAsync(deleteUserTags));
 
