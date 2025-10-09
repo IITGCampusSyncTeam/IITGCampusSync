@@ -189,8 +189,8 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                   child: const Text(
                     'Choose how you want to get started.',
                     style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w500,
                       color: Colors.black,
                       letterSpacing: 0.8,
                     ),
@@ -206,7 +206,7 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                   child: Text(
                     'Switch roles anytime from settings',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       color: Colors.black54,
                       letterSpacing: 0.4,
                     ),
@@ -224,7 +224,7 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                       _buildLoginButton(
                         // icon: Icons.school,
                         text: 'Student',
-                        color: Color(0xFF2B2B2B),
+                        color: (_selectedRole == 'student')? Color(0xFF9F9FA9):Color(0xFF27272A),
                         isSelected: _selectedRole == 'student',
                         onPressed: () => _onRoleSelected('student'),
                       ),
@@ -232,7 +232,7 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
                       _buildLoginButton(
                         // icon: Icons.admin_panel_settings,
                         text: 'Organizer',
-                        color: Color(0xFF2B2B2B),
+                        color: (_selectedRole == 'organizer')? Color(0xFF9F9FA9):Color(0xFF27272A),
                         isSelected: _selectedRole == 'organizer',
                         onPressed: () => _onRoleSelected('organizer'),
                       ),
@@ -289,24 +289,24 @@ class _LoginOptionsScreenState extends State<LoginOptionsScreen>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.15),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: color.withOpacity(0.15),
+        //     spreadRadius: 1,
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 4),
+        //   ),
+        // ],
       ),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? color:Colors.white24,
-          foregroundColor: isSelected ? Colors.white:color,
+          backgroundColor: isSelected ? Color(0xFFE4E4E7):Color(0xFFE4E4E7),
+          foregroundColor: isSelected ? Color(0xFF27272A):Color(0xFF9F9FA9),
           minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
-            side: BorderSide(color: color.withOpacity(0.5), width: 1.5),
+            // side: BorderSide(color: color.withOpacity(0.5), width: 1.5),
           ),
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 5),

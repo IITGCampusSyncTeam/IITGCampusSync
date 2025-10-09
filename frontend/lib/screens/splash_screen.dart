@@ -139,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         child: const Text(
                           'Discover. Sync. Connect.',
                           style: TextStyle(
-                            fontSize: 50,
+                            fontSize: 32,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 1.2,
                             color: Colors.black,
@@ -152,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     Text(
                       'Explore what’s happening on campus and bring people together in one place.',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Color(0xFF27272A),
                       ),
                     ),
@@ -177,7 +177,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: const Text(
                       'Continue',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),

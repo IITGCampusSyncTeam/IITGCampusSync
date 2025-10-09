@@ -118,7 +118,7 @@ class _InterestsPageState extends State<InterestsPage> {
               "Select the tags that best represent your club’s activities and interests.",
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[600],
+                color: Color(0xFF71717B),
               ),
               textAlign: TextAlign.center,
             ),
@@ -139,19 +139,19 @@ class _InterestsPageState extends State<InterestsPage> {
                         interest.name,
                         style: TextStyle(
                           fontSize: 16,
-                          color: isSelected ? Colors.white : Color(0xFF2E2E2E),
+                          color: isSelected ? Color(0xFFE0E0E0) : Color(0xFF464646),
                         ),
                       ),
                       selected: isSelected,
-                      selectedColor: Color(0xFF2E2E2E),
-                      backgroundColor: Colors.grey.shade200,
+                      selectedColor: Color(0xFF171717),
+                      backgroundColor: Color(0xFFFFFFFF),
                       onSelected: (_) => _toggleInterest(interest.name),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
+                        horizontal: 4,
+                        vertical: 4,
                       ),
                     );
                   }).toList(),
