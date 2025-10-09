@@ -235,7 +235,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 RSVPIcons(
-                  RSVP: event['RSVP'],
+                  RSVP: event['rsvp'],
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),

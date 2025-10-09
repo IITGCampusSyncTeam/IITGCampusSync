@@ -143,8 +143,8 @@ export const deleteUserTags = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        const { email } = req.params;
-        const user = await User.findOne({ email }).lean();
+        const { userId } = req.params;
+        const user = await User.findOne({ _id: userId }).lean();
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

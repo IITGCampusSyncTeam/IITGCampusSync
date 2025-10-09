@@ -18,12 +18,7 @@ class _PastEventsScreenState extends State<PastEventsScreen> {
   Widget build(BuildContext context) {
     // If events list is null (loading), show 2 skeleton cards as placeholders.
     if (widget.events == null) {
-      return ListView(
-        children: const [
-          _SkeletonCard(),
-          _SkeletonCard(),
-        ],
-      );
+      return Center(child: CircularProgressIndicator());
     }
     // If the list is empty after loading, show a message.
     if (widget.events!.isEmpty) {
@@ -60,32 +55,23 @@ class _PastEventsCard extends StatelessWidget {
 
     // Assumption: 'duration' is an integer representing minutes.
     // Defaulting to 120 minutes (2 hours) if the value is missing or invalid.
-    final int durationInMinutes = (event['duration'] as num?)?.toInt() ?? 120;
-    final DateTime eventEnd =
-        eventStart.add(Duration(minutes: durationInMinutes));
+    int durationInMinutes;
+    final dynamic durationValue = event['duration'];
 
-    // On the "Past Events" screen, only show events that have already finished.
-    if (eventEnd.isAfter(DateTime.now())) {
-      return const SizedBox.shrink(); // Hide ongoing or future events.
+    if (durationValue is num) {
+      // If the data is already a number (e.g., 120), use it directly.
+      durationInMinutes = durationValue.toInt();
+    } else if (durationValue is String) {
+      // If the data is a string (e.g., '120'), safely parse it to an integer.
+      // int.tryParse returns null on failure instead of crashing.
+      durationInMinutes = int.tryParse(durationValue) ?? 120;
+    } else {
+      // As a fallback for null or any other type, use a default value.
+      durationInMinutes = 120;
     }
     // --- End of Date and Time Logic ---
 
-    // --- FIX: Correctly process the RSVP list of Maps ---
-    // This handles the "'_Map<String, dynamic>' is not a subtype of type 'String'" error.
-    final List<dynamic> rsvpRawList = event['RSVP'] as List<dynamic>? ?? [];
-    final List<String> rsvpIds = rsvpRawList
-        .map((item) {
-          // Check if the item in the list is a Map (like a user object).
-          if (item is Map<String, dynamic>) {
-            // Attempt to extract the ID, assuming the key is '_id'.
-            return item['_id']?.toString() ?? '';
-          }
-          // Fallback if the item is already a string.
-          return item.toString();
-        })
-        .where((id) => id.isNotEmpty)
-        .toList(); // Ensure no empty IDs are passed.
-    // --- END OF FIX ---
+    final rsvpIds = event['rsvp']??[];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -169,7 +155,7 @@ class _PastEventsCard extends StatelessWidget {
                           size: 14, color: Color(0xFFFF6900)),
                       const SizedBox(width: 4),
                       Text(
-                        '${event['rating'] ?? '0'}',
+                        event['rating']?.toString() ?? '0',
                         style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w400),
                       ),
@@ -207,58 +193,6 @@ class _PastEventsCard extends StatelessWidget {
                         fontWeight: FontWeight.w600),
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A placeholder widget to display while event data is loading.
-class _SkeletonCard extends StatelessWidget {
-  const _SkeletonCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 20,
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    color: Colors.grey.shade200,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 14,
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    color: Colors.grey.shade200,
-                  ),
-                ],
               ),
             ),
           ],

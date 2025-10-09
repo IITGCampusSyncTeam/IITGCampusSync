@@ -85,8 +85,8 @@ class _RSVPIconsState extends State<RSVPIcons> {
                         radius: 12,
                         // Access the list via widget.RSVP
                         backgroundImage: NetworkImage(userImages == null
-                            ? ""
-                            : userImages![index]),
+                            ? "https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"
+                            : index<userImages!.length? userImages![index]:"https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"),
                       ),
                     ),
                   );
@@ -115,8 +115,8 @@ class _RSVPIconsState extends State<RSVPIcons> {
                           radius: 12,
                           // Access the list via widget.RSVP
                           backgroundImage: NetworkImage(userImages == null
-                              ? ""
-                              : userImages![index]),
+                              ? "https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"
+                              : index<userImages!.length? userImages![index]:"https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"),
                         ),
                       ),
                     );
