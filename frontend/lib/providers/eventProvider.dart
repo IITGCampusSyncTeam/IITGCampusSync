@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../apis/events/event_api.dart';
 import '../models/event.dart';
+import '../services/storage_service.dart';
 
 class EventProvider with ChangeNotifier {
   final EventAPI _eventAPI = EventAPI();
@@ -153,35 +154,87 @@ class EventProvider with ChangeNotifier {
 
   Future<void> fetchRsvpdUpcomingEvents() async {
     _isLoading = true;
+    _errorMessage = '';
     notifyListeners();
+    print("--- FETCHING RSVP'D UPCOMING EVENTS ---");
     try {
-      // NOTE: You must add a 'fetchRsvpdUpcomingEvents' method to your EventApi class
       final eventsData = await _eventAPI.fetchRsvpdUpcomingEvents();
-      _rsvpdUpcomingEvents = eventsData.map((data) => Event.fromJson(data)).toList();
-      _errorMessage = '';
+      if (eventsData.isEmpty) {
+        print("⚠️ No RSVP'd upcoming events returned from API.");
+        _rsvpdUpcomingEvents = [];
+      } else {
+        List<Event> parsedEvents = [];
+
+        for (var data in eventsData) {
+          try {
+            Event event = Event.fromJson(data);
+            event.isRsvpd = true; // All events returned here are RSVP'd
+            parsedEvents.add(event);
+          } catch (e) {
+            print("❌ Failed to parse one RSVP'd event: $e");
+            print("   Event Data: $data");
+          }
+        }
+
+
+        _rsvpdUpcomingEvents = parsedEvents;
+        print("✅ Parsed ${_rsvpdUpcomingEvents.length} RSVP'd upcoming events.");
+      }
     } catch (e) {
       _errorMessage = e.toString();
+      print("❌ Error fetching RSVP'd upcoming events: $e");
+      _rsvpdUpcomingEvents = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+      print("--- FETCH RSVP'D UPCOMING EVENTS COMPLETE ---");
     }
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> fetchAttendedEvents() async {
     _isLoading = true;
+    _errorMessage = '';
     notifyListeners();
+
+    print("--- FETCHING ATTENDED EVENTS ---");
+
     try {
       final eventsData = await _eventAPI.fetchAttendedEvents();
-      _attendedEvents = eventsData.map((data) => Event.fromJson(data)).toList();
-      _errorMessage = '';
+
+      if (eventsData.isEmpty) {
+        print("⚠️ No attended events returned from API.");
+        _attendedEvents = [];
+      } else {
+        List<Event> parsedEvents = [];
+
+        for (var data in eventsData) {
+          try {
+            Event event = Event.fromJson(data);
+            event.isRsvpd = true; // All attended events are RSVP'd
+            parsedEvents.add(event);
+          } catch (e) {
+            print("❌ Failed to parse one attended event: $e");
+            print("   Event Data: $data");
+          }
+        }
+
+        _attendedEvents = parsedEvents;
+        print("✅ Parsed ${_attendedEvents.length} attended events.");
+      }
     } catch (e) {
       _errorMessage = e.toString();
+      print("❌ Error fetching attended events: $e");
+      _attendedEvents = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+      print("--- FETCH ATTENDED EVENTS COMPLETE ---");
     }
-    _isLoading = false;
-    notifyListeners();
   }
 
 
   Future<void> toggleRsvpStatus(String eventId) async {
+    print("--- TOGGLING RSVP STATUS FOR EVENT: $eventId ---");
 
     final eventIndex = _upcomingEvents.indexWhere((event) => event.id == eventId);
     if (eventIndex == -1) return; // Exit if the event isn't found
@@ -191,13 +244,11 @@ class EventProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _eventAPI.rsvpForEvent(eventId);
-      print("✅ RSVP successful on server. Refreshing data for both screens...");
+      final success = await _eventAPI.rsvpForEvent(eventId);
+      print("✅ RSVP toggled on server successfully: $success");
 
-      // 4. On success, refresh ALL relevant lists from the server.
-      // This keeps both the Explore screen and My Events screen in sync.
+
       await fetchUpcomingEvents();
-
       await fetchRsvpdUpcomingEvents();
 
 
