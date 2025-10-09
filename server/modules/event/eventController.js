@@ -317,7 +317,7 @@ export const getRsvpdUpcomingEvents = async (req, res, next) => {
   }).sort({ dateTime: 1 }).lean();
 
   events.forEach(event => event.isRsvpd = true); // User has RSVP'd for all these
-  res.status(200).json(events);
+  res.status(200).json({ events });
 };
 
 // GET PAST EVENTS A USER HAS RSVP'D FOR
@@ -328,7 +328,7 @@ export const getAttendedEvents = async (req, res, next) => {
     rsvp: userId, // Where the user's ID is in the 'rsvp' array
   }).sort({ dateTime: -1 }).lean();
 
-  res.status(200).json(events);
+  res.status(200).json({ events });
 };
 
 
