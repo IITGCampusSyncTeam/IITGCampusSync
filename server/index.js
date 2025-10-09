@@ -21,7 +21,7 @@ import paymentRoutes from './modules/payment/payment_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'; // We'll need to modify this later
 import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
-import calendarRouter from './modules/calendar/calendar.routes.js'; 
+import calendarRouter from './modules/calendar/calendar.routes.js';
 
 
 // Import your Event model (adjust path as necessary)

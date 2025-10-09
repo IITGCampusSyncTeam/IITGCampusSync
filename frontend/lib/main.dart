@@ -4,9 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:frontend/screens/follow_club_system/follow_page.dart';
+import 'package:frontend/screens/multi_tag_screen/interest_page.dart';
+import 'package:frontend/screens/intro_screens/intro_screen_1.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
 import 'package:frontend/screens/org_screens/nav_bar.dart';
+import 'package:frontend/screens/user_profile_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
@@ -179,22 +183,23 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'IITGsync',
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.grey[400],
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        navigatorKey: navigatorKey,
-        // home: SplashScreen(),//final
-        home:
-            OrganizerNavigationContainer() //for testing organizer side please change
-        // home: SplashScreen(),
-        // home: MainNavigationContainer(),
-        // home: const MyHomePage(title: 'IITGsync'),
+      title: 'IITGsync',
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.grey[400],
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      navigatorKey: navigatorKey,
+      home: UserProfileScreen(),
+      // home: SplashScreen(),//final
+      // home:
+      //OrganizerNavigationContainer() //for testing organizer side please change
+      // home: SplashScreen(),
+      // home: MainNavigationContainer(),
+      // home: const MyHomePage(title: 'IITGsync'),
 
-        //home:ClubsScreen(),
-        );
+      //home:ClubsScreen(),
+    );
   }
 }
 
