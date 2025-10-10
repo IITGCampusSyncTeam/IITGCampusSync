@@ -158,6 +158,9 @@ class EventProvider with ChangeNotifier {
     notifyListeners();
     print("--- FETCHING RSVP'D UPCOMING EVENTS ---");
     try {
+      // 🧱 Developer bypass: hardcoded dev user ID (only during development)
+      const devUserId = '67cdd269256701c667eb3c00';
+      print("⚡ Developer bypass active. Using devUserId: $devUserId");
       final eventsData = await _eventAPI.fetchRsvpdUpcomingEvents();
       if (eventsData.isEmpty) {
         print("⚠️ No RSVP'd upcoming events returned from API.");
@@ -199,6 +202,8 @@ class EventProvider with ChangeNotifier {
     print("--- FETCHING ATTENDED EVENTS ---");
 
     try {
+      const devUserId = '67cdd269256701c667eb3c00';
+      print("⚡ Developer bypass active. Using devUserId: $devUserId");
       final eventsData = await _eventAPI.fetchAttendedEvents();
 
       if (eventsData.isEmpty) {
