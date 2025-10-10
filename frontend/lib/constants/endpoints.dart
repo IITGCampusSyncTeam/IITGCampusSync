@@ -56,7 +56,7 @@ class NotifEndpoints {
   static const saveToken = "${AuthConfig.serverUrl}/api/firebase/save-token";
 }
 
-/// ✅ User Tag Endpoints
+//User Tag Endpoints
 class UserTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
@@ -66,11 +66,14 @@ class UserTag {
   static String removeTags(String email) =>
       "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/deletetags";
 
-  static String updateUserTags(String email) =>
-      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/update-tags";
+  static String updateUserTags() =>
+      "${AuthConfig.serverUrl}/api/tags/updateUserTags";
+
+  static String getUserTags(String email) =>
+      "${AuthConfig.serverUrl}/api/tags/user/${Uri.encodeComponent(email)}";
 }
 
-/// ✅ Club Tag Endpoints (for adding/removing tags to clubs)
+//Club Tag Endpoints (for adding/removing tags to clubs)
 class ClubTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
