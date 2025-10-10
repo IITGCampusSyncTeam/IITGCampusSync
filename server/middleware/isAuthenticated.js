@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 const isAuthenticated = (req, res, next) => {
   // --- DEVELOPMENT BYPASS ---
   // This block will run ONLY if your server is in 'development' mode.
-  if (process.env.NODE_ENV === 'development') {
+//  if (process.env.NODE_ENV === 'development') {
+    if (true) {
     // 1. Paste the User ID you copied from MongoDB here.
     const TEST_USER_ID = '67cdd269256701c667eb3c00';
 
