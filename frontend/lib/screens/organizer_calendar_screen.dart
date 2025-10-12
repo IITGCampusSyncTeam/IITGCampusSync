@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/widgets/calendar_widgets.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/eventProvider.dart'; // Import the provider
+import 'package:frontend/providers/eventProvider.dart'; // Import the provider
 
 class OrganizerCalendarScreen extends StatefulWidget {
   final String organizerID;
@@ -134,8 +133,8 @@ class _OrganizerCalendarScreenState extends State<OrganizerCalendarScreen> {
           onPressed: () {
             // Navigate to create event screen or show dialog
           },
-          child: Icon(Icons.add),
           tooltip: 'Create Event',
+          child: Icon(Icons.add),
         ),
       ),
     );

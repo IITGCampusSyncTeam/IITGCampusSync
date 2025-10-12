@@ -1,302 +1,199 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
-import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PastEventsScreen extends StatefulWidget {
-  const PastEventsScreen({super.key});
+  // Use a specific type for better code safety. `List<dynamic>?` allows for a null list.
+  final List<dynamic>? events;
+
+  const PastEventsScreen({super.key, required this.events});
 
   @override
   State<PastEventsScreen> createState() => _PastEventsScreenState();
 }
 
 class _PastEventsScreenState extends State<PastEventsScreen> {
-  var events;
-
-  @override
-  void initState() {
-    initialize();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    // If events list is null (loading), show 2 skeleton cards as placeholders.
+    if (widget.events == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+    // If the list is empty after loading, show a message.
+    if (widget.events!.isEmpty) {
+      return const Center(
+        child: Text('No past events available.'),
+      );
+    }
+    // Once data is available, build the list of event cards.
     return ListView.builder(
-      itemCount: events == null ? 2 : events.length, // example count
-      itemBuilder: (context, index) => _PastEventTile(
-        event: events == null ? null : events[index],
+      itemCount: widget.events!.length,
+      itemBuilder: (context, index) => _PastEventsCard(
+        event: widget.events![index],
       ),
     );
-  }
-
-  void initialize() async {
-    final pref = await SharedPreferences.getInstance();
-    final creatorID = pref.getString('userID');
-    final response = await http.get(Uri.parse(
-        'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/$creatorID'));
-    if (response.statusCode == 200) {
-      setState(() {
-        events = jsonDecode(response.body);
-      });
-    }
-  }
-}
-
-class _PastEventTile extends StatelessWidget {
-  const _PastEventTile({required this.event});
-
-  final event;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PastEventsCard(event: event);
   }
 }
 
 class _PastEventsCard extends StatelessWidget {
   const _PastEventsCard({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    // --- Date and Time Logic ---
+    // Safely parse dateTime. A valid dateTime is required to show the card.
+    final DateTime? eventStart =
+        event['dateTime'] != null ? DateTime.tryParse(event['dateTime']) : null;
+
+    // Don't build the card if the event date is invalid or missing.
+    if (eventStart == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Assumption: 'duration' is an integer representing minutes.
+    // Defaulting to 120 minutes (2 hours) if the value is missing or invalid.
+    int durationInMinutes;
+    final dynamic durationValue = event['duration'];
+
+    if (durationValue is num) {
+      // If the data is already a number (e.g., 120), use it directly.
+      durationInMinutes = durationValue.toInt();
+    } else if (durationValue is String) {
+      // If the data is a string (e.g., '120'), safely parse it to an integer.
+      // int.tryParse returns null on failure instead of crashing.
+      durationInMinutes = int.tryParse(durationValue) ?? 120;
+    } else {
+      // As a fallback for null or any other type, use a default value.
+      durationInMinutes = 120;
+    }
+    // --- End of Date and Time Logic ---
+
+    final rsvpIds = event['rsvp']??[];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(
+            borderRadius: const BorderRadius.all(
               Radius.circular(16),
             ),
             border: Border.all(color: TextColors.muted)),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(16),
-                    topLeft: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    event == null
-                        ? 'https://unsplash.com/s/photos/random-person'
-                        : event['banner'] ??
-                            'https://unsplash.com/s/photos/random-person',
+            // Banner Image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(16),
+                topLeft: Radius.circular(16),
+              ),
+              child: Image.network(
+                event['banner'] ??
+                    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
                     height: 120,
                     width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 120,
-                        width: double.infinity,
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported,
-                              size: 50, color: Colors.grey),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                if (event != null)
-                  if (event['dateTime'] >= DateTime.now())
-                    Positioned(
-                      right: 16,
-                      top: 16,
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 24,
-                            width: 48,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(1000)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 4),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: 6,
-                                  width: 6,
-                                  decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius:
-                                          BorderRadius.circular(1000)),
-                                ),
-                                SizedBox(
-                                  width: 4,
-                                ),
-                                Text(
-                                  'Live',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 12),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported,
+                          size: 50, color: Colors.grey),
                     ),
-              ],
+                  );
+                },
+              ),
             ),
-            Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    event == null
-                        ? 'Test Title'
-                        : event['title'] ?? "Test Title",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.watch_later_outlined,
-                        size: 18,
-                      ),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                        event == null
-                            ? 'Test dateTime'
-                            : DateFormat('d MMMM').format(
-                                        DateTime.parse(event['dateTime'])) ==
-                                    ''
-                                ? "Test dateTime"
-                                : DateFormat('d MMMM')
-                                    .format(DateTime.parse(event['dateTime'])),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                event['title'] ?? "Event Title",
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+              ),
             ),
+
+            // Date
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.watch_later_outlined, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateFormat('d MMMM yyyy').format(eventStart),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w400, fontSize: 14),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RSVPIcons(
-                  RSVP: event == null ? [] : event['RSVP'] ?? [],
-                ),
+                rsvpIds.isEmpty
+                    ? SizedBox(width: MediaQuery.widthOf(context)-83,)
+                    : Flexible(
+                        child: RSVPIcons(
+                          RSVP: rsvpIds, // Use the correctly processed list
+                        ),
+                      ),
+                const SizedBox(width: 8),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 16.0, 0),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.star,
-                        size: 14,
-                        color: Color(0xFFFF6900),
-                      ),
-                      SizedBox(
-                        width: 3.33,
-                      ),
+                      const Icon(Icons.star,
+                          size: 14, color: Color(0xFFFF6900)),
+                      const SizedBox(width: 4),
                       Text(
-                        '${event == null ? '0' : event['rating'] ?? '0'}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        event['rating']?.toString() ?? '0',
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w400),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            Divider(
-              height: 1,
+
+            const Divider(
+              height: 24,
               color: TextColors.muted,
             ),
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
-                  child: Center(
-                    child: InkWell(
-                      onTap: () {
-                        // TODO: implement See Insights
-                      },
-                      borderRadius: BorderRadius.circular(999),
-                      child: Container(
-                        height: 40,
-                        width: (screenWidth - 108),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'See Insight',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
+
+            // "See Insight" Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: InkWell(
+                onTap: () {
+                  // TODO: implement See Insights
+                },
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'See Insight',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: Column(
-                    children: [
-                      InkWell(
-                        borderRadius: BorderRadius.circular(999),
-                        onTap: () {
-                          // TODO: Implement More
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            color: Color(0xFFE4E4E7),
-                          ),
-                          child: Icon(
-                            Icons.more_horiz,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      // child: InkWell(
-                      //   borderRadius: BorderRadius.circular(999),
-                      //   onTap: () {
-                      //     // TODO: Implement More
-                      //   },
-                      //   child: Container(
-                      //     padding: EdgeInsets.all(7),
-                      //     decoration: BoxDecoration(
-                      //         borderRadius: BorderRadius.circular(999),
-                      //         color: Color(0xFFE4E4E7)),
-                      //     child: Icon(
-                      //       Icons.more_horiz,
-                      //       color: Colors.black,
-                      //     ),
-                      //   ),
-                      // ),
-                      RsvpInfoSlider(),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),

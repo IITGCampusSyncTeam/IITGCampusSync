@@ -1,57 +1,45 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/screens/org_screens/RSVPIcons.dart';
 import 'package:frontend/screens/org_screens/rsvp_info_slider.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ActiveEventsScreen extends StatefulWidget {
-  const ActiveEventsScreen({super.key});
+  final dynamic events;
+
+  const ActiveEventsScreen({super.key, required this.events});
 
   @override
   State<ActiveEventsScreen> createState() => _ActiveEventsScreenState();
 }
 
 class _ActiveEventsScreenState extends State<ActiveEventsScreen> {
-  dynamic events;
-
-  @override
-  void initState() {
-    initialize();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (widget.events == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (widget.events.isEmpty) {
+      return const Center(
+        child: Text('No events available'),
+      );
+    }
     return ListView.builder(
-      itemCount: events == null ? 2 : events.length,
+      itemCount: widget.events.length,
       itemBuilder: (context, index) => _ActiveEventTile(
-        event: events == null ? null : events[index],
+        event: widget.events[index],
       ),
     );
-  }
-
-  void initialize() async {
-    final pref = await SharedPreferences.getInstance();
-    final creatorID = pref.getString('userID');
-    final response = await http.get(Uri.parse(
-        'https://iitgcampussync.onrender.com/api/events/active-events-by-creator/$creatorID'));
-    if (response.statusCode == 200) {
-      setState(() {
-        events = jsonDecode(response.body);
-      });
-    }
   }
 }
 
 class _ActiveEventTile extends StatelessWidget {
   const _ActiveEventTile({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +52,7 @@ class _ActiveEventTile extends StatelessWidget {
 class _ActiveEventsCard extends StatefulWidget {
   const _ActiveEventsCard({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   State<_ActiveEventsCard> createState() =>
@@ -74,11 +62,22 @@ class _ActiveEventsCard extends StatefulWidget {
 class _ActiveEventsCardState extends State<_ActiveEventsCard> {
   _ActiveEventsCardState({required this.event});
 
-  final event;
+  final dynamic event;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final end = DateTime.parse(event['dateTime']).add(
+      Duration(
+        hours: DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').hour,
+        minutes:
+            DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').minute,
+        seconds:
+            DateTime.parse(event['duration'] ?? '0000-00-00 00:00:00').second,
+      ),
+    );
+
+    if (DateTime.now().isAfter(end)) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
@@ -99,9 +98,9 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                   child: Image.network(
                     event == null
-                        ? 'https://unsplash.com/s/photos/random-person'
+                        ? 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop'
                         : event['banner'] ??
-                            'https://unsplash.com/s/photos/random-person',
+                            'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -119,15 +118,17 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                   ),
                 ),
                 if (event != null)
-                  if (event['dateTime'] >= DateTime.now())
+                  if (DateTime.parse(event['dateTime'])
+                      .isBefore(DateTime.now()))
                     Positioned(
                       right: 16,
                       top: 16,
                       child: Stack(
+                        alignment: Alignment.center,
                         children: [
                           Container(
                             height: 24,
-                            width: 48,
+                            width: 52,
                             decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(1000)),
@@ -234,13 +235,12 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 RSVPIcons(
-                  // RSVP: event == null ? [] : event['RSVP'] ?? [],
-                  RSVP: [''],
+                  RSVP: event['rsvp'],
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
                   child: Text(
-                    '${event == null ? '0' : event['views'] ?? '0'} Views',
+                    '${event == null ? '0' : event['views'] == null ? '0' : event['views'] == '' ? '0' : event['views'].length} Views',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -322,42 +322,7 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                  child: Column(children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(999),
-                      onTap: () {
-                        // TODO: Implement More
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(999),
-                          color: Color(0xFFE4E4E7),
-                        ),
-                        child: Icon(
-                          Icons.more_horiz,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    RsvpInfoSlider(),
-                  ]),
-                  // child: InkWell(
-                  //   borderRadius: BorderRadius.circular(999),
-                  //   onTap: () {
-                  //     // TODO: Implement More
-                  //   },
-                  //   child: Container(
-                  //     padding: EdgeInsets.all(7),
-                  //     decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(999),
-                  //         color: Color(0xFFE4E4E7)),
-                  //     child: Icon(
-                  //       Icons.more_horiz,
-                  //       color: Colors.black,
-                  //     ),
-                  //   ),
-                  // ),
+                  child: RsvpInfoSlider(),
                 ),
               ],
             ),

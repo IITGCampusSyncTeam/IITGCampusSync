@@ -18,7 +18,7 @@ import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:frontend/screens/splash_screen.dart';
 import './constants/endpoints.dart';
 import 'firebase_options.dart';
 import 'providers/eventProvider.dart';
