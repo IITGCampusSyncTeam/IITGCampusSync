@@ -1,7 +1,4 @@
 import 'package:frontend/models/user_model.dart';
-
-
-
 import 'club_model.dart';
 
 class Event {
@@ -19,16 +16,24 @@ class Event {
   final List<String> notifications;
   final List<dynamic> tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
+  final String? date; 
+  final List<Map<String, dynamic>> itinerary;
+  final List<String> prerequisites; 
+  final List<Map<String, dynamic>> speakers; 
+  final List<Map<String, dynamic>> resources;
+  final List<Map<String, dynamic>> venueDetails; 
+  final List<Map<String, dynamic>> links;
+  final List<Map> pocs;
   final List<RSVPItem> rsvp;
   final String venueType;
 
   Event({
     required this.id,
     required this.title,
-    required this.banner,
     required this.duration,
     required this.description,
     required this.dateTime,
+    this.banner,
     this.venue,
     this.club,
     this.createdBy,
@@ -37,6 +42,14 @@ class Event {
     this.notifications = const [],
     this.tag = const [],
     this.status = 'drafted',
+    this.prerequisites = const [],
+    this.itinerary = const [],
+    this.date,
+    this.speakers = const [],
+    this.resources = const [],
+    this.links = const [],
+    this.pocs = const [],
+    this.venueDetails = const [],
     this.rsvp = const [],
     this.venueType = 'On-Campus',
   });
@@ -48,6 +61,7 @@ class Event {
       'description': description,
       'dateTime': dateTime.toIso8601String(),
       'venue': venue,
+      'banner': banner,
       'club': club?.id,
       'createdBy': createdBy?.id,
       'participants': participants,
@@ -55,6 +69,15 @@ class Event {
       'notifications': notifications,
       'tag': tag,
       'status': status,
+      'itinerary': itinerary,
+      'date': date,
+      'speakers': speakers,
+      'resources': resources,
+      'venueDetails': venueDetails,
+      'links': links,
+      'pocs' : pocs,
+      'prerequisites' : prerequisites,
+
       'RSVP': rsvp.map((e) => e.toJson()).toList(),
       'venueType': venueType,
     };
@@ -69,6 +92,7 @@ class Event {
           ? DateTime.parse(json['dateTime'])
           : DateTime.now(),
       venue: json['venue'] ?? '',
+     
       club: json['club'] != null
           ? (json['club'] is Map ? Club.fromJson(json['club']) : null)
           : null,
@@ -81,6 +105,20 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
+      itinerary: List<Map<String, dynamic>>.from(json['itinerary'] ?? []), 
+      prerequisites: List<String>.from(json['prerequisites'] ?? []), 
+      speakers: List<Map<String, dynamic>>.from(json['speakers'] ?? []), 
+      resources: List<Map<String, dynamic>>.from(json['resources'] ?? []), 
+      venueDetails: List<Map<String, dynamic>>.from(json['venueDetails'] ?? []), 
+      links: List<Map<String, dynamic>>.from(json['links'] ?? []), 
+      pocs: json['pocs'] != null
+    ? (json['pocs'] as List)
+        .where((e) => e is Map)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+    : [],
+      date: json['date'], 
+
 
       banner: json['banner'] ?? 'banner',
       duration: json['duration'] ?? DateTime(0,0,0,0,0,0),
