@@ -1,4 +1,6 @@
-import EventModel from '../event/eventModel.js';
+import EventModel from "../event/eventModel.js";
+import User from "../user/user.model.js";
+import { getGoogleAuthURL, getTokensFromCode, createGoogleEvent } from "../calendar/googleCalendarService.js";
 
 const getUserEvents = async (req, res) => {
     const outlookId = req.params.outlookId;
@@ -37,8 +39,66 @@ const setPersonalReminderTime = async (req, res) => {
     }
 };
 
-// Export CalendarController as a default export
+// Get OAuth URL for frontend
+export const getGoogleOAuthURLController = (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) throw new Error("User ID is required");
+
+    const url = getGoogleAuthURL(userId);
+    res.status(200).json({ url });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+// Save tokens after OAuth
+export const saveGoogleTokensController = async (req, res) => {
+  try {
+    const { code, state } = req.query; // state contains userId
+    const userId = state;
+    if (!userId) throw new Error("User ID is missing");
+    if (!code) throw new Error("Authorization code is missing");
+
+    const { access_token, refresh_token, expiry_date } = await getTokensFromCode(code);
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    user.googleAccessToken = access_token;
+    user.googleRefreshToken = refresh_token;
+    user.googleTokenExpiry = new Date(expiry_date);
+    await user.save();
+
+    res.status(200).json({ message: "Google Calendar linked successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+//Link event to Google Calendar
+//Fetches app event by event id and adds it to user's Google Calendar
+export const linkEventToGoogleController = async (req, res) => {
+  try {
+    const { eventId, userId } = req.params;
+
+    if (!userId) throw new Error("User ID is required");
+    if (!eventId) throw new Error("Event ID is required");
+
+    const event = await EventModel.findById(eventId);
+    if (!event) throw new Error("Event not found");
+
+    const googleEvent = await createGoogleEvent(userId, event);
+    res.status(200).json({ message: "Event added to Google Calendar", googleEvent });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export default {
+    getGoogleOAuthURLController,
+    saveGoogleTokensController,
+    linkEventToGoogleController,
     getUserEvents,
     setPersonalReminderTime
 };

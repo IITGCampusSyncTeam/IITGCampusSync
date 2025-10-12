@@ -22,6 +22,8 @@ import eventRoutes from './modules/event/eventRoutes.js';
 import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
 import eventRegistrationRoutes from "./modules/eventRegistration/eventRegistrationRoutes.js";
+import calendarRouter from './modules/calendar/calendar.routes.js';
+
 
 // Import your Event model (adjust path as necessary)
 // Assuming it's something like:
@@ -37,19 +39,20 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors('*')); // Consider more specific CORS configuration for production
+app.use("/api/calendar", calendarRouter)
 
 // MongoDB connection
 const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            // useNewUrlParser and useUnifiedTopology are default true in Mongoose 6+
-            // useCreateIndex and useFindAndModify are no longer supported options
-        });
-        console.log('MongoDB connected');
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
-    }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      // useNewUrlParser and useUnifiedTopology are default true in Mongoose 6+
+      // useCreateIndex and useFindAndModify are no longer supported options
+    });
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
 };
 connectDB();
 
@@ -92,11 +95,11 @@ wss.on('connection', async (ws) => {
     // You can handle incoming messages from clients here if needed
     // e.g., if a client pings or requests specific data
     try {
-        const parsedMessage = JSON.parse(message.toString());
-        // Process parsedMessage (e.g., based on parsedMessage.type)
-      } catch (e) {
-        console.warn('Received non-JSON message or parse error on WebSocket:', message.toString());
-      }
+      const parsedMessage = JSON.parse(message.toString());
+      // Process parsedMessage (e.g., based on parsedMessage.type)
+    } catch (e) {
+      console.warn('Received non-JSON message or parse error on WebSocket:', message.toString());
+    }
   });
 
   ws.on('close', () => {
@@ -114,11 +117,11 @@ wss.on('connection', async (ws) => {
 
 // Basic route
 app.get('/', (req, res) => {
-    res.send('Backend is running.. with WebSocket support!');
+  res.send('Backend is running.. with WebSocket support!');
 });
 
 app.get('/hello', (req, res) => {
-    res.send('Hello from server');
+  res.send('Hello from server');
 });
 
 // Auth routes
@@ -148,22 +151,22 @@ app.use("/api/notif", notifRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Global server error:', err.stack || err); // Log stack for better debugging
-    res.status(err.status || 500).json({
-        status: 'error',
-        message: err.message || 'Internal Server Error',
-    });
+  console.error('Global server error:', err.stack || err); // Log stack for better debugging
+  res.status(err.status || 500).json({
+    status: 'error',
+    message: err.message || 'Internal Server Error',
+  });
 });
 
 app.get("/get-service-account", (req, res) => {
   try {
     const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!serviceAccountEnv) {
-        console.error("FIREBASE_SERVICE_ACCOUNT environment variable is not set.");
-        return res.status(500).json({ error: "Firebase service account configuration is missing." });
+      console.error("FIREBASE_SERVICE_ACCOUNT environment variable is not set.");
+      return res.status(500).json({ error: "Firebase service account configuration is missing." });
     }
     const serviceAccount = JSON.parse(serviceAccountEnv);
-    res.json({ client_email: serviceAccount.client_email, project_id: serviceAccount.project_id , private_key: serviceAccount.private_key});
+    res.json({ client_email: serviceAccount.client_email, project_id: serviceAccount.project_id, private_key: serviceAccount.private_key });
   } catch (error) {
     console.error("Error loading or parsing service account:", error);
     res.status(500).json({ error: "Failed to load or parse Firebase credentials" });
@@ -171,19 +174,19 @@ app.get("/get-service-account", (req, res) => {
 });
 
 // --- Mock cron job functions (replace with your actual implementations) ---
-const fetchAndAddContests = async () => { console.log("Mock: Fetching and adding contests...")};
-const removeFinishedContests = async () => { console.log("Mock: Removing finished contests...")};
+const fetchAndAddContests = async () => { console.log("Mock: Fetching and adding contests...") };
+const removeFinishedContests = async () => { console.log("Mock: Removing finished contests...") };
 // --- End mock cron job functions ---
 
 // Schedule to run every 12 hrs, will fetch cf contests
 cron.schedule('0 */12 * * *', () => {
-    console.log('🕒 Cron job: Fetching Codeforces contests...');
-    fetchAndAddContests();
-    removeFinishedContests();
+  console.log('🕒 Cron job: Fetching Codeforces contests...');
+  fetchAndAddContests();
+  removeFinishedContests();
 });
 
 // Start the server using the http server instance
 server.listen(PORT, '0.0.0.0', () => { // Use server.listen instead of app.listen
-    console.log(` HTTP and WebSocket Server running on port ${PORT}`);
+  console.log(` HTTP and WebSocket Server running on port ${PORT}`);
 });
 

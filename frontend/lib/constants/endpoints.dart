@@ -4,8 +4,9 @@ class AuthConfig {
   static const String CLIENT_ID =
       String.fromEnvironment('CLIENT_ID', defaultValue: '');
   static const String serverUrl =
-      String.fromEnvironment('serverUrl', defaultValue: '');
+      String.fromEnvironment('serverUrl', defaultValue: 'http://10.0.2.2:3000');
 }
+
 
 //change this later
 class AuthEndpoints {
@@ -55,6 +56,18 @@ class event {
   static const String attendedEvents = '$baseUrl/events/rsvpd/attended';
 }
 
+// class event {
+//   static const getAllEvents =
+//       '${AuthConfig.serverUrl}/api/events/get-all-events';
+//   static const getUpcomingEvents =
+//       '${AuthConfig.serverUrl}/api/events/get-upcoming-events';
+//   static const createEvent = '${AuthConfig.serverUrl}/api/events/create-event';
+//   static const createTentativeEvent =
+//       '${AuthConfig.serverUrl}/api/events/tentative';
+//   static const rsvpToEvent = '${AuthConfig.serverUrl}/api/events/rsvp/';
+//   static const rsvpToEvent =
+//       '${AuthConfig.serverUrl}/api/events/rsvp/';
+// }
 class payment {
   static const getRazorpayKey =
       "${AuthConfig.serverUrl}/api/payments/get-razorpay-key";
@@ -72,10 +85,10 @@ class UserTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
   static String addTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/$email/addtag/$tagId";
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/addtag/$tagId";
 
   static String removeTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/$email/deletetag/$tagId";
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/deletetag/$tagId";
 }
 
 class ClubTag {

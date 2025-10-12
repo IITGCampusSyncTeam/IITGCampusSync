@@ -2,7 +2,11 @@ import 'dart:convert';
 
 import 'package:frontend/constants/endpoints.dart';
 import 'package:frontend/services/storage_service.dart';
+import 'package:frontend/models/tag_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+
+
 
 class EventAPI {
 
@@ -99,6 +103,24 @@ class EventAPI {
     }
   }
 
+  // Fetch RSVP List for an Event
+  Future<List<dynamic>> fetchEventRSVPs(String eventId) async {
+    final url = '${rsvpForEvent(eventId)}/$eventId';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['RSVP'] ?? [];
+      } else {
+        throw Exception('Failed to fetch RSVPs: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error fetching RSVPs: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
 
   //
   // Future<void> createEvent(String title, String description, String dateTime,
@@ -127,14 +149,34 @@ class EventAPI {
   //   }
   // }
 
-  Future<void> createTentativeEvent(String title, DateTime date,
-      String venue) async {
-    final url = event
-        .createTentativeEvent;
+  Future<void> createTentativeEvent(
+      {required String title,
+      required DateTime date,
+      required String venue,
+      required TimeOfDay time,
+      required bool isSeries,
+      required String openTo,
+      required isOffline,
+      required List<Tag> tag,
+      required String seriesName}) async {
+    final url =
+        event.createTentativeEvent; // Add this endpoint to your endpoints.dart
+    final DateTime dateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
     final body = json.encode({
       'title': title,
-      'date': date.toIso8601String(),
+      'datetime': dateTime.toIso8601String(),
       'venue': venue,
+      'isSeries': isSeries,
+      'openTo': openTo,
+      'isOffline': isOffline,
+      'tag': tag.map((t) => t.id).toList(),
+      'seriesName': seriesName
     });
 
     try {
@@ -198,8 +240,3 @@ class EventAPI {
     }
   }
 }
-
-
-
-
-

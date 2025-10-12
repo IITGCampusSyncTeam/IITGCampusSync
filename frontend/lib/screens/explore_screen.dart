@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:frontend/apis/events/event_api.dart';
 import 'package:frontend/models/event.dart'; // Import the Event model
 import 'package:frontend/screens/payment_screen.dart';
+import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -19,7 +20,8 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-
+  List<Event> events = []; // Now using the Event model
+  bool isLoading = true;
   EventAPI eventAPI = EventAPI();
   NotificationServices notificationServices = NotificationServices();
   final Set<String> _selectedFilters = {'Upcoming'};
@@ -58,6 +60,30 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
   }
 
+  void loadEvents() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final eventList = await eventAPI.fetchEvents();
+      setState(() {
+        // Parse the events using the Event model
+        events =
+            eventList.map((eventData) => Event.fromJson(eventData)).toList();
+        // Sort events by date (newest first)
+        events.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+        // Reset pagination when loading new events
+        _currentPage = 0;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showErrorDialog(e.toString());
+    }
+  }
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -90,7 +116,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Consumer<EventProvider>(
           builder: (context, eventProvider, child) {
@@ -106,8 +132,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _buildTopBar(),
                         const SizedBox(height: 16),
                         _buildSearchBar(),
-                        const SizedBox(height: 16),
-                        _buildFilterChips(),
                         const SizedBox(height: 8),
                         _buildOrganisersSection(),
                       ],
@@ -115,6 +139,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
 
                   // Event List Section
+                  if(events.isNotEmpty)
+                  ElevatedButton(
+                  onPressed: () {
+                  final firstEvent = events[0];
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => EventShareScreen(
+                  eventTitle: firstEvent.title,
+                  eventDescription: firstEvent.description,
+                  eventDateTime: firstEvent.dateTime.toString(),
+                  eventLocation: firstEvent.venue ?? "Unknown venue",
+                  eventLink: "https://example.com/event/${firstEvent.id}",
+                  imageUrl: firstEvent.banner ?? "https://via.placeholder.com/300",
+                  ),
+                  ),
+                  );
+                  },
+                  child: Text('Share'),
+                  ),
                   if (eventProvider.isLoading)
                     const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
@@ -215,45 +259,45 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
     );
   }
+  //
+  // Widget _buildFilterChips() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //
+  //       SingleChildScrollView(
+  //         scrollDirection: Axis.horizontal,
+  //         padding: const EdgeInsets.symmetric(horizontal: 16),
+  //         child: Row(
+  //           children: [
+  //             _buildFilterChip("Upcoming", false),
+  //             const SizedBox(width: 8),
+  //             _buildFilterChip("Following", false),
+  //             const SizedBox(width: 8),
+  //             _buildFilterChip("My interests", false),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildFilterChips() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              _buildFilterChip("Upcoming", false),
-              const SizedBox(width: 8),
-              _buildFilterChip("Following", false),
-              const SizedBox(width: 8),
-              _buildFilterChip("My interests", false),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.black : Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
+  // Widget _buildFilterChip(String label, bool isSelected) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //     decoration: BoxDecoration(
+  //       color: isSelected ? Colors.black : Colors.grey[200],
+  //       borderRadius: BorderRadius.circular(20),
+  //     ),
+  //     child: Text(
+  //       label,
+  //       style: TextStyle(
+  //         color: isSelected ? Colors.white : Colors.black,
+  //         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildEventsList(List<Event> events,EventProvider eventProvider) {
     if (events.isEmpty) {

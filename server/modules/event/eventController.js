@@ -1,6 +1,6 @@
 import Event from './eventModel.js';
 import User from '../user/user.model.js';
-import {admin} from '../firebase/firebase_controller.js';
+import { admin } from '../firebase/firebase_controller.js';
 import Club from '../club/clubModel.js';
 import { broadcast } from '../../index.js';
 import EventRegistration from '../eventRegistration/eventRegistrationModel.js';
@@ -8,94 +8,94 @@ import catchAsync from '../../utils/catchAsync.js';
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
-    const dateIST = new Date(istDateTime);
-    const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
-    return utcDateTime.toISOString(); // Save as UTC string
+  const dateIST = new Date(istDateTime);
+  const utcDateTime = new Date(dateIST.getTime() - (5.5 * 60 * 60 * 1000)); // Subtract 5 hours 30 minutes
+  return utcDateTime.toISOString(); // Save as UTC string
 }
 
-export async function createEvent(req, res) {
-    try {
-        const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
+async function createEvent(req, res) {
+  try {
+    const { title, description, dateTime, club: clubId, createdBy, tag: tagId } = req.body;
 
-        const dateTimeUTC = convertISTtoUTC(dateTime);
-        console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
+    const dateTimeUTC = convertISTtoUTC(dateTime);
+    console.log("📅 Converted DateTime (IST to UTC):", dateTimeUTC);
 
-        const associatedClub = await Club.findById(clubId).populate('followers');
+    const associatedClub = await Club.findById(clubId).populate('followers');
 
-        if (!associatedClub) {
-            return res.status(404).json({ status: "error", message: "Club not found" });
-        }
-
-        console.log("Associated Club:", associatedClub.name);
-        console.log("Followers of Club:", associatedClub.followers.length);
-
-        const fcmTokens = associatedClub.followers
-            .filter(user => user && user.fcmToken) // Added null check for user
-            .map(user => user.fcmToken);
-
-        console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
-
-        let newEvent = await Event.create({
-            title,
-            description,
-            dateTime: dateTimeUTC,
-            club: clubId,
-            createdBy,
-            participants: associatedClub.followers.map(user => user._id),
-            notifications: [],
-            tag: tagId,
-        });
-
-        console.log("✅ Event Created Successfully (pre-population for broadcast):", newEvent._id);
-
-        const populatedEventForBroadcast = await Event.findById(newEvent._id)
-            .populate('participants', 'username profilePicture')
-            .populate({ path: 'club', select: 'name avatar' })
-            .populate({ path: 'tag', select: 'name' });
-
-        if (populatedEventForBroadcast) {
-            broadcast({ type: 'EVENT_CREATED', payload: populatedEventForBroadcast });
-            console.log('📢 Broadcasted EVENT_CREATED');
-        } else {
-            console.warn('⚠️ Could not find event for broadcast after creation:', newEvent._id);
-        }
-
-        // Send FCM notifications to club followers individually
-        if (fcmTokens.length > 0) {
-            console.log(`Attempting to send ${fcmTokens.length} FCM messages individually...`);
-            let successCount = 0;
-            let failureCount = 0;
-
-            for (const token of fcmTokens) {
-                const message = {
-                    notification: {
-                        title: `New Event: ${title}`,
-                        body: description,
-                    },
-                    token: token, // The specific token for this message
-                    // data: { eventId: newEvent._id.toString(), type: 'newEvent' } // Optional data payload
-                };
-
-                try {
-                    // Use admin.messaging().send() for a single message
-                    const response = await admin.messaging().send(message);
-                    console.log(`✅ Successfully sent FCM message to token ${token.substring(0, 20)}...:`, response); // Log part of token for privacy
-                    successCount++;
-                } catch (error) {
-                    console.error(`❌ Failed to send FCM message to token ${token.substring(0, 20)}...:`, error.code, error.message);
-                    failureCount++;
-                }
-            }
-            console.log(`FCM Individual Send Summary: ${successCount} successful, ${failureCount} failed.`);
-        } else {
-            console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
-        }
-
-        res.status(201).json({ status: "success", event: populatedEventForBroadcast || newEvent });
-    } catch (error) {
-        console.error("❌ Error creating event:", error);
-        res.status(500).json({ status: "error", message: "Internal Server Error" });
+    if (!associatedClub) {
+      return res.status(404).json({ status: "error", message: "Club not found" });
     }
+
+    console.log("Associated Club:", associatedClub.name);
+    console.log("Followers of Club:", associatedClub.followers.length);
+
+    const fcmTokens = associatedClub.followers
+      .filter(user => user && user.fcmToken) // Added null check for user
+      .map(user => user.fcmToken);
+
+    console.log("✅ FCM Tokens of Club Followers:", fcmTokens);
+
+    let newEvent = await Event.create({
+      title,
+      description,
+      dateTime: dateTimeUTC,
+      club: clubId,
+      createdBy,
+      participants: associatedClub.followers.map(user => user._id),
+      notifications: [],
+      tag: tagId,
+    });
+
+    console.log("✅ Event Created Successfully (pre-population for broadcast):", newEvent._id);
+
+    const populatedEventForBroadcast = await Event.findById(newEvent._id)
+      .populate('participants', 'username profilePicture')
+      .populate({ path: 'club', select: 'name avatar' })
+      .populate({ path: 'tag', select: 'name' });
+
+    if (populatedEventForBroadcast) {
+      broadcast({ type: 'EVENT_CREATED', payload: populatedEventForBroadcast });
+      console.log('📢 Broadcasted EVENT_CREATED');
+    } else {
+      console.warn('⚠️ Could not find event for broadcast after creation:', newEvent._id);
+    }
+
+    // Send FCM notifications to club followers individually
+    if (fcmTokens.length > 0) {
+      console.log(`Attempting to send ${fcmTokens.length} FCM messages individually...`);
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const token of fcmTokens) {
+        const message = {
+          notification: {
+            title: `New Event: ${title}`,
+            body: description,
+          },
+          token: token, // The specific token for this message
+          // data: { eventId: newEvent._id.toString(), type: 'newEvent' } // Optional data payload
+        };
+
+        try {
+          // Use admin.messaging().send() for a single message
+          const response = await admin.messaging().send(message);
+          console.log(`✅ Successfully sent FCM message to token ${token.substring(0, 20)}...:`, response); // Log part of token for privacy
+          successCount++;
+        } catch (error) {
+          console.error(`❌ Failed to send FCM message to token ${token.substring(0, 20)}...:`, error.code, error.message);
+          failureCount++;
+        }
+      }
+      console.log(`FCM Individual Send Summary: ${successCount} successful, ${failureCount} failed.`);
+    } else {
+      console.log("⚠️ No FCM tokens found for club followers, skipping notifications.");
+    }
+
+    res.status(201).json({ status: "success", event: populatedEventForBroadcast || newEvent });
+  } catch (error) {
+    console.error("❌ Error creating event:", error);
+    res.status(500).json({ status: "error", message: "Internal Server Error" });
+  }
 }
 
 
@@ -154,7 +154,7 @@ export const getUpcomingEvents = async (req, res) => {
     // Fetch only events whose dateTime is in the future
     const upcomingEvents = await Event.find({ dateTime: { $gt: currentDateTime } })
       .sort({ dateTime: 1 }).limit(10); // Sort events in ascending order (earliest first)
-    console.log("upcoming:",upcomingEvents);
+    console.log("upcoming:", upcomingEvents);
     res.status(200).json({ status: "success", events: upcomingEvents });
 
   } catch (error) {
@@ -287,18 +287,21 @@ export const editEvent = async (req, res) => {
 // Function to create a tentative event
 export const createTentativeEvent = async (req, res) => {
   try {
-    const { title, date, venue } = req.body;
+    const { title, datetime, venue,isSeries,openTo,isOffline,tag,seriesName } = req.body;
 
-    if (!title || !date || !venue) {
+    if (!title || !datetime || !venue||!openTo||!tag) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const newEvent = await Event.create({
       title,
       description: "Tentative Event", // optional default
-      dateTime: new Date(date), // assuming frontend sends ISO string
+      dateTime: new Date(datetime), // assuming frontend sends ISO string
       venue,
-      status: "tentative"
+      tag:tag,
+      venueType:isOffline? 'On-Campus':'Online',
+      status: "tentative",
+      series:isSeries ? seriesName:'NA'
     });
 
     return res.status(201).json({ message: "Tentative event created", event: newEvent });
@@ -330,6 +333,101 @@ export const getAttendedEvents = async (req, res, next) => {
 
   res.status(200).json({ events });
 };
+
+export const getActiveCreatorEvents = async (req, res) => {
+  try {
+    const { createdBy } = req.body;
+    const now = Date.now();
+
+    if (!createdBy) {
+      return res.status(400).json({ message: 'Missing Creator ID!!' });
+    }
+
+    // Upcoming events: published and in the future
+    const upcomingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'published',
+      dateTime: { $gt: now }
+    });
+
+    // Ongoing events: status is 'live'
+    const ongoingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'live'
+    });
+
+    return res.status(200).json({
+      ongoingEvents,
+      upcomingEvents
+    });
+  } catch (error) {
+    console.error("Error fetching creator events:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// function to add students to rsvp list of an event
+export const rsvpToEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { userId, status } = req.body; // status can be: "yes", "no", "maybe"
+
+    if (!eventId || !userId || !status) {
+      return res.status(400).json({ status: "error", message: "Missing eventId, userId or status" });
+    }
+
+    const validStatuses = ["yes", "no", "maybe"];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({ status: "error", message: "Invalid RSVP status" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ status: "error", message: "Event not found" });
+    }
+
+    // check if the user already RSVPed
+    const existing = event.RSVP.find(r => r.user.toString() === userId);
+
+    if (existing) {
+      existing.status = status.toLowerCase();
+      existing.timestamp = new Date();
+    } else {
+      event.RSVP.push({
+        user: userId,
+        status: status.toLowerCase(),
+        timestamp: new Date()
+      });
+    }
+
+    await event.save();
+
+    res.status(200).json({ status: "success", message: "RSVP recorded", RSVP: event.RSVP });
+  } catch (error) {
+    console.error("❌ Error RSVPing to event:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
+// Admin fetches RSVP list of an event
+export const getEventRSVPs = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    if (!eventId) return res.status(400).json({ status: "error", message: "Missing eventId" });
+
+    const event = await Event.findById(eventId)
+      .populate('RSVP.user', 'username email profilePicture');
+
+    if (!event) return res.status(404).json({ status: "error", message: "Event not found" });
+
+    res.status(200).json({ status: "success", eventId, RSVP: event.RSVP });
+  } catch (error) {
+    console.error("❌ Error fetching RSVPs:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
 
 
 //  Export functions properly

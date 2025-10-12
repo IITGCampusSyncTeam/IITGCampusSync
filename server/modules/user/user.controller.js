@@ -9,17 +9,14 @@ export const getUser = async (req, res, next) => {
 
 export const getUserWithEmail = async (req, res) => {
     const { email } = req.params;
-
     try {
         console.log("Fetching user from database...");
-        const user = await User.findOne({email}).lean()
-
+        const user = await User.findOne({ email }).lean()
         if (!user) {
             console.log("User not found.");
             return res.status(404).json({ message: 'Club not found' });
         }
         console.log("user fetched:", user);
-
         if (!user.tag || user.tag.length === 0) {
             console.log("User has no associated tags.");
             user.tag = [];
@@ -29,14 +26,11 @@ export const getUserWithEmail = async (req, res) => {
                 .select("_id title")
                 .lean();
             console.log("Tags retrieved:", userTags);
-
-            // ✅ Ensure the `tag` field is properly formatted
             user.tag = userTags.map(tag => ({
                 id: tag._id.toString(),
-                name: tag.title,  // ✅ Make sure "title" is included
+                name: tag.title,
             }));
         }
-
         console.log("Final user data before sending:", JSON.stringify(user, null, 2));
         res.status(200).json(user);
     } catch (err) {
@@ -45,16 +39,15 @@ export const getUserWithEmail = async (req, res) => {
     }
 };
 
-//not used
 export const createUser = async (req, res) => {
     const data = req.body;
     const user = new User(data);
     const savedUser = await user.save();
     res.json(savedUser);
 };
+
 export const updateUserController = async (req, res) => {
     const { email } = req.params;
-
     try {
         const updatedUser = await User.findOneAndUpdate({ 'email': email }, req.body, { new: true });
         if (!updatedUser) {
@@ -66,100 +59,21 @@ export const updateUserController = async (req, res) => {
         res.status(500).json({ message: 'Error updating user' });
     }
 };
-// Select a tag (add a tag to user profile)
-export const selectTag = async (req, res) => {
-    try {
-        const { email, tagId } = req.params; // Get user email & tagId from route params
-
-        // Find user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Check if tag exists
-        const tag = await Tag.findById(tagId);
-        if (!tag) {
-            return res.status(404).json({ message: "Tag not found" });
-        }
-
-        // Add tag to user's list (prevent duplicates)
-        user.tag.addToSet(tagId); 
-        await user.save();
-
-        // Add user to tag's `users` list (bi-directional linking)
-        tag.users.addToSet(user._id);
-        await tag.save();
-
-        // Populate tags before sending response
-        await user.populate("tag");
-
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Error adding tag", error: error.message });
-    }
-};
-
-
-
-
-// ✅ Delete a tag from user's profile
-export const deleteUserTag = async (req, res) => {
-    try {
-        const { email, tagId } = req.params; // Get user email & tagId from route params
-
-        // Find user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Check if tag exists in the user's list
-        if (!user.tag.includes(tagId)) {
-            return res.status(400).json({ message: "Tag not found in user's profile" });
-        }
-
-        // Remove the tag from user's tag list
-        user.tag.pull(tagId);
-        await user.save();
-
-        // Find the tag and remove the user from its `users` list
-        const tag = await Tag.findById(tagId);
-        if (tag) {
-            tag.users.pull(user._id);
-            await tag.save();
-        }
-
-        // Populate tags before sending response
-        await user.populate("tag");
-
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Error removing tag", error: error.message });
-    }
-};
-
 
 export const getUserFollowedEvents = async (req, res) => {
     try {
-        const userId = req.user._id; // Extract user ID from the request
-
-        // Find the user and populate their subscribed clubs
+        const userId = req.user._id;
         const user = await User.findById(userId).populate("subscribedClubs");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
         const clubIds = user.subscribedClubs.map(club => club._id);
-
-        // Find upcoming events for the clubs the user is following
         const currentDateTime = new Date();
         const upcomingEvents = await Event.find({
             club: { $in: clubIds },
             dateTime: { $gt: currentDateTime }
         }).sort({ dateTime: 1 })
-        .populate("club", "name"); // Populate club name
-
+            .populate("club", "name");
         res.status(200).json({ status: "success", events: upcomingEvents });
     } catch (error) {
         console.error("Error fetching upcoming events for user:", error);
@@ -167,4 +81,62 @@ export const getUserFollowedEvents = async (req, res) => {
     }
 };
 
-//export default getUserFollowedEvents;
+export const selectTags = async (req, res) => {
+    try {
+        const { email } = req.params;
+        const { tagIds } = req.body;
+
+        if (!tagIds || !Array.isArray(tagIds)) {
+            return res.status(400).json({ message: "Please provide an array of tag IDs." });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.tag.addToSet(...tagIds);
+        await user.save();
+
+        await Tag.updateMany(
+            { _id: { $in: tagIds } },
+            { $addToSet: { users: user._id } }
+        );
+
+        await user.populate("tag");
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Error adding tags to user", error: error.message });
+    }
+};
+
+export const deleteUserTags = async (req, res) => {
+    try {
+        const { email } = req.params;
+        const { tagIds } = req.body;
+
+        if (!tagIds || !Array.isArray(tagIds)) {
+            return res.status(400).json({ message: "Please provide an array of tag IDs." });
+        }
+
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { $pull: { tag: { $in: tagIds } } },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        await Tag.updateMany(
+            { _id: { $in: tagIds } },
+            { $pull: { users: updatedUser._id } }
+        );
+
+        await updatedUser.populate("tag");
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: "Error removing tags from user", error: error.message });
+    }
+};
