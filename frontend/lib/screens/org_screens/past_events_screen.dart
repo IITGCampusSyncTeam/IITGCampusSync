@@ -71,7 +71,7 @@ class _PastEventsCard extends StatelessWidget {
     }
     // --- End of Date and Time Logic ---
 
-    final rsvpIds = event['rsvp']??[];
+    final rsvpIds = event['rsvp'] ?? [];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -139,13 +139,13 @@ class _PastEventsCard extends StatelessWidget {
 
             Row(
               children: [
-                rsvpIds.isEmpty
-                    ? SizedBox(width: MediaQuery.widthOf(context)-83,)
-                    : Flexible(
-                        child: RSVPIcons(
-                          RSVP: rsvpIds, // Use the correctly processed list
-                        ),
-                      ),
+                if (rsvpIds.isNotEmpty)
+                  Flexible(
+                    child: RSVPIcons(
+                      RSVP: rsvpIds, // Use the correctly processed list
+                    ),
+                  ),
+                const Spacer(),
                 const SizedBox(width: 8),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 16.0, 0),
