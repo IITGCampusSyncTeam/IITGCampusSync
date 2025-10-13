@@ -8,6 +8,10 @@ import 'package:frontend/screens/explore_screen.dart';
 import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
+import 'package:frontend/screens/org_screens/interests_page.dart';
+import 'package:frontend/screens/org_screens/org_login.dart';
+import 'package:frontend/screens/profile_screen.dart';
+import 'package:frontend/screens/splash_screen.dart';
 import 'package:frontend/screens/org_screens/nav_bar.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:frontend/utilities/helper_functions.dart';
@@ -181,22 +185,22 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'IITGsync',
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.grey[400],
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        navigatorKey: navigatorKey,
-        // home: SplashScreen(),//final
-        // home:
-        //     OrganizerNavigationContainer() //for testing organizer side please change
-        home: SplashScreen(),
-        // home: MainNavigationContainer(),
-        // home: const MyHomePage(title: 'IITGsync'),
+      title: 'IITGsync',
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.grey[400],
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      navigatorKey: navigatorKey,
+      // home: SplashScreen(),//final
+      // home: OrganizerNavigationContainer()//for testing organizer side please change
+      home: SplashScreen(),
+      // home: InterestsPage(),
+      // home: MainNavigationContainer(),
+      // home: const MyHomePage(title: 'IITGsync'),
 
-        //home:ClubsScreen(),
-        );
+      //home:ClubsScreen(),
+    );
   }
 }
 
