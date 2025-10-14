@@ -9,7 +9,7 @@ import {
   getUpcomingEvents,
   getPastEventsOfClub,
   getFollowedClubEvents,
-  getActiveCreatorEvents,
+  getCreatorEvents,
   getRsvpdUpcomingEvents,
   getAttendedEvents,
   updateEventStatus,
@@ -29,7 +29,7 @@ router.get("/past/:clubId", getPastEventsOfClub);
 router.get("/followed/:userId", getFollowedClubEvents);
 router.get("/rsvpd/upcoming", isAuthenticated, getRsvpdUpcomingEvents);
 router.get("/rsvpd/attended", isAuthenticated, getAttendedEvents);
-router.get("/upcoming-events-by-creator", getActiveCreatorEvents); // Route to get all active events by a particular creator
+router.get("/active-events-by-creator/:createdBy", getCreatorEvents); // Route to get all active events by a particular creator
 router.put("/status/:eventId", updateEventStatus);
 router.put("/edit/:eventId", editEvent);
 router.post('/tentative', createTentativeEvent);

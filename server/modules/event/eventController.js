@@ -139,7 +139,6 @@ export const getEvents = async (req, res) => {
     }
 
     res.status(200).json(events);
-
   } catch (error) {
     console.error("❌ Error fetching events:", error);
     res.status(500).json({ message: "Failed to fetch events" });
@@ -172,7 +171,7 @@ export const getPastEventsOfClub = async (req, res) => {
       return res.status(400).json({ error: 'Missing clubId in request params' });
     }
 
-    const pastEvents = await Event.find({
+    const pastEvents = await EventModel.find({
       club: clubId,
       dateTime: { $lt: new Date() },
     }).sort({ dateTime: -1 }); // sort by newest to oldest
@@ -241,7 +240,7 @@ export const updateEventStatus = async (req, res) => {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
+    const updatedEvent = await EventModel.findByIdAndUpdate(
       eventId,
       { status },
       { new: true }
@@ -267,7 +266,7 @@ export const editEvent = async (req, res) => {
       return res.status(400).json({ error: "Missing eventId" });
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
+    const updatedEvent = await EventModel.findByIdAndUpdate(
       eventId,
       updateData,
       { new: true } // return the updated document
@@ -321,6 +320,29 @@ export const getRsvpdUpcomingEvents = async (req, res, next) => {
 
   events.forEach(event => event.isRsvpd = true); // User has RSVP'd for all these
   res.status(200).json({ events });
+};
+
+export const getActiveCreatorEvents = async (req, res) => {
+  try {
+    const { createdBy } = req.params;
+
+    if (!createdBy) {
+      return res.status(400).json({ message: 'Missing Creator ID!!' });
+    }
+
+    // Upcoming events: published and in the future
+    const Events = await Event.find({
+      createdBy: createdBy,
+    });
+
+
+    return res.status(200).json({
+      Events
+    });
+  } catch (error) {
+    console.error("Error fetching creator events:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 // GET PAST EVENTS A USER HAS RSVP'D FOR
@@ -428,10 +450,8 @@ export const getEventRSVPs = async (req, res) => {
   }
 };
 
-
-
 //  Export functions properly
-
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {
