@@ -11,7 +11,7 @@ const eventSchema = new mongoose.Schema({
   club: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
   views: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  RSVP: [
+  rsvp: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       status: { type: String, enum: ['yes', 'no', 'maybe'], default: 'yes' },

@@ -5,7 +5,11 @@ import 'package:frontend/models/event.dart'; // Import the Event model
 import 'package:frontend/screens/payment_screen.dart';
 import 'package:frontend/screens/sharing.dart';
 import 'package:frontend/services/notification_services.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
+import '../providers/eventProvider.dart';
+import '../services/notification_services.dart';
 import '../widgets/event_card.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -20,6 +24,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   bool isLoading = true;
   EventAPI eventAPI = EventAPI();
   NotificationServices notificationServices = NotificationServices();
+  final Set<String> _selectedFilters = {'Upcoming'};
   int _selectedIndex = 0; // Track the selected navigation item
 
   // Pagination controls
@@ -41,7 +46,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void initState() {
     super.initState();
-    loadEvents();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<EventProvider>(context, listen: false).fetchUpcomingEvents();
+    });
 
     // Initialize notification services
     notificationServices.requestNotificationPermission;
@@ -96,88 +103,115 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
+  void _onFilterTap(String filter) {
+    setState(() {
+      if (_selectedFilters.contains(filter)) {
+        _selectedFilters.remove(filter);
+      } else {
+        _selectedFilters.add(filter);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.delayed(Duration.zero);
-            loadEvents();
+        child: Consumer<EventProvider>(
+          builder: (context, eventProvider, child) {
+            return RefreshIndicator(
+              onRefresh: () => eventProvider.fetchAllData(),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTopBar(),
+                        const SizedBox(height: 5),
+                        _buildSearchBar(),
+                        const SizedBox(height: 4),
+                        _buildOrganisersSection(),
+                      ],
+                    ),
+                  ),
+
+                  // Event List Section
+                  if(events.isNotEmpty)
+                    ElevatedButton(
+                      onPressed: () {
+                        final firstEvent = events[0];
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventShareScreen(
+                              eventTitle: firstEvent.title,
+                              eventDescription: firstEvent.description,
+                              eventDateTime: firstEvent.dateTime.toString(),
+                              eventLocation: firstEvent.venue ?? "Unknown venue",
+                              eventLink: "https://example.com/event/${firstEvent.id}",
+                              imageUrl: firstEvent.banner ?? "https://via.placeholder.com/300",
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('Share'),
+                    ),
+                  if (eventProvider.isLoading)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (eventProvider.upcomingEvents.isEmpty)
+                    const SliverFillRemaining(
+                      child: Center(child: Text("No events found.")),
+                    )
+                  else
+                    SliverList.builder(
+                      itemCount: eventProvider.upcomingEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = eventProvider.upcomingEvents[index];
+                        return EventCard(
+                          event: event,
+                          style: CardStyle.full,
+                          onRsvpPressed: () => eventProvider.toggleRsvpStatus(event.id),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            );
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTopBar(),
-                _buildFilterChips(),
-                isLoading
-                    ? const SizedBox(
-                        height: 200,
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : _buildEventsList(),
-                _buildOrganisersSection(),
-                SizedBox(
-                  height: 20,
-                ),
-                // ElevatedButton(onPressed: (){
-                //  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>EventShareScreen()));
-                //  }, child: Text('share'))
-                if(events.isNotEmpty)
-           ElevatedButton(
-              onPressed: () {
-              final firstEvent = events[0];
-              Navigator.push(
-                context,
-               MaterialPageRoute(
-              builder: (context) => EventShareScreen(
-              eventTitle: firstEvent.title,
-             eventDescription: firstEvent.description,
-              eventDateTime: firstEvent.dateTime.toString(),
-               eventLocation: firstEvent.venue ?? "Unknown venue",
-              eventLink: "https://example.com/event/${firstEvent.id}",
-              imageUrl: firstEvent.banner ?? "https://via.placeholder.com/300",
-                        ),
-                     ),
-                    );
-                  },
-                 child: Text('Share'),
-               ),
-
-
-              ],
-            ),
-          ),
         ),
       ),
-      // Note: Bottom navigation bar is now handled by MainNavigationContainer
     );
   }
 
+
+
+
   Widget _buildTopBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             "Hey Shivangi!",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Sans TRIAL'),
           ),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
+                icon: const Icon(Icons.local_mall_outlined),
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => PaymentScreen()));
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_none),
+                icon: const Icon(Icons.notifications_outlined),
                 onPressed: () {
                   // Show notification permission or settings or show a new screen where notifs will be stored
                   notificationServices.requestNotificationPermission;
@@ -201,11 +235,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 hintText: "Search events...",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
@@ -213,11 +247,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
           const SizedBox(width: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.filter_list),
+              icon: const Icon(Icons.tune_outlined),
               onPressed: () {},
             ),
           ),
@@ -225,50 +259,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
     );
   }
+  //
+  // Widget _buildFilterChips() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //
+  //       SingleChildScrollView(
+  //         scrollDirection: Axis.horizontal,
+  //         padding: const EdgeInsets.symmetric(horizontal: 16),
+  //         child: Row(
+  //           children: [
+  //             _buildFilterChip("Upcoming", false),
+  //             const SizedBox(width: 8),
+  //             _buildFilterChip("Following", false),
+  //             const SizedBox(width: 8),
+  //             _buildFilterChip("My interests", false),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildFilterChips() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSearchBar(),
-        const SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              _buildFilterChip("All Events", true),
-              const SizedBox(width: 8),
-              _buildFilterChip("Upcoming", false),
-              const SizedBox(width: 8),
-              _buildFilterChip("Following", false),
-              const SizedBox(width: 8),
-              _buildFilterChip("My interests", false),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildFilterChip(String label, bool isSelected) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //     decoration: BoxDecoration(
+  //       color: isSelected ? Colors.black : Colors.grey[200],
+  //       borderRadius: BorderRadius.circular(20),
+  //     ),
+  //     child: Text(
+  //       label,
+  //       style: TextStyle(
+  //         color: isSelected ? Colors.white : Colors.black,
+  //         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.black : Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventsList() {
+  Widget _buildEventsList(List<Event> events,EventProvider eventProvider) {
     if (events.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32.0),
@@ -292,21 +323,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         // Events for current page
         ...currentEvents.map((event) {
           return EventCard(
-            banner: event.title.toUpperCase(),
-            title: event.title,
-            organizer: event.club?.name ?? 'Unknown Organizer',
-            dateTime: event.dateTime.toString(), // Format this as needed
-            location:
-                "TBD", // You might need to add location to your Event model
-            tags: event.getTagTitles(),
-            imageUrl:
-                "https://images.unsplash.com/photo-1581322339219-8d8282b70610", // Default image
-            description: event.description,
+            style: CardStyle.full,
+            onRsvpPressed: () {
+              Provider.of<EventProvider>(context, listen: false)
+                  .toggleRsvpStatus(event.id);
+            }, event: event,
           );
         }).toList(),
 
         // Pagination controls
-        _buildPaginationControls(totalPages),
+        // _buildPaginationControls(totalPages),
       ],
     );
   }
@@ -321,10 +347,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage > 0
                 ? () {
-                    setState(() {
-                      _currentPage--;
-                    });
-                  }
+              setState(() {
+                _currentPage--;
+              });
+            }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -352,10 +378,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage < totalPages - 1
                 ? () {
-                    setState(() {
-                      _currentPage++;
-                    });
-                  }
+              setState(() {
+                _currentPage++;
+              });
+            }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -413,47 +439,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ],
     );
   }
-  //
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     items: const [
-  //       BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-  //       BottomNavigationBarItem(
-  //           icon: Icon(Icons.calendar_today), label: "Calendar"),
-  //       BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-  //     ],
-  //     currentIndex: _selectedIndex,
-  //     selectedItemColor: Colors.black,
-  //     unselectedItemColor: Colors.grey,
-  //     onTap: (index) {
-  //       setState(() {
-  //         _selectedIndex = index; // Update the selected index
-  //       });
-  //
-  //       if (index == 1) {
-  //         print("Navigating to Calendar screen");
-  //         // Navigate to Calendar screen - replacing with print for debugging
-  //         try {
-  //           Navigator.of(context).pushNamed('/calendar');
-  //         } catch (e) {
-  //           print("Navigation error: $e");
-  //           // Fallback direct navigation if named route is not defined
-  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
-  //         }
-  //       } else if (index == 2) {
-  //         print("Navigating to Profile screen");
-  //         // Navigate to Profile screen - replacing with print for debugging
-  //         try {
-  //           Navigator.of(context).pushNamed('/profile');
-  //         } catch (e) {
-  //           print("Navigation error: $e");
-  //           // Fallback direct navigation if named route is not defined
-  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-  //         }
-  //       }
-  //     },
-  //   );
-  // }
+//
+// Widget _buildBottomNavigationBar() {
+//   return BottomNavigationBar(
+//     items: const [
+//       BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
+//       BottomNavigationBarItem(
+//           icon: Icon(Icons.calendar_today), label: "Calendar"),
+//       BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+//     ],
+//     currentIndex: _selectedIndex,
+//     selectedItemColor: Colors.black,
+//     unselectedItemColor: Colors.grey,
+//     onTap: (index) {
+//       setState(() {
+//         _selectedIndex = index; // Update the selected index
+//       });
+//
+//       if (index == 1) {
+//         print("Navigating to Calendar screen");
+//         // Navigate to Calendar screen - replacing with print for debugging
+//         try {
+//           Navigator.of(context).pushNamed('/calendar');
+//         } catch (e) {
+//           print("Navigation error: $e");
+//           // Fallback direct navigation if named route is not defined
+//           // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
+//         }
+//       } else if (index == 2) {
+//         print("Navigating to Profile screen");
+//         // Navigate to Profile screen - replacing with print for debugging
+//         try {
+//           Navigator.of(context).pushNamed('/profile');
+//         } catch (e) {
+//           print("Navigation error: $e");
+//           // Fallback direct navigation if named route is not defined
+//           // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+//         }
+//       }
+//     },
+//   );
+// }
 }
 
 class OrganiserItem extends StatelessWidget {

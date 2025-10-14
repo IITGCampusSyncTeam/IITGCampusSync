@@ -43,6 +43,19 @@ class redirecturi {
   static const Redirecturi = 'iitgsync://success';
 }
 
+
+//old baseURL = 'http://192.168.29.195:3000/api';
+// const String baseUrl = 'https://iitgcampussync.onrender.com/api';
+//
+// class event {
+//   static const getAllEvents = '$baseUrl/events/get-all-events';
+//   static const getUpcomingEvents = '$baseUrl/events/get-upcoming-events';
+//   static const createEvent = '$baseUrl/events/create-event';
+//   static const createTentativeEvent = '$baseUrl/events/tentative';
+//   static const String rsvpdUpcomingEvents = '$baseUrl/events/rsvpd/upcoming';
+//   static const String attendedEvents = '$baseUrl/events/rsvpd/attended';
+// }
+
 class event {
   static const getAllEvents =
       '${AuthConfig.serverUrl}/api/events/get-all-events';
@@ -52,10 +65,10 @@ class event {
   static const createTentativeEvent =
       '${AuthConfig.serverUrl}/api/events/tentative';
   static const rsvpToEvent = '${AuthConfig.serverUrl}/api/events/rsvp/';
-//   static const rsvpToEvent =
-//       '${AuthConfig.serverUrl}/api/events/rsvp/';
-}
+  static const String rsvpdUpcomingEvents = '${AuthConfig.serverUrl}/api/events/rsvpd/upcoming';
+   static const String attendedEvents = '${AuthConfig.serverUrl}/api/events/rsvpd/attended';
 
+}
 class payment {
   static const getRazorpayKey =
       "${AuthConfig.serverUrl}/api/payments/get-razorpay-key";
@@ -97,4 +110,10 @@ class ClubMembers {
 
   static String removeMember(String clubId, String email) =>
       "$baseUrl/$clubId/removemember/$email";
+}
+
+
+class Constants {
+  // Replace this actual backend server URL
+  static const String API_BASE_URL = 'https://iitgcampussync.onrender.com/api';
 }
