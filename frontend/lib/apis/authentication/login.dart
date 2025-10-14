@@ -10,8 +10,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/endpoints.dart';
 import '../../main.dart';
 import '../../screens/login_screen.dart';
+import '../../services/storage_service.dart';
 
 Future<void> authenticate() async {
+
+  final storageService = StorageService();
+
   try {
     final result = await FlutterWebAuth2.authenticate(
       url: AuthEndpoints.getAccess,
@@ -27,6 +31,9 @@ Future<void> authenticate() async {
     if (accessToken == null || userDetail == null) {
       throw ('Access token or user detail not found');
     }
+
+    await storageService.writeToken(accessToken);
+    print("✅ Token saved successfully!");
 
     try {
       // Decode URL-encoded userDetail string
@@ -80,7 +87,6 @@ Future<void> authenticate() async {
       // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_data', jsonEncode(user.toJson()));
-      await prefs.setString('access_token', accessToken);
       await prefs.setString('email', user.email);
       // Now fetch and send the FCM token
       String? token = await FirebaseMessaging.instance.getToken();
@@ -173,10 +179,15 @@ Future<void> authenticate() async {
   }
 }
 
-
 Future<void> logoutHandler(context) async {
+
   final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
+  final storageService = StorageService();
+
+  await storageService.deleteToken(); // Delete the secure token
+  await prefs.clear(); // Clear all other saved data
+
+  print("✅ All user data and tokens cleared on logout.");
 
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(builder: (context) => const login()),
@@ -185,6 +196,11 @@ Future<void> logoutHandler(context) async {
 }
 
 Future<bool> isLoggedIn() async {
-  var access = await getAccessToken();
-  return access != 'error';
+  // CHECK FOR TOKEN IN SECURE STORAGE
+  final storageService = StorageService();
+  final token = await storageService.readToken();
+  // The user is logged in if the token exists (is not null).
+  return token != null;
 }
+
+

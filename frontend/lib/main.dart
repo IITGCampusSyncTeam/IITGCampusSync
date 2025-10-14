@@ -185,22 +185,19 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'IITGsync',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.grey[400],
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      navigatorKey: navigatorKey,
-      // home: SplashScreen(),//final
-      // home: OrganizerNavigationContainer()//for testing organizer side please change
-      home: SplashScreen(),
-      // home: InterestsPage(),
-      // home: MainNavigationContainer(),
-      // home: const MyHomePage(title: 'IITGsync'),
+        title: 'IITGsync',
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.grey[400],
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        navigatorKey: navigatorKey,
+        // home: SplashScreen(),
+        home: MainNavigationContainer()
+        // home: const MyHomePage(title: 'IITGsync'),
 
-      //home:ClubsScreen(),
-    );
+        //home:ClubsScreen(),
+        );
   }
 }
 

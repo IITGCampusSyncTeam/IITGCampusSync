@@ -1,4 +1,5 @@
 import 'package:frontend/models/user_model.dart';
+
 import 'club_model.dart';
 
 class Event {
@@ -14,14 +15,20 @@ class Event {
   final List<String> participants;
   final List<String> feedbacks;
   final List<String> notifications;
+   bool isRsvpd;
+  // Changed to dynamic to handle either tag objects or strings
   final List<dynamic> tag; // Changed to dynamic to handle either tag objects or strings
   final String status;
-  final String? date; 
+  final String imageUrl;
+  final String organizer;
+  final String location;
+
+  final String? date;
   final List<Map<String, dynamic>> itinerary;
-  final List<String> prerequisites; 
-  final List<Map<String, dynamic>> speakers; 
+  final List<String> prerequisites;
+  final List<Map<String, dynamic>> speakers;
   final List<Map<String, dynamic>> resources;
-  final List<Map<String, dynamic>> venueDetails; 
+  final List<Map<String, dynamic>> venueDetails;
   final List<Map<String, dynamic>> links;
   final List<Map> pocs;
   final List<RSVPItem> rsvp;
@@ -29,6 +36,9 @@ class Event {
 
   Event({
     required this.id,
+    required this.organizer,
+    required this.location,
+    required this.imageUrl,
     required this.title,
     required this.duration,
     required this.description,
@@ -42,6 +52,7 @@ class Event {
     this.notifications = const [],
     this.tag = const [],
     this.status = 'drafted',
+    this.isRsvpd = false,
     this.prerequisites = const [],
     this.itinerary = const [],
     this.date,
@@ -69,6 +80,9 @@ class Event {
       'notifications': notifications,
       'tag': tag,
       'status': status,
+      'imageUrl': imageUrl,
+      'organizer':organizer,
+      'location':location,
       'itinerary': itinerary,
       'date': date,
       'speakers': speakers,
@@ -92,7 +106,7 @@ class Event {
           ? DateTime.parse(json['dateTime'])
           : DateTime.now(),
       venue: json['venue'] ?? '',
-     
+
       club: json['club'] != null
           ? (json['club'] is Map ? Club.fromJson(json['club']) : null)
           : null,
@@ -105,19 +119,23 @@ class Event {
       tag: json['tag'] ??
           [], // Just pass the tag data as is, we'll handle it when displaying
       status: json['status'] ?? 'drafted',
-      itinerary: List<Map<String, dynamic>>.from(json['itinerary'] ?? []), 
-      prerequisites: List<String>.from(json['prerequisites'] ?? []), 
-      speakers: List<Map<String, dynamic>>.from(json['speakers'] ?? []), 
-      resources: List<Map<String, dynamic>>.from(json['resources'] ?? []), 
-      venueDetails: List<Map<String, dynamic>>.from(json['venueDetails'] ?? []), 
-      links: List<Map<String, dynamic>>.from(json['links'] ?? []), 
+      isRsvpd: json['isRsvpd'] ?? false,
+      organizer: json['organizer'] ?? 'Unknown Organizer',
+      location: json['location'] ?? 'Unknown Location',
+      imageUrl: json['imageUrl'] ?? '', // Add a default empty string for the image
+      itinerary: List<Map<String, dynamic>>.from(json['itinerary'] ?? []),
+      prerequisites: List<String>.from(json['prerequisites'] ?? []),
+      speakers: List<Map<String, dynamic>>.from(json['speakers'] ?? []),
+      resources: List<Map<String, dynamic>>.from(json['resources'] ?? []),
+      venueDetails: List<Map<String, dynamic>>.from(json['venueDetails'] ?? []),
+      links: List<Map<String, dynamic>>.from(json['links'] ?? []),
       pocs: json['pocs'] != null
     ? (json['pocs'] as List)
         .where((e) => e is Map)
         .map((e) => Map<String, dynamic>.from(e))
         .toList()
     : [],
-      date: json['date'], 
+      date: json['date'],
 
 
       banner: json['banner'] ?? 'banner',

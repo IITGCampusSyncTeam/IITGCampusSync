@@ -3,6 +3,8 @@ import User from '../user/user.model.js';
 import { admin } from '../firebase/firebase_controller.js';
 import Club from '../club/clubModel.js';
 import { broadcast } from '../../index.js';
+import EventRegistration from '../eventRegistration/eventRegistrationModel.js';
+import catchAsync from '../../utils/catchAsync.js';
 
 // Convert IST to UTC
 function convertISTtoUTC(istDateTime) {
@@ -98,12 +100,44 @@ async function createEvent(req, res) {
 
 
 //  Function to fetch events
-const getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('participants').populate({ path: 'club' }).populate({ path: 'tag' });
-    console.log(events)
-    // Populating for debugging
-    //    console.log(" Retrieved Events:", events);
+
+    const events = await Event.find()
+      .populate('participants')
+      .populate({ path: 'club' })
+      .populate({ path: 'tag' })
+      .lean();
+
+    // Check if a user is logged in
+    if (req.user) {
+      const userId = req.user.id;
+
+
+      const eventIds = events.map(event => event._id);
+
+      // to find all registrations for the current user that match the fetched events
+      const userRegistrations = await EventRegistration.find({
+        user: userId,
+        event: { $in: eventIds }
+      });
+
+      // Create a Set of event IDs the user has RSVP'd to for quick checking
+      const rsvpdEventIds = new Set(
+        userRegistrations.map(reg => reg.event.toString())
+      );
+
+
+      events.forEach(event => {
+        event.isRsvpd = rsvpdEventIds.has(event._id.toString());
+      });
+    } else {
+
+      events.forEach(event => {
+        event.isRsvpd = false;
+      });
+    }
+
     res.status(200).json(events);
   } catch (error) {
     console.error("❌ Error fetching events:", error);
@@ -112,7 +146,7 @@ const getEvents = async (req, res) => {
 };
 
 // Function to get upcoming events
-const getUpcomingEvents = async (req, res) => {
+export const getUpcomingEvents = async (req, res) => {
   try {
     const currentDateTime = new Date();
 
@@ -128,8 +162,8 @@ const getUpcomingEvents = async (req, res) => {
   }
 };
 
-// func to get past events of the club
-const getPastEventsOfClub = async (req, res) => {
+ // func to get past events of the club
+export const getPastEventsOfClub = async (req, res) => {
   try {
     const { clubId } = req.params;
 
@@ -151,7 +185,7 @@ const getPastEventsOfClub = async (req, res) => {
 
 
 //func for fetching events of followed clubs
-const getFollowedClubEvents = async (req, res) => {
+export const getFollowedClubEvents = async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -196,7 +230,7 @@ const getFollowedClubEvents = async (req, res) => {
 
 
 // Function to update event status
-const updateEventStatus = async (req, res) => {
+export const updateEventStatus = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { status } = req.body;
@@ -223,7 +257,7 @@ const updateEventStatus = async (req, res) => {
   }
 };
 
-const editEvent = async (req, res) => {
+export const editEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const updateData = req.body;
@@ -250,7 +284,7 @@ const editEvent = async (req, res) => {
 };
 
 // Function to create a tentative event
-const createTentativeEvent = async (req, res) => {
+export const createTentativeEvent = async (req, res) => {
   try {
     const { title, datetime, venue,isSeries,openTo,isOffline,tag,seriesName } = req.body;
 
@@ -276,8 +310,19 @@ const createTentativeEvent = async (req, res) => {
   }
 };
 
+// GET UPCOMING EVENTS A USER HAS RSVP'D FOR
+export const getRsvpdUpcomingEvents = async (req, res, next) => {
+  const userId = req.user.id;
+  const events = await Event.find({
+    dateTime: { $gte: new Date() }, // Events in the future
+    rsvp: userId, // Where the user's ID is in the 'rsvp' array
+  }).sort({ dateTime: 1 }).lean();
 
-const getCreatorEvents = async (req, res) => {
+  events.forEach(event => event.isRsvpd = true); // User has RSVP'd for all these
+  res.status(200).json({ events });
+};
+
+export const getActiveCreatorEvents = async (req, res) => {
   try {
     const { createdBy } = req.params;
 
@@ -293,6 +338,49 @@ const getCreatorEvents = async (req, res) => {
 
     return res.status(200).json({
       Events
+    });
+  } catch (error) {
+    console.error("Error fetching creator events:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// GET PAST EVENTS A USER HAS RSVP'D FOR
+export const getAttendedEvents = async (req, res, next) => {
+  const userId = req.user.id;
+  const events = await Event.find({
+    dateTime: { $lt: new Date() }, // Events in the past
+    rsvp: userId, // Where the user's ID is in the 'rsvp' array
+  }).sort({ dateTime: -1 }).lean();
+
+  res.status(200).json({ events });
+};
+
+export const getActiveCreatorEvents = async (req, res) => {
+  try {
+    const { createdBy } = req.body;
+    const now = Date.now();
+
+    if (!createdBy) {
+      return res.status(400).json({ message: 'Missing Creator ID!!' });
+    }
+
+    // Upcoming events: published and in the future
+    const upcomingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'published',
+      dateTime: { $gt: now }
+    });
+
+    // Ongoing events: status is 'live'
+    const ongoingEvents = await Event.find({
+      createdBy: createdBy,
+      status: 'live'
+    });
+
+    return res.status(200).json({
+      ongoingEvents,
+      upcomingEvents
     });
   } catch (error) {
     console.error("Error fetching creator events:", error);
@@ -344,7 +432,7 @@ export const rsvpToEvent = async (req, res) => {
 };
 
 // Admin fetches RSVP list of an event
-const getEventRSVPs = async (req, res) => {
+export const getEventRSVPs = async (req, res) => {
   try {
     const { eventId } = req.params;
 
@@ -363,7 +451,7 @@ const getEventRSVPs = async (req, res) => {
 };
 
 //  Export functions properly
-export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getCreatorEvents, rsvpToEvent, getEventRSVPs };
+export default { createEvent, getEvents, getUpcomingEvents, getPastEventsOfClub, getFollowedClubEvents, updateEventStatus, editEvent, createTentativeEvent, getActiveCreatorEvents, rsvpToEvent, getEventRSVPs };
 
 //func for fetching events of followed clubs
 //export const getFollowedClubEvents = async (req, res) => {

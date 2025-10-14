@@ -18,10 +18,13 @@ import onedriveRoutes from "./modules/onedrive/onedriveRoutes.js";
 import tagRoutes from "./modules/tag/tagRoute.js";
 import firebaseRoutes from './modules/firebase/firebase_routes.js';
 import paymentRoutes from './modules/payment/payment_routes.js';
+import eventRoutes from './modules/event/eventRoutes.js';
+import notifRoutes from './modules/notif/notification_routes.js';
 import eventRoutes from './modules/event/eventRoutes.js'; // We'll need to modify this later
 //import notifRoutes from './modules/notif/notification_routes.js';
 import cron from 'node-cron';
-import calendarRouter from './modules/calendar/calendar.routes.js'; 
+import eventRegistrationRoutes from "./modules/eventRegistration/eventRegistrationRoutes.js";
+import calendarRouter from './modules/calendar/calendar.routes.js';
 
 
 // Import your Event model (adjust path as necessary)
@@ -143,7 +146,7 @@ app.use("/api/events", eventRoutes); // This router will need to import `broadca
 // Other routes
 app.use("/api/firebase", firebaseRoutes);
 app.use("/api/payments", paymentRoutes);
-//app.use("/api/notif", notifRoutes);
+app.use("/api/notif", notifRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
