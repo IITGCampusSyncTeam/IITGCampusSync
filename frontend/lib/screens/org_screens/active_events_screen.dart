@@ -63,9 +63,9 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
   _ActiveEventsCardState({required this.event});
 
   final dynamic event;
-
   @override
   Widget build(BuildContext context) {
+    final rsvpIds = event['rsvp'] ?? [];
     final screenWidth = MediaQuery.of(context).size.width;
     final end = DateTime.parse(event['dateTime']).add(
       Duration(
@@ -234,9 +234,13 @@ class _ActiveEventsCardState extends State<_ActiveEventsCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RSVPIcons(
-                  RSVP: event['rsvp'],
-                ),
+                if (rsvpIds.isNotEmpty)
+                  Flexible(
+                    child: RSVPIcons(
+                      RSVP: rsvpIds, // Use the correctly processed list
+                    ),
+                  ),
+                const Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
                   child: Text(

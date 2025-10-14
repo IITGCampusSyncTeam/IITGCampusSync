@@ -30,8 +30,17 @@ class _RSVPIconsState extends State<RSVPIcons> {
     if (widget.RSVP.isEmpty) return;
 
     List<String> fetchedImages = [];
-    for (dynamic user in widget.RSVP) {
-      String userId = user['user'];
+    for (int i = 0; i < widget.RSVP.length; i++) {
+      dynamic user = widget.RSVP[i];
+      String userId;
+
+      // Handle both cases: if RSVP contains objects with 'user' key or direct user IDs
+      if (user is Map && user.containsKey('user')) {
+        userId = user['user'].toString();
+      } else {
+        userId = user.toString();
+      }
+
       try {
         final response = await http.get(Uri.parse('https://iitgcampussync.onrender.com/api/user/$userId'));
         if (response.statusCode == 200) {
@@ -39,13 +48,17 @@ class _RSVPIconsState extends State<RSVPIcons> {
           // Assuming the user data contains a 'profilePicture' field with the image URL
           if (userData['profilePicture'] != null) {
             fetchedImages.add(userData['profilePicture']);
+          } else {
+            fetchedImages.add("https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png");
           }
         } else {
           // Handle error or add a placeholder
           debugPrint('Failed to load user data for $userId');
+          fetchedImages.add("https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png");
         }
       } catch (e) {
         debugPrint('Error fetching user data for $userId: $e');
+        fetchedImages.add("https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png");
       }
     }
     if (mounted) setState(() => userImages = fetchedImages);
