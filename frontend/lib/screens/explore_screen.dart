@@ -116,7 +116,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Consumer<EventProvider>(
           builder: (context, eventProvider, child) {
@@ -130,9 +130,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildTopBar(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 5),
                         _buildSearchBar(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         _buildOrganisersSection(),
                       ],
                     ),
@@ -140,25 +140,25 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
                   // Event List Section
                   if(events.isNotEmpty)
-                  ElevatedButton(
-                  onPressed: () {
-                  final firstEvent = events[0];
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                  builder: (context) => EventShareScreen(
-                  eventTitle: firstEvent.title,
-                  eventDescription: firstEvent.description,
-                  eventDateTime: firstEvent.dateTime.toString(),
-                  eventLocation: firstEvent.venue ?? "Unknown venue",
-                  eventLink: "https://example.com/event/${firstEvent.id}",
-                  imageUrl: firstEvent.banner ?? "https://via.placeholder.com/300",
-                  ),
-                  ),
-                  );
-                  },
-                  child: Text('Share'),
-                  ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final firstEvent = events[0];
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventShareScreen(
+                              eventTitle: firstEvent.title,
+                              eventDescription: firstEvent.description,
+                              eventDateTime: firstEvent.dateTime.toString(),
+                              eventLocation: firstEvent.venue ?? "Unknown venue",
+                              eventLink: "https://example.com/event/${firstEvent.id}",
+                              imageUrl: firstEvent.banner ?? "https://via.placeholder.com/300",
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('Share'),
+                    ),
                   if (eventProvider.isLoading)
                     const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
@@ -168,19 +168,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       child: Center(child: Text("No events found.")),
                     )
                   else
-            SliverList.builder(
-            itemCount: eventProvider.upcomingEvents.length,
-            itemBuilder: (context, index) {
-            final event = eventProvider.upcomingEvents[index];
-            return EventCard(
-            event: event,
-            style: CardStyle.full,
-            onRsvpPressed: () => eventProvider.toggleRsvpStatus(event.id),
-            );
-            },
-            ),
-            ],
-            ),
+                    SliverList.builder(
+                      itemCount: eventProvider.upcomingEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = eventProvider.upcomingEvents[index];
+                        return EventCard(
+                          event: event,
+                          style: CardStyle.full,
+                          onRsvpPressed: () => eventProvider.toggleRsvpStatus(event.id),
+                        );
+                      },
+                    ),
+                ],
+              ),
             );
           },
         ),
@@ -193,25 +193,25 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildTopBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             "Hey Shivangi!",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Sans TRIAL'),
           ),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
+                icon: const Icon(Icons.local_mall_outlined),
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => PaymentScreen()));
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_none),
+                icon: const Icon(Icons.notifications_outlined),
                 onPressed: () {
                   // Show notification permission or settings or show a new screen where notifs will be stored
                   notificationServices.requestNotificationPermission;
@@ -235,11 +235,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 hintText: "Search events...",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
@@ -247,11 +247,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
           const SizedBox(width: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.filter_list),
+              icon: const Icon(Icons.tune_outlined),
               onPressed: () {},
             ),
           ),
@@ -332,7 +332,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         }).toList(),
 
         // Pagination controls
-        _buildPaginationControls(totalPages),
+        // _buildPaginationControls(totalPages),
       ],
     );
   }
@@ -347,10 +347,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage > 0
                 ? () {
-                    setState(() {
-                      _currentPage--;
-                    });
-                  }
+              setState(() {
+                _currentPage--;
+              });
+            }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -378,10 +378,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ElevatedButton(
             onPressed: _currentPage < totalPages - 1
                 ? () {
-                    setState(() {
-                      _currentPage++;
-                    });
-                  }
+              setState(() {
+                _currentPage++;
+              });
+            }
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -439,47 +439,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ],
     );
   }
-  //
-  // Widget _buildBottomNavigationBar() {
-  //   return BottomNavigationBar(
-  //     items: const [
-  //       BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-  //       BottomNavigationBarItem(
-  //           icon: Icon(Icons.calendar_today), label: "Calendar"),
-  //       BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-  //     ],
-  //     currentIndex: _selectedIndex,
-  //     selectedItemColor: Colors.black,
-  //     unselectedItemColor: Colors.grey,
-  //     onTap: (index) {
-  //       setState(() {
-  //         _selectedIndex = index; // Update the selected index
-  //       });
-  //
-  //       if (index == 1) {
-  //         print("Navigating to Calendar screen");
-  //         // Navigate to Calendar screen - replacing with print for debugging
-  //         try {
-  //           Navigator.of(context).pushNamed('/calendar');
-  //         } catch (e) {
-  //           print("Navigation error: $e");
-  //           // Fallback direct navigation if named route is not defined
-  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
-  //         }
-  //       } else if (index == 2) {
-  //         print("Navigating to Profile screen");
-  //         // Navigate to Profile screen - replacing with print for debugging
-  //         try {
-  //           Navigator.of(context).pushNamed('/profile');
-  //         } catch (e) {
-  //           print("Navigation error: $e");
-  //           // Fallback direct navigation if named route is not defined
-  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-  //         }
-  //       }
-  //     },
-  //   );
-  // }
+//
+// Widget _buildBottomNavigationBar() {
+//   return BottomNavigationBar(
+//     items: const [
+//       BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
+//       BottomNavigationBarItem(
+//           icon: Icon(Icons.calendar_today), label: "Calendar"),
+//       BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+//     ],
+//     currentIndex: _selectedIndex,
+//     selectedItemColor: Colors.black,
+//     unselectedItemColor: Colors.grey,
+//     onTap: (index) {
+//       setState(() {
+//         _selectedIndex = index; // Update the selected index
+//       });
+//
+//       if (index == 1) {
+//         print("Navigating to Calendar screen");
+//         // Navigate to Calendar screen - replacing with print for debugging
+//         try {
+//           Navigator.of(context).pushNamed('/calendar');
+//         } catch (e) {
+//           print("Navigation error: $e");
+//           // Fallback direct navigation if named route is not defined
+//           // Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarScreen()));
+//         }
+//       } else if (index == 2) {
+//         print("Navigating to Profile screen");
+//         // Navigate to Profile screen - replacing with print for debugging
+//         try {
+//           Navigator.of(context).pushNamed('/profile');
+//         } catch (e) {
+//           print("Navigation error: $e");
+//           // Fallback direct navigation if named route is not defined
+//           // Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+//         }
+//       }
+//     },
+//   );
+// }
 }
 
 class OrganiserItem extends StatelessWidget {

@@ -20,8 +20,9 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
     _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<EventProvider>(context, listen: false);
-      provider.fetchRsvpdUpcomingEvents();
-      provider.fetchAttendedEvents();
+      //provider.fetchRsvpdUpcomingEvents();
+      // provider.fetchAttendedEvents();
+      provider.fetchUpcomingEvents();
     });
   }
 
@@ -79,12 +80,16 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
             children: [
               RefreshIndicator(
               onRefresh: () => eventProvider.fetchAllData(),
-          child: _buildEventList(eventProvider.rsvpdUpcomingEvents, eventProvider),
-          ),
+          //child: _buildEventList(eventProvider.rsvpdUpcomingEvents, eventProvider),
+                child: _buildEventList(eventProvider.upcomingEvents, eventProvider),
+
+              ),
 
           RefreshIndicator(
           onRefresh: () => eventProvider.fetchAllData(),
-          child: _buildEventList(eventProvider.attendedEvents, eventProvider),
+          //child: _buildEventList(eventProvider.attendedEvents, eventProvider),
+            child: _buildEventList(eventProvider.upcomingEvents, eventProvider),
+
           ),
             ],
           );
@@ -95,24 +100,29 @@ class _MyEventsScreenState extends State<MyEventsScreen> with SingleTickerProvid
 
   Widget _buildEventList(List<Event> events, EventProvider provider) {
     if (events.isEmpty) {
-      return const Center(child: Text("No events in this category."));
+      return RefreshIndicator(
+        onRefresh: () => provider.fetchAllData(),
+        child: Stack(children: [ListView(), const Center(child: Text("No events in this category."))]),
+      );
     }
-    return  ListView.builder(
+    return RefreshIndicator(
+      onRefresh: () => provider.fetchAllData(),
+      child: ListView.builder(
         padding: const EdgeInsets.all(8.0),
         itemCount: events.length,
         itemBuilder: (context, index) {
           final event = events[index];
           return EventCard(
             event: event,
-            style: CardStyle.compact, // Use the compact card style for this screen
+            style: CardStyle.compact,
             onRsvpPressed: () {
-              // Only allow toggling RSVP for events that are still upcoming
               if (event.dateTime.isAfter(DateTime.now())) {
                 provider.toggleRsvpStatus(event.id);
               }
             },
           );
         },
-      );
+      ),
+    );
   }
 }
