@@ -87,19 +87,19 @@ class EventProvider with ChangeNotifier {
     _errorMessage = '';
     notifyListeners();
 
-    print("--- STARTING FETCH UPCOMING EVENTS ---");
+    //print("--- STARTING FETCH UPCOMING EVENTS ---");
 
     try {
       // This calls your EventAPI to get the raw list of data
       final List<dynamic> eventsData = await _eventAPI.fetchUpcomingEvents();
 
-      print("1. DATA RECEIVED IN PROVIDER: Found ${eventsData.length} raw event items.");
+      //print("1. DATA RECEIVED IN PROVIDER: Found ${eventsData.length} raw event items.");
 
       if (eventsData.isEmpty) {
-        print("2. CONCLUSION: The API returned an empty list.");
+        //print("2. CONCLUSION: The API returned an empty list.");
         _upcomingEvents = []; // Set to empty list
       } else {
-        print("2. PARSING DATA NOW...");
+        //print("2. PARSING DATA NOW...");
 
         List<Event> parsedEvents = [];
         for (var data in eventsData) {
@@ -108,24 +108,24 @@ class EventProvider with ChangeNotifier {
             parsedEvents.add(Event.fromJson(data));
           } catch (e) {
             // If this fails, it will print the exact data and error
-            print("-----------------------------------------");
-            print("❌ FAILED TO PARSE ONE EVENT. ERROR: $e");
-            print("   Problematic Event Data: $data");
-            print("-----------------------------------------");
+            // print("-----------------------------------------");
+            // print("❌ FAILED TO PARSE ONE EVENT. ERROR: $e");
+            // print("   Problematic Event Data: $data");
+            // print("-----------------------------------------");
           }
         }
 
         _upcomingEvents = parsedEvents;
-        print("3. CONCLUSION: Successfully parsed ${_upcomingEvents.length} events.");
+        //print("3. CONCLUSION: Successfully parsed ${_upcomingEvents.length} events.");
       }
 
     } catch (e) {
       _errorMessage = e.toString();
-      print("❌ CATASTROPHIC ERROR in provider: $e");
+      //print("❌ CATASTROPHIC ERROR in provider: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
-      print("--- FETCH UPCOMING EVENTS FINISHED ---");
+      //print("--- FETCH UPCOMING EVENTS FINISHED ---");
     }
   }
 
@@ -217,14 +217,14 @@ class EventProvider with ChangeNotifier {
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
-    print("--- FETCHING RSVP'D UPCOMING EVENTS ---");
+    //print("--- FETCHING RSVP'D UPCOMING EVENTS ---");
     try {
       // 🧱 Developer bypass: hardcoded dev user ID (only during development)
-      const devUserId = '67cdd269256701c667eb3c00';
-      print("⚡ Developer bypass active. Using devUserId: $devUserId");
+      //const devUserId = '67cdd269256701c667eb3c00';
+      //print("⚡ Developer bypass active. Using devUserId: $devUserId");
       final eventsData = await _eventAPI.fetchRsvpdUpcomingEvents();
       if (eventsData.isEmpty) {
-        print("⚠️ No RSVP'd upcoming events returned from API.");
+        //print("⚠️ No RSVP'd upcoming events returned from API.");
         _rsvpdUpcomingEvents = [];
       } else {
         List<Event> parsedEvents = [];
@@ -235,7 +235,7 @@ class EventProvider with ChangeNotifier {
             event.isRsvpd = true; // All events returned here are RSVP'd
             parsedEvents.add(event);
           } catch (e) {
-            print("❌ Failed to parse one RSVP'd event: $e");
+            //print("❌ Failed to parse one RSVP'd event: $e");
             print("   Event Data: $data");
           }
         }
@@ -260,15 +260,15 @@ class EventProvider with ChangeNotifier {
     _errorMessage = '';
     notifyListeners();
 
-    print("--- FETCHING ATTENDED EVENTS ---");
+    //print("--- FETCHING ATTENDED EVENTS ---");
 
     try {
-      const devUserId = '67cdd269256701c667eb3c00';
-      print("⚡ Developer bypass active. Using devUserId: $devUserId");
+      // const devUserId = '67cdd269256701c667eb3c00';
+      // print("⚡ Developer bypass active. Using devUserId: $devUserId");
       final eventsData = await _eventAPI.fetchAttendedEvents();
 
       if (eventsData.isEmpty) {
-        print("⚠️ No attended events returned from API.");
+        //print("⚠️ No attended events returned from API.");
         _attendedEvents = [];
       } else {
         List<Event> parsedEvents = [];
@@ -285,7 +285,7 @@ class EventProvider with ChangeNotifier {
         }
 
         _attendedEvents = parsedEvents;
-        print("✅ Parsed ${_attendedEvents.length} attended events.");
+        //print("✅ Parsed ${_attendedEvents.length} attended events.");
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -300,7 +300,7 @@ class EventProvider with ChangeNotifier {
 
 
   Future<void> toggleRsvpStatus(String eventId) async {
-    print("--- TOGGLING RSVP STATUS FOR EVENT: $eventId ---");
+    //print("--- TOGGLING RSVP STATUS FOR EVENT: $eventId ---");
 
     final eventIndex = _upcomingEvents.indexWhere((event) => event.id == eventId);
     if (eventIndex == -1) return; // Exit if the event isn't found

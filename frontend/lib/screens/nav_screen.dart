@@ -4,7 +4,7 @@ import 'package:frontend/screens/explore_screen.dart';
 import 'package:frontend/screens/calendar_screen.dart';
 import 'package:frontend/screens/my_events_screen.dart';
 import 'package:frontend/screens/user_profile_screen.dart';
-import 'package:provider/provider.dart'; // ✅ ADD THIS
+import 'package:provider/provider.dart';
 import '../providers/eventProvider.dart';
 
 
@@ -56,7 +56,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
           BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), activeIcon: Icon(Icons.explore), label: "Explore"),
           BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: "Calendar"),
           BottomNavigationBarItem(icon: Icon(Icons.confirmation_number_outlined), activeIcon: Icon(Icons.confirmation_number), label: "My Events"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_2_outlined), activeIcon: Icon(Icons.person), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: "Profile"),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.black,

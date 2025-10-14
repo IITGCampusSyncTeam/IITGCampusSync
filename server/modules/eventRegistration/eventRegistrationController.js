@@ -5,7 +5,7 @@ import catchAsync from '../../utils/catchAsync.js';
 
 // This controller will handle both registering and un-registering (toggling)
 export const toggleRsvp = catchAsync(async (req, res, next) => {
-console.log("--- RSVP ENDPOINT TRIGGERED ---");
+//console.log("--- RSVP ENDPOINT TRIGGERED ---");
   const { eventId } = req.params;
   const userId = req.user.id; // Comes from your isAuthenticated middleware
 
@@ -17,11 +17,11 @@ const event = await Event.findById(eventId);
   }
   const currentRsvp = Array.isArray(event.rsvp) ? event.rsvp : [];
 
-  console.log(`1. Found event. Current RSVP array: [${currentRsvp.join(', ')}]`);
+  //console.log(`1. Found event. Current RSVP array: [${currentRsvp.join(', ')}]`);
 
   // 2. Check if the user's ID is already in the 'rsvp' array
   const isRsvpd = currentRsvp.map(id => id.toString()).includes(userId);
-  console.log(`2. Is user already RSVP'd? ${isRsvpd}`);
+  //console.log(`2. Is user already RSVP'd? ${isRsvpd}`);
 
   const updateOperation = isRsvpd
       ? { $pull: { rsvp: userId } }            // remove
@@ -36,11 +36,11 @@ const event = await Event.findById(eventId);
 
     if (!updatedEvent) {
       // extremely unlikely since we found it earlier, but safe to check
-      console.error(`❌ Event disappeared during update: ${eventId}`);
+      //console.error(`❌ Event disappeared during update: ${eventId}`);
       return res.status(404).json({ status: 'error', message: 'Event not found after update' });
     }
 
-    console.log(`Event AFTER update. New RSVP array: [${(updatedEvent.rsvp || []).join(', ')}]`);
+    //console.log(`Event AFTER update. New RSVP array: [${(updatedEvent.rsvp || []).join(', ')}]`);
 
     return res.status(200).json(responseMessage);
   });
