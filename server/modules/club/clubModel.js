@@ -30,13 +30,11 @@ const clubSchema = new Schema({
         }
     ],
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }], // Associated events
-    images: { type: String }, // Club image
+    images: { type: String }, // Club image/logo
     websiteLink: { type: String }, // Club website
-    logo: { type: String, default: "" },  // URL of club logo
     merch: [merchSchema], // Array of merch items
     files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }], // Associated files
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-
     tag: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
 
 });

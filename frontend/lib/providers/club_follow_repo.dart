@@ -1,44 +1,58 @@
 import 'dart:convert';
-import 'package:frontend/constants/endpoints.dart';
-import 'package:frontend/models/club_follow_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/models/club_model.dart';
+import 'package:frontend/config/auth_config.dart';
 
-class ClubRepository {
-  const ClubRepository();
+class ClubFollowService {
+  static const String _baseUrl = "${AuthConfig.serverUrl}/api/user";
 
-  Future<List<Club>> fetchClubs() async {
-    final response = await http.get(
-      Uri.parse(ClubFollowEndpoints.getAllClubs()),
-      headers: {"Content-Type": "application/json"},
-    );
+  /// Fetch all clubs
+  static Future<List<Club>> getAllClubs() async {
+    final url = Uri.parse("$_baseUrl/getbasicallclubs");
+    print('📡 Fetching clubs from: $url');
+
+    final response = await http.get(url);
+    print('📨 Status: ${response.statusCode}');
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body) as List;
+      final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Club.fromJson(json)).toList();
     } else {
-      throw Exception("Failed to load clubs: ${response.statusCode}");
+      throw Exception('❌ Failed to load clubs: ${response.statusCode}');
     }
   }
 
-  Future<void> followClub(String clubId) async {
-    final response = await http.post(
-      Uri.parse(ClubFollowEndpoints.followClub(clubId)),
-      headers: {"Content-Type": "application/json"},
-    );
+  /// Follow a club
+  static Future<void> followClub(String userId, String clubId) async {
+    final url = Uri.parse("$_baseUrl/$clubId/follow");
+    final response = await http.post(url, body: {'userId': userId});
 
     if (response.statusCode != 200) {
-      throw Exception("Failed to follow club: ${response.statusCode}");
+      throw Exception('❌ Failed to follow club: ${response.statusCode}');
     }
   }
 
-  Future<void> unfollowClub(String clubId) async {
-    final response = await http.post(
-      Uri.parse(ClubFollowEndpoints.unfollowClub(clubId)),
-      headers: {"Content-Type": "application/json"},
-    );
+  /// Unfollow a club
+  static Future<void> unfollowClub(String userId, String clubId) async {
+    final url = Uri.parse("$_baseUrl/$clubId/unfollow");
+    final response = await http.post(url, body: {'userId': userId});
 
     if (response.statusCode != 200) {
-      throw Exception("Failed to unfollow club: ${response.statusCode}");
+      throw Exception('❌ Failed to unfollow club: ${response.statusCode}');
+    }
+  }
+
+  /// Get subscribed (followed) club IDs
+  static Future<List<String>> getSubscribedClubIds(String userId) async {
+    final url = Uri.parse("$_baseUrl/getsubscribedclubs/$userId");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((club) => club["_id"].toString()).toList();
+    } else {
+      throw Exception(
+          '❌ Failed to fetch subscribed clubs: ${response.statusCode}');
     }
   }
 }

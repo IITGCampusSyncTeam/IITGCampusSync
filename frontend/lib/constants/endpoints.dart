@@ -94,12 +94,23 @@ class ClubMembers {
       "$baseUrl/$clubId/removemember/$email";
 }
 
+class UserFollowEndpoints {
+  static const String base = "${AuthConfig.serverUrl}/api/user";
+  // user side endpoints
+  static String followClub(String clubId) => "$base/$clubId/follow"; //works
+
+  static String unfollowClub(String clubId) => "$base/$clubId/unfollow"; //works
+
+  static String getBasicAllClubs() => "$base/getbasicallclubs"; //works
+
+  static String getSubscribedClubs(String userId) =>
+      "$base/user/subscribed/$userId"; //works
+}
+
 class ClubFollowEndpoints {
-  static const String base = "${AuthConfig.serverUrl}/clubs";
+  static const String base = "${AuthConfig.serverUrl}/api/clubs";
 
-  static String getAllClubs() => "$base/";
-
-  static String followClub(String clubId) => "$base/$clubId/follow";
-
-  static String unfollowClub(String clubId) => "$base/$clubId/unfollow";
+// club side endpoints
+  static String getFollowers(String clubId) =>
+      "$base/followers/$clubId"; //works
 }

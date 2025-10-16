@@ -8,10 +8,11 @@ List<String> parseStringList(dynamic jsonList) {
   if (jsonList is List) {
     return jsonList
         .map((item) {
-      if (item is String) return item;
-      if (item is Map && item.containsKey('_id')) return item['_id'].toString();
-      return item.toString(); // fallback
-    })
+          if (item is String) return item;
+          if (item is Map && item.containsKey('_id'))
+            return item['_id'].toString();
+          return item.toString(); // fallback
+        })
         .toList()
         .cast<String>();
   }
@@ -36,9 +37,7 @@ class ClubMember {
           ? json['userId']['_id'] ?? ''
           : json['userId'] ?? '',
       responsibility: json['responsibility'] ?? '',
-      user: json['userId'] is Map
-          ? User.fromJson(json['userId'])
-          : null,
+      user: json['userId'] is Map ? User.fromJson(json['userId']) : null,
     );
   }
 
@@ -80,6 +79,9 @@ class Club {
     required this.followers,
     required this.files,
   });
+  bool isFollowedBy(String userId) {
+    return followers.contains(userId);
+  }
 
   factory Club.fromJson(Map<String, dynamic> json) {
     return Club(
@@ -91,18 +93,18 @@ class Club {
           ? json['secretary']['_id'] ?? ''
           : json['secretary'] ?? '',
       members: (json['members'] as List?)
-          ?.map((member) => ClubMember.fromJson(member))
-          .toList() ??
+              ?.map((member) => ClubMember.fromJson(member))
+              .toList() ??
           [],
       events: parseStringList(json['events']),
       images: json['images'] ?? '',
       websiteLink: json['websiteLink'] ?? '',
       tag: parseStringList(json['tag']),
       merch: (json['merch'] as List?)
-          ?.map((item) => Merch.fromJson(item))
-          .toList() ??
+              ?.map((item) => Merch.fromJson(item))
+              .toList() ??
           [],
-      followers: parseStringList(json['followers']),
+      followers: parseStringList(json['foll owers']),
       files: parseStringList(json['files']),
     );
   }

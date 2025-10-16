@@ -6,7 +6,11 @@ import {
     selectTags,
     deleteUserTags,
     getUserFollowedEvents,
-    getUserWithEmail
+    getUserWithEmail,
+    followClub,
+    unfollowClub,
+    getSubscribedClubs,
+    getBasicAllClubs
 } from "./user.controller.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { validateUser } from "./user.model.js";
@@ -24,13 +28,25 @@ const validate = (schema) => {
     };
 };
 
+// Specific routes
 router.get("/", isAuthenticated, catchAsync(getUser));
-router.get("/:email", getUserWithEmail);
-router.post("/", validate(validateUser), catchAsync(createUser));
-router.put("/:email", isAuthenticated, catchAsync(updateUserController));
 router.get("/get-user-followed-events", isAuthenticated, getUserFollowedEvents);
+router.get("/subscribed/:userId", getSubscribedClubs);
+router.get("/getbasicallclubs", getBasicAllClubs);
 
+// Tag-related
 router.post("/:email/tags/select", isAuthenticated, catchAsync(selectTags));
 router.delete("/:email/tags/delete", isAuthenticated, catchAsync(deleteUserTags));
+
+// Follow/unfollow
+router.post("/follow", followClub);
+router.delete("/unfollow", unfollowClub);
+
+// Create / update user
+router.post("/", validate(validateUser), catchAsync(createUser));
+router.put("/:email", isAuthenticated, catchAsync(updateUserController));
+
+//email
+router.get("/:email", getUserWithEmail);
 
 export default router;

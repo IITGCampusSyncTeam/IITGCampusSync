@@ -11,11 +11,10 @@ import {
     getClubDetail,
     addTagToClub,
     removeTagFromClub,
-    followClub,
-    unfollowClub,
     addOrEditMember,
     removeMember,
-    getClubDetailWithEmail
+    getClubDetailWithEmail,
+    getFollowers
 } from './clubController.js';
 import isAuthenticated from '../../middleware/isAuthenticated.js';
 
@@ -32,14 +31,10 @@ router.get('/', getClubs);
 router.get('/:id', getClubDetail);
 router.get('/c/:email', getClubDetailWithEmail);
 router.post("/:clubId/addtag/:tagId", isAuthenticated, addTagToClub);
-
-router.post("/:clubId/follow", isAuthenticated, followClub);//follow Club
-router.delete("/:clubId/unfollow", isAuthenticated, unfollowClub);//unfollow Club
-// Remove Tag from Club
 router.delete("/:clubId/deletetag/:tagId", isAuthenticated, removeTagFromClub);
-
-// ✅ New member routes
+// New member routes
 router.put('/:clubId/addmember/:email', isAuthenticated, addOrEditMember);
 router.delete('/:clubId/removemember/:email', isAuthenticated, removeMember);
+router.get("/followers/:clubId", getFollowers);
 
 export default router;

@@ -25,10 +25,7 @@ class _TagScreenState extends State<TagScreen> {
   final ValueNotifier<List<String>> selectedTagIds = ValueNotifier([]);
   bool isLoading = true;
 
-  //user email
-  // Empty = not signed in
-  String? userEmail;
-  //String? userEmail = "@iitg.ac.in";(for testing without login)
+  String? userEmail; // Empty if not signed in
 
   @override
   void initState() {
@@ -50,7 +47,8 @@ class _TagScreenState extends State<TagScreen> {
     } else {
       log("No user data found in SharedPreferences.");
     }
-    // manual email for testing without login
+
+    // Manual test email (optional)
     // userEmail = "@iitg.ac.in";
   }
 
@@ -71,8 +69,8 @@ class _TagScreenState extends State<TagScreen> {
     if (userEmail == null || userEmail!.isEmpty) {
       _showSnackBar(
         "Please sign in to continue!",
-        backgroundColor: Colors.redAccent,
-        icon: Icons.error_outline,
+        backgroundColor: Colors.orangeAccent, // 🔸 Orange for login warning
+        icon: Icons.warning_amber_rounded,
       );
       log("User not signed in — cannot update tags");
       return;
@@ -93,7 +91,7 @@ class _TagScreenState extends State<TagScreen> {
         );
         log("Tags updated successfully for $userEmail");
 
-        // Navigate to UserProfile on successful continuation
+        // Navigate to UserProfile after success
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => UserProfileScreen()),
@@ -133,11 +131,12 @@ class _TagScreenState extends State<TagScreen> {
             ),
           ],
         ),
-        backgroundColor: backgroundColor,
+        backgroundColor: backgroundColor.withOpacity(0.95),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         duration: const Duration(seconds: 3),
+        elevation: 8,
       ),
     );
   }
@@ -259,6 +258,7 @@ class _TagScreenState extends State<TagScreen> {
   AppBar _buildAppBar(BuildContext context, double width) {
     return AppBar(
       backgroundColor: Colors.white,
+      scrolledUnderElevation: 0,
       leading: IconButton(
         onPressed: () {
           Navigator.push(

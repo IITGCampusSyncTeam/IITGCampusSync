@@ -18,6 +18,8 @@ class User {
   final List<String> merchOrders;
   final int version; // This corresponds to __v in the JSON
   final List<Map<String, dynamic>> tag; // Added tag field
+  final String profileImage;
+  final List<String> followingClubs;
 
   User({
     required this.id,
@@ -37,8 +39,10 @@ class User {
     required this.clubsResponsible,
     required this.merchOrders,
     required this.reminders,
-    required this.tag, // Added tag field
+    required this.tag,
     this.version = 0, // Default value for __v
+    required this.profileImage,
+    required this.followingClubs,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -60,8 +64,14 @@ class User {
       clubsResponsible: List<String>.from(json['clubsResponsible'] ?? []),
       reminders: List<Map<String, dynamic>>.from(json['reminders'] ?? []),
       merchOrders: List<String>.from(json['merchOrders'] ?? []),
-      tag: List<Map<String, dynamic>>.from(json['tag'] ?? []), // Parse tag field
+      tag:
+          List<Map<String, dynamic>>.from(json['tag'] ?? []), // Parse tag field
       version: json['__v'] ?? 0,
+      profileImage: json['profileImage'] ?? '',
+      followingClubs: (json['followingClubs'] as List?)
+              ?.map((clubId) => clubId.toString())
+              .toList() ??
+          [],
     );
   }
 
@@ -86,6 +96,8 @@ class User {
       'merchOrders': merchOrders,
       'tag': tag, // Include tag field in JSON
       '__v': version,
+      'profileImage': profileImage,
+      'followingClubs': followingClubs,
     };
   }
 }
