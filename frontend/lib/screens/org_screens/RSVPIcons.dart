@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RSVPIcons extends StatefulWidget {
-  final List<String> RSVP;
+  final dynamic RSVP;
 
   const RSVPIcons({super.key, required this.RSVP});
 
@@ -11,18 +13,42 @@ class RSVPIcons extends StatefulWidget {
 }
 
 class _RSVPIconsState extends State<RSVPIcons> {
-  late final int count;
-  late final List<String>? userImages;
+  int count = 0;
+  List<String>? userImages;
 
   @override
   void initState() {
     super.initState();
+    if (widget.RSVP == null) {
+      return;
+    }
     count = widget.RSVP.length;
     fetchUserData();
   }
 
   Future<void> fetchUserData() async {
-    //TODO : implement fetchUserData()
+    if (widget.RSVP.isEmpty) return;
+
+    List<String> fetchedImages = [];
+    for (dynamic user in widget.RSVP) {
+      String userId = user['user'];
+      try {
+        final response = await http.get(Uri.parse('https://iitgcampussync.onrender.com/api/user/$userId'));
+        if (response.statusCode == 200) {
+          final userData = json.decode(response.body);
+          // Assuming the user data contains a 'profilePicture' field with the image URL
+          if (userData['profilePicture'] != null) {
+            fetchedImages.add(userData['profilePicture']);
+          }
+        } else {
+          // Handle error or add a placeholder
+          debugPrint('Failed to load user data for $userId');
+        }
+      } catch (e) {
+        debugPrint('Error fetching user data for $userId: $e');
+      }
+    }
+    if (mounted) setState(() => userImages = fetchedImages);
   }
 
   @override
@@ -59,8 +85,8 @@ class _RSVPIconsState extends State<RSVPIcons> {
                         radius: 12,
                         // Access the list via widget.RSVP
                         backgroundImage: NetworkImage(userImages == null
-                            ? ""
-                            : userImages![index]),
+                            ? "https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"
+                            : index<userImages!.length? userImages![index]:"https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"),
                       ),
                     ),
                   );
@@ -89,8 +115,8 @@ class _RSVPIconsState extends State<RSVPIcons> {
                           radius: 12,
                           // Access the list via widget.RSVP
                           backgroundImage: NetworkImage(userImages == null
-                              ? ""
-                              : userImages![index]),
+                              ? "https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"
+                              : index<userImages!.length? userImages![index]:"https://upload.wikimedia.org/wikipedia/commons/a/a2/Person_Image_Placeholder.png"),
                         ),
                       ),
                     );
