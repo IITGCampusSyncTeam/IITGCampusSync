@@ -1,9 +1,11 @@
 <component name="libraryTable">
   <library name="Dart SDK">
     <CLASSES>
+      <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/_internal" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/async" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/cli" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/collection" />
+      <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/concurrent" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/convert" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/core" />
       <root url="file://$PROJECT_DIR$/../SWC/flutter_new/bin/cache/dart-sdk/lib/developer" />

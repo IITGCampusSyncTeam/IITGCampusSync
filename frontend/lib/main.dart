@@ -9,8 +9,6 @@ import 'package:frontend/screens/multi_tag_screen/interest_page.dart';
 import 'package:frontend/screens/intro_screens/intro_screen_1.dart';
 import 'package:frontend/screens/login_options_screen.dart';
 import 'package:frontend/screens/nav_screen.dart';
-import 'package:frontend/screens/org_screens/nav_bar.dart';
-import 'package:frontend/screens/user_profile_screen.dart';
 import 'package:frontend/services/notification_services.dart';
 import 'package:frontend/utilities/helper_functions.dart';
 import 'package:http/http.dart' as http;
@@ -190,12 +188,12 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       navigatorKey: navigatorKey,
-      home: UserProfileScreen(),
       // home: SplashScreen(),//final
       // home:
-      //OrganizerNavigationContainer() //for testing organizer side please change
+      //     OrganizerNavigationContainer() //for testing organizer side please change
       // home: SplashScreen(),
-      // home: MainNavigationContainer(),
+      // home: InterestsPage(),
+      home: MainNavigationContainer(),
       // home: const MyHomePage(title: 'IITGsync'),
 
       //home:ClubsScreen(),

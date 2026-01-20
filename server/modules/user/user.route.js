@@ -11,6 +11,7 @@ import {
     unfollowClub,
     getSubscribedClubs,
     getBasicAllClubs
+    getUserProfile
 } from "./user.controller.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { validateUser } from "./user.model.js";
@@ -35,6 +36,7 @@ router.get("/subscribed/:userId", getSubscribedClubs);
 router.get("/getbasicallclubs", getBasicAllClubs);
 
 // Tag-related
+router.get("/get-profile/:userID", isAuthenticated, getUserProfile);
 router.post("/:email/tags/select", isAuthenticated, catchAsync(selectTags));
 router.delete("/:email/tags/delete", isAuthenticated, catchAsync(deleteUserTags));
 

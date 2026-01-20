@@ -304,6 +304,51 @@ export const removeTagFromClub = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+// ✅ Assign tags to a club after authentication
+export const assignTagsToAuthenticatedClub = async (req, res) => {
+  try {
+    const { email, tagIds } = req.body;
+
+    if (!email || !Array.isArray(tagIds)) {
+      return res.status(400).json({ message: "Email and tagIds (array) are required" });
+    }
+
+    // 1️⃣ Find the club by email
+    const club = await Club.findOne({ email });
+    if (!club) return res.status(404).json({ message: "Club not found" });
+
+    // 2️⃣ Validate all tags
+    const validTags = await Tag.find({ _id: { $in: tagIds } });
+    if (validTags.length !== tagIds.length) {
+      return res.status(400).json({ message: "One or more tags are invalid" });
+    }
+
+    // 3️⃣ Add tags to club (avoid duplicates)
+    tagIds.forEach(tagId => {
+      if (!club.tag.includes(tagId)) club.tag.push(tagId);
+    });
+
+    await club.save();
+
+    // 4️⃣ Add club to tags' `clubs` array
+    await Promise.all(
+      tagIds.map(async (tagId) => {
+        const tag = await Tag.findById(tagId);
+        if (!tag.clubs.includes(club._id)) {
+          tag.clubs.push(club._id);
+          await tag.save();
+        }
+      })
+    );
+
+    res.status(200).json({ message: "Tags assigned to club successfully", club });
+  } catch (err) {
+    console.error("Error assigning tags to club:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const addOrEditMember = async (req, res) => {
     const { clubId, email } = req.params;
     const { responsibility } = req.body;

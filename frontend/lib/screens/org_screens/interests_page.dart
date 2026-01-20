@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+import 'package:frontend/screens/home_screen.dart';
+import 'package:frontend/models/interests.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+
+class InterestsPage extends StatefulWidget {
+  const InterestsPage({Key? key}) : super(key: key);
+
+  @override
+  State<InterestsPage> createState() => _InterestsPageState();
+}
+
+class _InterestsPageState extends State<InterestsPage> {
+  final Set<String> _selectedInterests = {};
+
+  void _toggleInterest(String name) {
+    setState(() {
+      if (_selectedInterests.contains(name)) {
+        _selectedInterests.remove(name);
+      } else {
+        _selectedInterests.add(name);
+      }
+    });
+  }
+
+  // void _continue() {
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const HomeScreen()),
+  //   );
+  // }
+
+  void _continue() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid; // optional if using auth
+    if (uid == null) return;
+
+    try {
+      final response = await http.get(Uri.parse('http://<YOUR_SERVER_URL>/api/tags'));
+      if (response.statusCode != 200) throw Exception('Failed to fetch tags');
+      final List<dynamic> allTags = jsonDecode(response.body);
+
+      final selectedTagIds = allTags
+          .where((t) => _selectedInterests.contains(t['title'])) // match by title
+          .map((t) => t['_id'])
+          .toList();
+
+      final clubEmail = '<CLUB_EMAIL_FROM_AUTH>';
+      final token = '<JWT_TOKEN>';
+      final assignResponse = await http.post(
+        Uri.parse('http://<YOUR_SERVER_URL>/api/clubs/assign-tags'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // optional, remove if not using JWT
+        },
+        body: jsonEncode({
+          'email': clubEmail,
+          'tagIds': selectedTagIds,
+        }),
+      );
+
+      if (assignResponse.statusCode == 200) {
+        // ✅ Navigate to Home screen after successful assignment
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        throw Exception('Failed to assign tags');
+      }
+    } catch (e) {
+      print('Error assigning tags: $e');
+      // Fallback: still navigate to Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          TextButton(
+            onPressed: _continue,
+            child: const Text(
+              "Skip",
+              style: TextStyle(color: Colors.black54, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Image.asset('assets/icons/appicon.png'),
+            const SizedBox(height: 20),
+            const Text(
+              "Tell us about your club",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1C1C1C),
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Select the tags that best represent your club’s activities and interests.",
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF71717B),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+
+            // Scrollable Interests
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: sampleInterests.map((interest) {
+                    final isSelected = _selectedInterests.contains(interest.name);
+                    return ChoiceChip(
+                      showCheckmark: false,
+                      label: Text(
+                        interest.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isSelected ? Color(0xFFE0E0E0) : Color(0xFF464646),
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: Color(0xFF171717),
+                      backgroundColor: Color(0xFFFFFFFF),
+                      onSelected: (_) => _toggleInterest(interest.name),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                child: ElevatedButton(
+                  // onPressed: _continue,
+                  onPressed: _selectedInterests.isNotEmpty ? _continue : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF252525),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                  ),
+                  child: const Text(
+                    "Continue",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

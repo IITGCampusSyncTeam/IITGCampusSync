@@ -70,6 +70,14 @@ dependencies:
   intl: ^0.20.2
   shimmer: ^3.0.0
 
+  remixicon: ^1.4.1
+  dotted_border: ^2.1.0
+
+
+  cloud_firestore: ^5.4.3
+  firebase_auth: ^5.3.1
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -100,6 +108,7 @@ flutter:
     - assets/images/Avatar.png
     - assets/images/Avatar.svg
     - assets/icons/
+    - assets/images/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
