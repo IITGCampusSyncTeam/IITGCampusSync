@@ -1,14 +1,5 @@
-class AuthConfig {
-  static const String AZURE_TENANT_ID =
-      String.fromEnvironment('AZURE_TENANT_ID', defaultValue: '');
-  static const String CLIENT_ID =
-      String.fromEnvironment('CLIENT_ID', defaultValue: '');
-  static const String serverUrl =
-      String.fromEnvironment('serverUrl', defaultValue: 'http://10.0.2.2:3000');
-}
+import 'package:frontend/config/auth_config.dart';
 
-
-//change this later
 class AuthEndpoints {
   static const String getAccess =
       'https://login.microsoftonline.com/${AuthConfig.AZURE_TENANT_ID}/oauth2/v2.0/authorize?client_id=${AuthConfig.CLIENT_ID}&response_type=code&redirect_uri=${"https://iitgcampussync.onrender.com"}/api/auth/login/redirect/mobile&scope=offline_access%20user.read&state=12345&prompt=consent';
@@ -18,7 +9,6 @@ class Userendpoints {
   static const getdetails = 'https://graph.microsoft.com/v1.0/me';
 }
 
-//change this later
 class UserEndPoints {
   static const currentUser = "${AuthConfig.serverUrl}/api/user/";
   static const getUserFollowedEvents =
@@ -29,7 +19,6 @@ class ClubEndPoints {
   static const cluburl = "${AuthConfig.serverUrl}/api/clubs/";
 }
 
-//change this later
 class backend {
   static const uri = AuthConfig.serverUrl;
 }
@@ -52,8 +41,6 @@ class event {
   static const createTentativeEvent =
       '${AuthConfig.serverUrl}/api/events/tentative';
   static const rsvpToEvent = '${AuthConfig.serverUrl}/api/events/rsvp/';
-//   static const rsvpToEvent =
-//       '${AuthConfig.serverUrl}/api/events/rsvp/';
 }
 
 class payment {
@@ -69,16 +56,24 @@ class NotifEndpoints {
   static const saveToken = "${AuthConfig.serverUrl}/api/firebase/save-token";
 }
 
+//User Tag Endpoints
 class UserTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
-  static String addTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/addtag/$tagId";
+  static String addTags(String email) =>
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/addtags";
 
-  static String removeTag(String email, String tagId) =>
-      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/deletetag/$tagId";
+  static String removeTags(String email) =>
+      "${AuthConfig.serverUrl}/api/user/${Uri.encodeComponent(email)}/deletetags";
+
+  static String updateUserTags() =>
+      "${AuthConfig.serverUrl}/api/tags/updateUserTags";
+
+  static String getUserTags(String email) =>
+      "${AuthConfig.serverUrl}/api/tags/user/${Uri.encodeComponent(email)}";
 }
 
+//Club Tag Endpoints (for adding/removing tags to clubs)
 class ClubTag {
   static const String getAvailableTags = "${AuthConfig.serverUrl}/api/tags/";
 
@@ -86,7 +81,7 @@ class ClubTag {
       "${AuthConfig.serverUrl}/api/clubs/$clubId/addtag/$tagId";
 
   static String removeTag(String clubId, String tagId) =>
-      "${AuthConfig.serverUrl}/api/clubs/$clubId/deletetag/$tagId";
+      "${AuthConfig.serverUrl}/api/clubs/$clubId/removetag/$tagId";
 }
 
 class ClubMembers {
@@ -97,4 +92,25 @@ class ClubMembers {
 
   static String removeMember(String clubId, String email) =>
       "$baseUrl/$clubId/removemember/$email";
+}
+
+class UserFollowEndpoints {
+  static const String base = "${AuthConfig.serverUrl}/api/user";
+  // user side endpoints
+  static String followClub(String clubId) => "$base/$clubId/follow"; //works
+
+  static String unfollowClub(String clubId) => "$base/$clubId/unfollow"; //works
+
+  static String getBasicAllClubs() => "$base/getbasicallclubs"; //works
+
+  static String getSubscribedClubs(String userId) =>
+      "$base/user/subscribed/$userId"; //works
+}
+
+class ClubFollowEndpoints {
+  static const String base = "${AuthConfig.serverUrl}/api/clubs";
+
+// club side endpoints
+  static String getFollowers(String clubId) =>
+      "$base/followers/$clubId"; //works
 }

@@ -14,7 +14,7 @@ export const getUserWithEmail = async (req, res) => {
         const user = await User.findOne({ email }).lean()
         if (!user) {
             console.log("User not found.");
-            return res.status(404).json({ message: 'Club not found' });
+            return res.status(404).json({ message: 'no user not found' });
         }
         console.log("user fetched:", user);
         if (!user.tag || user.tag.length === 0) {
@@ -140,6 +140,109 @@ export const deleteUserTags = async (req, res) => {
         res.status(500).json({ message: "Error removing tags from user", error: error.message });
     }
 };
+
+// Follow Club
+export const followClub = async (req, res) => {
+    try {
+        const { userId, clubId } = req.body;
+
+        const user = await User.findById(userId);
+        const club = await Club.findById(clubId);
+
+        if (!user || !club) {
+            return res.status(404).json({ message: "User or Club not found" });
+        }
+
+        // Prevent duplicate follow
+        if (user.subscribedClubs.includes(clubId)) {
+            return res.status(400).json({ message: "Already following this club" });
+        }
+
+        user.subscribedClubs.push(clubId);
+        club.followers.push(userId);
+
+        await user.save();
+        await club.save();
+
+        res.status(200).json({ message: "Club followed successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Unfollow Club
+export const unfollowClub = async (req, res) => {
+    try {
+        const { userId, clubId } = req.body;
+
+        const user = await User.findById(userId);
+        const club = await Club.findById(clubId);
+
+        if (!user || !club) {
+            return res.status(404).json({ message: "User or Club not found" });
+        }
+
+        // Remove club from user
+        user.subscribedClubs = user.subscribedClubs.filter(
+            id => id.toString() !== clubId
+        );
+
+        // Remove user from club
+        club.followers = club.followers.filter(
+            id => id.toString() !== userId
+        );
+
+        await user.save();
+        await club.save();
+
+        res.status(200).json({ message: "Club unfollowed successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get Subscribed Clubs for a User
+export const getSubscribedClubs = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const user = await User.findById(userId).populate("subscribedClubs", "name logo");
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const clubs = user.subscribedClubs.map(club => ({
+            id: club._id,
+            name: club.name,
+            images: club.logo || null, // null means handle default image in frontend
+        }));
+
+        res.status(200).json(clubs);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get All Clubs
+export const getBasicAllClubs = async (req, res) => {
+    try {
+        // Fetch name and images fields from each club
+        const clubs = await Club.find({}, "name images");
+
+        // Format the output
+        const formattedClubs = clubs.map((club) => ({
+            id: club._id,
+            name: club.name,
+            image: club.images || null, // handles missing image
+        }));
+
+        res.status(200).json(formattedClubs);
+    } catch (error) {
+        console.error("Error fetching clubs:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 
 export const getUserProfile = async (req, res) => {
     try {
